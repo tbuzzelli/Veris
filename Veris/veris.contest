@@ -1,0 +1,92 @@
+{
+  "name": "UCF HSPT 2017",
+  "contest_path": ".",
+  "submissions_path": "submissions",
+  "judge_solutions_path": "solutions",
+  "problems": [
+    {
+      "name": "Naughty or Nice?",
+      "filename": "naughty",
+      "data_path": "data/naughty",
+      "time_limit": 60000,
+      "checker": "DiffChecker true true"
+    },
+    {
+      "name": "Yertle the Turtle",
+      "filename": "yertle",
+      "data_path": "data/yertle",
+      "time_limit": 60000,
+      "checker": "DiffChecker true true"
+    },
+    {
+      "name": "The Power of Two is a Curious Thing",
+      "filename": "power",
+      "data_path": "data/power",
+      "time_limit": 60000,
+      "checker": "DiffChecker true true"
+    },
+    {
+      "name": "Seahorse Shoes",
+      "filename": "shoes",
+      "data_path": "data/shoes",
+      "time_limit": 60000,
+      "checker": "DiffChecker true true"
+    },
+    {
+      "name": "Every Day I'm Shuffling",
+      "filename": "shuffling",
+      "data_path": "data/shuffling",
+      "time_limit": 60000,
+      "checker": "DiffChecker true true"
+    },
+    {
+      "name": "Knights, Pirates, Ninjas",
+      "filename": "knights",
+      "data_path": "data/knights",
+      "time_limit": 60000,
+      "checker": "DiffChecker true true"
+    },
+    {
+      "name": "Shifting Gears",
+      "filename": "shift",
+      "data_path": "data/shift",
+      "time_limit": 60000,
+      "checker": "DiffChecker true true"
+    },
+    {
+      "name": "Jumping Fish",
+      "filename": "jump",
+      "data_path": "data/jump",
+      "time_limit": 60000,
+      "checker": "DiffChecker true true"
+    },
+    {
+      "name": "Rolling Burritos",
+      "filename": "burrito",
+      "data_path": "data/burrito",
+      "time_limit": 60000,
+      "checker": "DiffChecker true true"
+    },
+    {
+      "name": "Diamonds in the Rough",
+      "filename": "diamond",
+      "data_path": "data/diamond",
+      "time_limit": 60000,
+      "checker": "DiffChecker true true"
+    },
+    {
+      "name": "Wheel of Fortune Cookie Monster Mash",
+      "filename": "wheel",
+      "data_path": "data/wheel",
+      "time_limit": 60000,
+      "checker": "DiffChecker true true"
+    },
+    {
+      "name": "Chutes and Ladders",
+      "filename": "ladders",
+      "data_path": "data/ladders",
+      "time_limit": 60000,
+      "checker": "DiffChecker true true"
+    },
+  ]
+}
