@@ -25,22 +25,22 @@ public class Veris {
 
     public static final String[] ansFileTypes = { "ans", "out", "sol", "a" };
     public static final String[] inFileTypes = { "in", "data" };
-    HashMap<String, File> answerFiles, inputFiles;
+    private HashMap<String, File> answerFiles, inputFiles;
 
-    BoxWriter boxWriter;
-    Problem problem;
-    Checker checker;
-    ArrayList<Case> cases;
-    File sourceFile;
-    File directory;
-    String className;
-    String language;
-    long longestTime;
-    long totalTime;
-    long timeLimit;
-    File dataFolder;
-    boolean sortCasesBySize = true;
-    boolean isVerbose;
+    private BoxWriter boxWriter;
+    private Problem problem;
+    private Checker checker;
+    private ArrayList<Case> cases;
+    private File sourceFile;
+    private File directory;
+    private String className;
+    private String language;
+    private long longestTime;
+    private long totalTime;
+    private long timeLimit;
+    private File dataFolder;
+    private boolean sortCasesBySize = true;
+    private boolean isVerbose;
 
     public Veris() {
         Path tmpDir;
@@ -179,7 +179,9 @@ public class Veris {
                 digits++;
                 n /= 10;
             }
-            Collections.sort(cases);
+            if (sortCasesBySize) {
+                Collections.sort(cases);
+            }
             int cnt = 1;
             boxWriter.println("Running " + cases.size() + " test case" + (cases.size() != 1 ? "s" : ""));
             boxWriter.println();

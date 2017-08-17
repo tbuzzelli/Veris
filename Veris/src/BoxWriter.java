@@ -57,7 +57,7 @@ public class BoxWriter {
         lineLength = 0;
     }
 
-    public void startLine() {
+    private void startLine() {
         if (boxWidth == 0 || lineLength > 0) {
             return;
         }
@@ -67,7 +67,7 @@ public class BoxWriter {
         flush();
     }
 
-    public void finishLine() {
+    private void finishLine() {
         if (boxWidth == 0 || lineLength == 0) {
             return;
         }
@@ -219,7 +219,7 @@ public class BoxWriter {
         }
     }
 
-    public static String[] splitIntoLines(String str) {
+    private static String[] splitIntoLines(String str) {
         ArrayList<String> lines = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
         for (char c : str.toCharArray()) {
@@ -235,27 +235,28 @@ public class BoxWriter {
     }
 
     public static int getVisibleStringLength(String str) {
+        // Remove all terminal control sequences.
         str = str.replaceAll("\u001B\\[[\\d;]*[^\\d;]", "");
         int length = 0;
         for (char c : str.toCharArray()) {
             int type = Character.getType(c);
             if (type != Character.CONTROL
-                && type != Character.LINE_SEPARATOR
-                && type != Character.MODIFIER_LETTER
-                && type != Character.MODIFIER_SYMBOL
-                && type != Character.NON_SPACING_MARK
-                && type != Character.PARAGRAPH_SEPARATOR) {
+                    && type != Character.LINE_SEPARATOR
+                    && type != Character.MODIFIER_LETTER
+                    && type != Character.MODIFIER_SYMBOL
+                    && type != Character.NON_SPACING_MARK
+                    && type != Character.PARAGRAPH_SEPARATOR) {
                 length++;
             }
         }
         return length;
     }
 
-    public void printSpaces(int numSpaces) {
+    private void printSpaces(int numSpaces) {
         repeatCharacter(' ', numSpaces);
     }
 
-    public void repeatCharacter(char c, int n) {
+    private void repeatCharacter(char c, int n) {
         if (n <= 0) {
             return;
         }
