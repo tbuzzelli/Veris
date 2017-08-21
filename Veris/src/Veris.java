@@ -248,7 +248,7 @@ public class Veris {
             boxWriter.println("Unknown language " + language);
             return Verdict.INTERNAL_ERROR;
         }
-        builder.redirectError(Redirect.INHERIT);
+        //builder.redirectError(Redirect.INHERIT);
         builder.directory(directory);
         final Process process = builder.start();
         int resInt = process.waitFor();
