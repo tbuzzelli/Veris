@@ -28,6 +28,7 @@ public class Judge {
     public static final Checker DEFAULT_CHECKER = new TokenChecker();
     public static final int DEFAULT_TIME_LIMIT = 1000; // 1 second
     public static final String DEFAULT_CONTEST_FILENAME = "veris.contest";
+    public static final String DEFAULT_DATA_FOLDER_PATH = ".";
     public Map<String, String> argMap;
     public String[] args;
 
@@ -59,16 +60,37 @@ public class Judge {
         // Create the Veris object.
         Veris veris = new Veris();
 
-        // If less than 2 arguments were given, print the usage and
-        // exit.
-        if (args.length < 2) {
-            usage();
-            return;
-        }
-
         // Get the source file and data folder and give them to Veris.
-        String sourceFileString = args[0];
-        String dataFolderString = args[1];
+        String sourceFileString = null;
+        if (args.length > 0) {
+            sourceFileString = args[0];
+        } else {
+            File[] files = new File(".").listFiles();
+            for (File f : files) {
+                if (f.isDirectory()) continue;
+                String name = f.getName();
+                if (name.endsWith(".java")
+                        || name.endsWith(".c")
+                        || name.endsWith(".cc")
+                        || name.endsWith(".py")) {
+                    if (sourceFileString == null) {
+                        sourceFileString = name;
+                    } else {
+                        usage();
+                        return;
+                    }
+                }
+            }
+            if (sourceFileString == null) {
+                usage();
+                return;
+            }
+            System.out.printf("***Inferring solution file of '%s'\n", sourceFileString);
+        }
+        String dataFolderString = getDataFolderPathFromArgs();
+        if (dataFolderString == null) {
+            dataFolderString = DEFAULT_DATA_FOLDER_PATH;
+        }
         try {
             veris.setSourceFile(new File(sourceFileString));
         } catch (Exception e) {
@@ -306,6 +328,14 @@ public class Judge {
         veris.testCode();
         exited = true;
         System.exit(0);
+    }
+
+    /**
+     * Gets the data folder path from the -data or -d arguments.
+     * @return The data folder path if provided or null otherwise.
+     */
+    public String getDataFolderPathFromArgs() {
+        return getArg("data", "d");
     }
 
     /**
