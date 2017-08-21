@@ -239,7 +239,7 @@ public class Judge {
             }
 
             boxWriter.printDivider();
-            boxWriter.printf( " Solutions that could not be run: %d\n", failedSolutions.size());
+            boxWriter.printf( " Solutions that could not be run: %d\n", errorSolutons.size());
 
             for (int i = 0; i < errorSolutons.size(); i++) {
                 boxWriter.printf( "   %s\n", errorSolutons.get(i).getPath());
