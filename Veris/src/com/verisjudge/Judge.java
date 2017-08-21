@@ -68,7 +68,7 @@ public class Judge {
 
         // Get the source file and data folder and give them to Veris.
         String sourceFileString = null;
-        if (args.length > 0) {
+        if (args.length > 0 && args[0].charAt(0) != '-') {
             sourceFileString = args[0];
         } else {
             File[] files = new File(".").listFiles();
