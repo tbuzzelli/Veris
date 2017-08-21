@@ -1,7 +1,10 @@
+package com.verisjudge;
 import java.util.ArrayList;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.verisjudge.checker.Checker;
+import com.verisjudge.utils.CheckerUtils;
 
 public class Problem {
 

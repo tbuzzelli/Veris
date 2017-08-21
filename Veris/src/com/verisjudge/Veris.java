@@ -1,3 +1,4 @@
+package com.verisjudge;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -11,6 +12,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
+
+import com.verisjudge.checker.Checker;
+import com.verisjudge.checker.TokenChecker;
+import com.verisjudge.utils.BoxWriter;
+import com.verisjudge.utils.FastScanner;
 
 public class Veris {
 

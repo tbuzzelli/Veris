@@ -1,3 +1,7 @@
+package com.verisjudge.checker;
+import com.verisjudge.Verdict;
+import com.verisjudge.utils.FastScanner;
+
 public class NoChecker extends Checker {
 
     @Override

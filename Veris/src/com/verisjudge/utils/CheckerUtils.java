@@ -1,10 +1,13 @@
+package com.verisjudge.utils;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import com.verisjudge.checker.Checker;
+
 public class CheckerUtils {
 
-    enum Error {
+    public enum Error {
         EMPTY_CHECKER_STRING,
         CLASS_DOES_NOT_EXTEND_CHECKER,
         UNABLE_TO_FIND_CHECKER,
@@ -94,7 +97,7 @@ public class CheckerUtils {
         ArrayList<String> argStrings = new ArrayList<>();
         try {
             // Attempt to get the checker class from the class name.
-            Class<?> c1 = Class.forName(name);
+            Class<?> c1 = Class.forName("com.verisjudge.checker." + name);
             // If the class we find does not extend checker, report an error.
             if (!Checker.class.isAssignableFrom(c1)) {
                 setError(Error.CLASS_DOES_NOT_EXTEND_CHECKER,

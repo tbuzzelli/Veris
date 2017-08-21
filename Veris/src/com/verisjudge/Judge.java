@@ -1,7 +1,13 @@
+package com.verisjudge;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
+import com.verisjudge.checker.Checker;
+import com.verisjudge.checker.TokenChecker;
+import com.verisjudge.utils.BoxWriter;
+import com.verisjudge.utils.CheckerUtils;
 
 /*
 
@@ -229,7 +235,7 @@ public class Judge {
             boxWriter.printf(" Failed solutions: %d\n", failedSolutions.size());
 
             for (int i = 0; i < failedSolutions.size(); i++) {
-                boxWriter.printf( "  + %s\n", failedSolutions.get(i).getPath() + "   (" + failedSolutionResults.get(i).getColorString() + ")");
+                boxWriter.printf( "  + %s\n", failedSolutions.get(i).getPath() + "   (" + failedSolutionResults.get(i).getName() + ")");
             }
 
             boxWriter.printDivider();

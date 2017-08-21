@@ -1,3 +1,4 @@
+package com.verisjudge;
 
 public enum Verdict {
 

@@ -1,3 +1,5 @@
+package com.verisjudge.checker;
+
 public class EpsilonChecker extends TokenChecker {
     private final double absEps, relEps;
 

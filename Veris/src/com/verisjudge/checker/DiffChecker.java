@@ -1,6 +1,11 @@
+package com.verisjudge.checker;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayDeque;
+
+import com.verisjudge.Verdict;
+import com.verisjudge.utils.FastScanner;
 
 public class DiffChecker extends Checker {
 
