@@ -14,15 +14,6 @@ import java.util.concurrent.TimeUnit;
 
 public class Veris {
 
-    static enum Verdict {
-        CORRECT,
-        WRONG_ANSWER,
-        RUNTIME_ERROR,
-        COMPILE_ERROR,
-        TIME_LIMIT_EXCEEDED,
-        INTERNAL_ERROR
-    }
-
     public static final String[] ansFileTypes = { "ans", "out", "sol", "a" };
     public static final String[] inFileTypes = { "in", "data" };
     private HashMap<String, File> answerFiles, inputFiles;
@@ -205,10 +196,10 @@ public class Veris {
                         && boxWriter.getRemainingWidth() < caseWidth) {
                     boxWriter.println();
                 }
-                boxWriter.print("\033[" + getVerdictColorString(caseResult) + "m");
+                boxWriter.print("\033[" + caseResult.getColorString() + "m");
                 boxWriter.print(" ");
                 boxWriter.printf(String.format("%%0%dd", digits), cnt++);
-                boxWriter.print(" " + getVerdictCharacter(caseResult));
+                boxWriter.print(" " + caseResult.getCharacter());
                 boxWriter.print(" ");
                 if (caseResult != Verdict.CORRECT && isVerbose()) {
                     boxWriter.print("(" + c.name + ") ");
@@ -220,7 +211,7 @@ public class Veris {
         }
         boxWriter.printDivider();
         boxWriter.print("Verdict: ");
-        boxWriter.print(getVerdictString(result));
+        boxWriter.print(result.getName());
         if (result != Verdict.CORRECT && caseName != null) {
             boxWriter.print(" (on '" + caseName + "')");
         }
@@ -258,8 +249,8 @@ public class Veris {
         } else {
             res = Verdict.COMPILE_ERROR;
         }
-        boxWriter.print("\033[" + getCompileVerdictColorString(res) + "m");
-        boxWriter.print(getVerdictCharacter(res));
+        boxWriter.print("\033[" + res.getCompileColorString() + "m");
+        boxWriter.print(res.getCharacter());
         boxWriter.print("\033[0m");
         boxWriter.println();
         return res;
@@ -364,74 +355,6 @@ public class Veris {
                     break;
                 }
             }
-        }
-    }
-
-    public static String getVerdictString(Verdict verdict) {
-        switch (verdict) {
-            case CORRECT:
-                return "Correct";
-            case WRONG_ANSWER:
-                return "Wrong Answer";
-            case RUNTIME_ERROR:
-                return "Runtime Error";
-            case COMPILE_ERROR:
-                return "Compilation Error";
-            case TIME_LIMIT_EXCEEDED:
-                return "Time-Limit Exceeded";
-            case INTERNAL_ERROR:
-                return "Internal Error";
-            default:
-                return "Unknown Verdict";
-        }
-    }
-
-    public static char getVerdictCharacter(Verdict verdict) {
-        switch (verdict) {
-            case CORRECT:
-                return '✓';
-            case WRONG_ANSWER:
-                return 'x';
-            case RUNTIME_ERROR:
-                return 'r';
-            case COMPILE_ERROR:
-                return 'c';
-            case TIME_LIMIT_EXCEEDED:
-                return 't';
-            case INTERNAL_ERROR:
-                return '?';
-            default:
-                return '?';
-        }
-    }
-
-    public static String getVerdictColorString(Verdict verdict) {
-        switch (verdict) {
-            case CORRECT:
-                return "1;37;42";
-            case WRONG_ANSWER:
-                return "1;37;41";
-            case RUNTIME_ERROR:
-                return "1;37;101";
-            case COMPILE_ERROR:
-                return "1;37;43";
-            case TIME_LIMIT_EXCEEDED:
-                return "1;37;44";
-            case INTERNAL_ERROR:
-                return "1;37;45";
-            default:
-                return "1;37;45";
-        }
-    }
-
-    public static String getCompileVerdictColorString(Verdict verdict) {
-        switch (verdict) {
-            case CORRECT:
-                return "1;51;32";
-            case COMPILE_ERROR:
-                return "1;33";
-            default:
-                return "1;33";
         }
     }
 

@@ -184,7 +184,7 @@ public class Judge {
             boxWriter.println("\nFound " + solutions.length + " solutions.");
             ArrayList<File> validSolutions = new ArrayList<>();
             ArrayList<File> failedSolutions = new ArrayList<>();
-            ArrayList<Veris.Verdict> failedSolutionResults = new ArrayList<>();
+            ArrayList<Verdict> failedSolutionResults = new ArrayList<>();
             ArrayList<File> errorSolutons = new ArrayList<>();
             for (int i = 0; i < solutions.length; i++) {
                 File solution = solutions[i];
@@ -209,8 +209,8 @@ public class Judge {
                 Problem problem = contest.getProblem(problemFilename);
                 veris.fromProblem(problem);
                 veris.setSortCasesBySize(false);
-                Veris.Verdict result = veris.testCode();
-                if (result == Veris.Verdict.CORRECT) {
+                Verdict result = veris.testCode();
+                if (result == Verdict.CORRECT) {
                     validSolutions.add(solution);
                 } else {
                     failedSolutions.add(solution);
@@ -229,7 +229,7 @@ public class Judge {
             boxWriter.printf(" Failed solutions: %d\n", failedSolutions.size());
 
             for (int i = 0; i < failedSolutions.size(); i++) {
-                boxWriter.printf( "  + %s\n", failedSolutions.get(i).getPath() + "   (" + Veris.getVerdictString(failedSolutionResults.get(i)) + ")");
+                boxWriter.printf( "  + %s\n", failedSolutions.get(i).getPath() + "   (" + failedSolutionResults.get(i).getColorString() + ")");
             }
 
             boxWriter.printDivider();

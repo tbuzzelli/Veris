@@ -12,20 +12,20 @@ public class TokenChecker extends Checker {
     }
 
     @Override
-    public Veris.Verdict check(FastScanner input, FastScanner pScanner, FastScanner ansScanner) {
+    public Verdict check(FastScanner input, FastScanner pScanner, FastScanner ansScanner) {
         while(ansScanner.hasNext()) {
             if(!pScanner.hasNext()) {
-                return Veris.Verdict.WRONG_ANSWER; // not enough output
+                return Verdict.WRONG_ANSWER; // not enough output
             }
             String ans = ansScanner.next(), par = pScanner.next();
             if(!check(ans,par)) {
-                return Veris.Verdict.WRONG_ANSWER; // output differs
+                return Verdict.WRONG_ANSWER; // output differs
             }
         }
         if(pScanner.hasNext()) {
-            return Veris.Verdict.WRONG_ANSWER; // too much output
+            return Verdict.WRONG_ANSWER; // too much output
         }
-        return Veris.Verdict.CORRECT; // correct
+        return Verdict.CORRECT; // correct
     }
 
     private boolean check(String answer, String participant) {

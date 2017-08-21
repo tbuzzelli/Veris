@@ -17,7 +17,7 @@ public class DiffChecker extends Checker {
     }
 
     @Override
-    public Veris.Verdict check(FastScanner input, FastScanner pScanner, FastScanner ansScanner) {
+    public Verdict check(FastScanner input, FastScanner pScanner, FastScanner ansScanner) {
         BufferedReader pBr = pScanner.getBufferedReader();
         BufferedReader ansBr = ansScanner.getBufferedReader();
         ArrayDeque<String> pLines = new ArrayDeque<>();
@@ -33,7 +33,7 @@ public class DiffChecker extends Checker {
                 ansLines.push(line);
             }
         } catch (IOException e) {
-            return Veris.Verdict.INTERNAL_ERROR;
+            return Verdict.INTERNAL_ERROR;
         }
         if (ignoreTrailingBlankLines) {
             while (!pLines.isEmpty() && pLines.peek().isEmpty()) pLines.pop();
@@ -47,14 +47,14 @@ public class DiffChecker extends Checker {
             } else if(ansLines.size() + 1 == pLines.size()) {
                 ansLines.push("");
             } else {
-                return Veris.Verdict.WRONG_ANSWER;
+                return Verdict.WRONG_ANSWER;
             }
         }
         while (!pLines.isEmpty()) {
             if (!pLines.pop().equals(ansLines.pop())) {
-                return Veris.Verdict.WRONG_ANSWER;
+                return Verdict.WRONG_ANSWER;
             }
         }
-        return Veris.Verdict.CORRECT;
+        return Verdict.CORRECT;
     }
 }
