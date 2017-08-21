@@ -235,14 +235,14 @@ public class Judge {
             boxWriter.printf(" Failed solutions: %d\n", failedSolutions.size());
 
             for (int i = 0; i < failedSolutions.size(); i++) {
-                boxWriter.printf( "  + %s\n", failedSolutions.get(i).getPath() + "   (" + failedSolutionResults.get(i).getName() + ")");
+                boxWriter.printf( "   %s\n", failedSolutions.get(i).getPath() + "   (" + failedSolutionResults.get(i).getName() + ")");
             }
 
             boxWriter.printDivider();
             boxWriter.printf( " Solutions that could not be run: %d\n", failedSolutions.size());
 
             for (int i = 0; i < errorSolutons.size(); i++) {
-                boxWriter.printf( "  + %s\n", errorSolutons.get(i).getPath());
+                boxWriter.printf( "   %s\n", errorSolutons.get(i).getPath());
             }
 
             boxWriter.closeBox();
