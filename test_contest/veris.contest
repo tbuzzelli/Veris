@@ -1,7 +1,8 @@
 {
   "name": "UCF HSPT 2017",
   "contest_path": ".",
-  "submissions_path": ".",
+  "submissions_path": "submissions",
+  "judge_solutions_path": "solutions",
   "problems": [
     {
       "name": "Naughty or Nice?",
