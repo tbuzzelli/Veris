@@ -226,9 +226,11 @@ public class Judge {
             boxWriter.println("===========================================================================");
             boxWriter.println("\n");
             boxWriter.openBox(80);
+            boxWriter.println();
             boxWriter.centerOn();
             boxWriter.println("Contest Judge Solution Verification Results");
             boxWriter.centerOff();
+            boxWriter.println();
             boxWriter.printDivider();
             boxWriter.printf(" Valid solutions: %d\n", validSolutions.size());
             boxWriter.printDivider();
