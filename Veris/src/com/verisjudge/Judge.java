@@ -26,7 +26,7 @@ java -jar Veris.jar -contest=HSPT.contest -verify
 public class Judge {
     public static void usage() {
         System.out.println(
-                "usage: java Veris source data_folder [-c (EpsilonChecker | TokenChecker | CustomChecker) [arguments]] [-t time_limit_ms] [-v]");
+                "usage: java -jar veris.jar source [-data=\"path_to_data_folder\"] [-checker=\"(EpsilonChecker | TokenChecker | CustomChecker) [arguments]\"] [-time_limit=\"1200ms\"] [-verbose]");
         System.exit(1);
     }
     static boolean exited = false;
@@ -45,8 +45,7 @@ public class Judge {
         // -key  =>  key -> ""
         argMap = new HashMap<>();
         for (String arg : args) {
-            if (arg.length() < 2) continue;
-            if (arg.charAt(0) == '-') {
+            if (arg.length() > 0 && arg.charAt(0) == '-') {
                 int eqIndex = arg.indexOf('=');
                 if (eqIndex == -1) {
                     argMap.put(arg.substring(1), "");

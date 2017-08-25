@@ -1,13 +1,44 @@
 package com.verisjudge.utils;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
 
-public class BoxWriter {
+public class BoxWriter extends Writer {
+
+    public static final int BORDER_BASIC    = 0;
+    public static final int BORDER_SINGLE   = 1;
+    public static final int BORDER_THICK    = 2;
+    public static final int BORDER_DOUBLE   = 3;
+    public static final int BORDER_ROUNDED  = 4;
+
+    public static final int BORDER_HORIZONTAL_LINE     = 0;
+    public static final int BORDER_VERTICAL_LINE       = 1;
+    public static final int BORDER_CROSS               = 2;
+    public static final int BORDER_CORNER_TOP_RIGHT    = 3;
+    public static final int BORDER_CORNER_TOP_LEFT     = 4;
+    public static final int BORDER_CORNER_BOTTOM_LEFT  = 5;
+    public static final int BORDER_CORNER_BOTTOM_RIGHT = 6;
+    public static final int BORDER_EDGE_RIGHT          = 7;
+    public static final int BORDER_EDGE_TOP            = 8;
+    public static final int BORDER_EDGE_LEFT           = 9;
+    public static final int BORDER_EDGE_BOTTOM         = 10;
+
+    public static final char[][] BORDER_CHARS = {
+            {'-', '|', '+', '+', '+', '+', '+', '+', '+', '+', '+'},
+            {'─', '│', '┼', '┐', '┌', '└', '┘', '┤', '┬', '├', '┴'},
+            {'━', '┃', '╋', '┓', '┏', '┗', '┛', '┫', '┳', '┣', '┻'},
+            {'═', '║', '╬', '╗', '╔', '╚', '╝', '╣', '╦', '╠', '╩'},
+            {'─', '│', '┼', '╮', '╭', '╰', '╯', '┤', '┬', '├', '┴'},
+        };
+
+    public static final int DEFAULT_BORDER = BORDER_DOUBLE;
 
     private PrintWriter out;
+    private int borderType = 0;
     private int boxWidth = 0;
     private int lineLength = 0;
     private boolean center;
@@ -17,15 +48,23 @@ public class BoxWriter {
     }
 
     public void openBox(int width) {
+        openBox(width, DEFAULT_BORDER);
+    }
+
+    public void openBox(int width, int borderType) {
+        if (borderType < 0 && borderType >= BORDER_CHARS.length) {
+            borderType = DEFAULT_BORDER;
+        }
+        this.borderType = borderType;
         closeBox();
         if (lineLength > 0) {
             out.println();
             lineLength = 0;
         }
         boxWidth = width;
-        out.print('╔');
-        repeatCharacter('═', boxWidth - 2);
-        out.println('╗');
+        out.print(BORDER_CHARS[borderType][BORDER_CORNER_TOP_LEFT]);
+        repeatCharacter(BORDER_CHARS[borderType][BORDER_HORIZONTAL_LINE], boxWidth - 2);
+        out.println(BORDER_CHARS[borderType][BORDER_CORNER_TOP_RIGHT]);
         flush();
         lineLength = 0;
     }
@@ -35,9 +74,9 @@ public class BoxWriter {
             finishLine();
             out.println();
         }
-        out.print('╠');
-        repeatCharacter('═', boxWidth - 2);
-        out.println('╣');
+        out.print(BORDER_CHARS[borderType][BORDER_EDGE_LEFT]);
+        repeatCharacter(BORDER_CHARS[borderType][BORDER_HORIZONTAL_LINE], boxWidth - 2);
+        out.println(BORDER_CHARS[borderType][BORDER_EDGE_RIGHT]);
         flush();
         lineLength = 0;
     }
@@ -50,9 +89,9 @@ public class BoxWriter {
             finishLine();
             out.println();
         }
-        out.print('╚');
-        repeatCharacter('═', boxWidth - 2);
-        out.println('╝');
+        out.print(BORDER_CHARS[borderType][BORDER_CORNER_BOTTOM_LEFT]);
+        repeatCharacter(BORDER_CHARS[borderType][BORDER_HORIZONTAL_LINE], boxWidth - 2);
+        out.println(BORDER_CHARS[borderType][BORDER_CORNER_BOTTOM_RIGHT]);
         flush();
         boxWidth = 0;
         lineLength = 0;
@@ -64,7 +103,7 @@ public class BoxWriter {
         }
         finishLine();
         lineLength = 1;
-        out.print('║');
+        out.print(BORDER_CHARS[borderType][BORDER_VERTICAL_LINE]);
         flush();
     }
 
@@ -73,7 +112,7 @@ public class BoxWriter {
             return;
         }
         printSpaces(boxWidth - lineLength - 1);
-        out.print('║');
+        out.print(BORDER_CHARS[borderType][BORDER_VERTICAL_LINE]);
         flush();
         lineLength = 0;
     }
@@ -274,5 +313,10 @@ public class BoxWriter {
 
     public void close() {
         out.close();
+    }
+
+    @Override
+    public void write(char[] arg0, int arg1, int arg2) throws IOException {
+        out.write(arg0, arg1, arg2);
     }
 }
