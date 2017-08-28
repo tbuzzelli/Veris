@@ -27,7 +27,7 @@ public class EpsilonChecker extends TokenChecker {
                 rel = Math.abs((a-b)/a);
             }
             return Math.abs(a-b) <= absEps || rel <= relEps;
-        } catch(Exception e) {
+        } catch (Exception e) {
             return answer.equals(participant);
         }
         
