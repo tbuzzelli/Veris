@@ -11,12 +11,14 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import com.verisjudge.checker.Checker;
 import com.verisjudge.checker.TokenChecker;
 import com.verisjudge.utils.BoxWriter;
 import com.verisjudge.utils.FastScanner;
+import com.verisjudge.utils.NullOutputStream;
 
 public class Veris {
 
@@ -27,7 +29,7 @@ public class Veris {
     private BoxWriter boxWriter;
     private Problem problem;
     private Checker checker;
-    private ArrayList<Case> cases;
+    private ArrayList<TestCase> cases;
     private File sourceFile;
     private File directory;
     private String className;
@@ -39,7 +41,18 @@ public class Veris {
     private boolean sortCasesBySize = true;
     private boolean isVerbose;
 
+    /**
+     * Veris constructor which defaults to writing to System.out.
+     */
     public Veris() {
+        this(System.out);
+    }
+
+    /**
+     * Veris constructor which writes to given output stream.
+     * @param out The output stream to write to.
+     */
+    public Veris(OutputStream out) {
         Path tmpDir;
         try {
             tmpDir = Files.createTempDirectory("veris");
@@ -50,7 +63,26 @@ public class Veris {
         setChecker(new TokenChecker());
         setTimeLimit(2000);
         setIsVerbose(false);
-        boxWriter = new BoxWriter(System.out);
+        boxWriter = new BoxWriter(out);
+    }
+
+    /**
+     * Set the output stream for veris to write to.
+     * @param out The output stream to have veris write to.
+     */
+    public void setOutputStream(OutputStream out) {
+        if (boxWriter != null) {
+            boxWriter.close();
+        }
+        boxWriter = new BoxWriter(out);
+    }
+
+    /**
+     * Sets the output stream to NullOutputStream so nothing
+     * will be written anywhere.
+     */
+    public void clearOutputStream() {
+        setOutputStream(new NullOutputStream());
     }
 
     /**
@@ -145,11 +177,16 @@ public class Veris {
                 continue;
             File inputFile = inputFiles.get(name);
             File answerFile = answerFiles.get(name);
-            cases.add(new Case(inputFile, answerFile));
+            cases.add(new TestCase(inputFile, answerFile));
         }
     }
 
+    /**
+     * Test the code against all test cases
+     * @return The Verdict.
+     */
     public Verdict testCode() {
+        // Print the header
         boxWriter.println();
         boxWriter.openBox(80);
         if (problem != null) {
@@ -162,46 +199,61 @@ public class Veris {
         }
         boxWriter.println("Judging solution: " + sourceFile.getName());
         boxWriter.println();
+
         Verdict result;
+
+        // Attempt to compile the code.
         try {
             result = compileCode();
         } catch (Exception e) {
+            // Catch any exceptions and set result to INTERNAL_ERROR.
             result = Verdict.INTERNAL_ERROR;
         }
+
+        // As long as the code compiled, run it against the cases.
         String caseName = null;
         if (result == Verdict.CORRECT) {
+            // Calculate the number of digits to use when printing each case.
             int digits = 0;
             int n = cases.size();
             while (n > 0) {
                 digits++;
                 n /= 10;
             }
+            // Sort our test cases if needed.
             if (sortCasesBySize) {
                 Collections.sort(cases);
             }
+            // Print a line saying how many test cases are being run.
             int cnt = 1;
             boxWriter.println("Running " + cases.size() + " test case" + (cases.size() != 1 ? "s" : ""));
             boxWriter.println();
-            for (Case c : cases) {
+            for (TestCase c : cases) {
                 Verdict caseResult;
+                // Run the case and get the result.
                 try {
                     caseResult = runCase(className, c);
                 } catch (Exception e) {
+                    // Catch any exceptions and set result to INTERNAL_ERROR.
                     caseResult = Verdict.INTERNAL_ERROR;
-                    e.printStackTrace();
                 }
-                if (result == Verdict.CORRECT) {
+                // If the current result is still correct or if we had an
+                // internal error, set it to this one.
+                if (result == Verdict.CORRECT || caseResult == Verdict.INTERNAL_ERROR) {
                     result = caseResult;
                     caseName = c.name;
                 }
+                // Calculate the case width we need to print.
                 int caseWidth = 4 + digits;
                 if (caseResult != Verdict.CORRECT && isVerbose()) {
                     caseWidth += 2 + c.name.length();
                 }
+                // If this won't fit in the box when we print it, print a new line.
                 if (boxWriter.getLineLength() > 1
                         && boxWriter.getRemainingWidth() < caseWidth) {
                     boxWriter.println();
                 }
+                // Print this case as the colored block with the number/name.
                 boxWriter.print("\033[" + caseResult.getColorString() + "m");
                 boxWriter.print(" ");
                 boxWriter.printf(String.format("%%0%dd", digits), cnt++);
@@ -216,21 +268,31 @@ public class Veris {
             boxWriter.println();
         }
         boxWriter.printDivider();
+        // Print the verdict and what case was wrong if the verdict was not correct.
         boxWriter.print("Verdict: ");
         boxWriter.print(result.getName());
         if (result != Verdict.CORRECT && caseName != null) {
             boxWriter.print(" (on '" + caseName + "')");
         }
         boxWriter.printDivider();
+        // Print the worst time and the total time.
         boxWriter.printf("Worst time: %.2fs\n", longestTime / 1000.0);
         boxWriter.printf("Total time: %.2fs\n", totalTime / 1000.0);
         boxWriter.closeBox();
-        
+
         return result;
     }
 
-    public Verdict compileCode() throws Exception {
+    /**
+     * Compile the solution
+     * @return Either CORRECT or COMPILE_ERROR depending on whether or not
+     * the solution compiled successfully. May return INTERNAL_ERROR if an
+     * error occured.
+     */
+    public Verdict compileCode() {
+        // Print the header.
         boxWriter.print("Compiling code: ");
+        // Create the compile process.
         ProcessBuilder builder;
         if(language.equals("java")) {
             builder = new ProcessBuilder("javac", className + ".java");
@@ -245,10 +307,17 @@ public class Veris {
             boxWriter.println("Unknown language " + language);
             return Verdict.INTERNAL_ERROR;
         }
-        //builder.redirectError(Redirect.INHERIT);
+        // Set the working directory to the temporary directory.
         builder.directory(directory);
-        final Process process = builder.start();
-        int resInt = process.waitFor();
+        int resInt;
+        // Attempt to compile the program/
+        try {
+            final Process process = builder.start();
+            resInt = process.waitFor();
+        } catch (Exception e) {
+            return Verdict.INTERNAL_ERROR;
+        }
+        // Get the result and print it.
         Verdict res;
         if (resInt == 0) {
             res = Verdict.CORRECT;
@@ -259,10 +328,19 @@ public class Veris {
         boxWriter.print(res.getCharacter());
         boxWriter.print("\033[0m");
         boxWriter.println();
+        // Return the compile result.
         return res;
     }
 
-    public Verdict runCase(String className, Case c) throws Exception {
+    /**
+     * Run a single test case against the solution.
+     * @param className The Java or Python class/filenames to use.
+     * @param c The test case to run.
+     * @return A Verdict reprenting the result from running the solution against
+     * this test case. Returns INTERNAL_ERROR if an error occurred.
+     */
+    public Verdict runCase(String className, TestCase c) {
+        // Create the output file to use.
         File pOut = new File(directory, className + ".out");
         ProcessBuilder builder = null;
         if(language.equals("java")) {
@@ -277,13 +355,23 @@ public class Veris {
             boxWriter.println("Unknown language " + language);
             return Verdict.INTERNAL_ERROR;
         }
+        // Set the working directory and redirect their output to the file.
         builder.directory(directory);
         builder.redirectOutput(pOut);
-        if(isVerbose())
+
+        // If we are verbose, inherit their error stream.
+        if(isVerbose()) {
             builder.redirectError(Redirect.INHERIT);
+        }
 
-        Process process = builder.start();
-
+        // Create the process and attempt to start it.
+        Process process;
+        try {
+            process = builder.start();
+        } catch (Exception e) {
+            return Verdict.INTERNAL_ERROR;
+        }
+    
         // Pipe them their input
         Thread inputThread = new Thread() {
             public void run() {
@@ -298,29 +386,52 @@ public class Veris {
             }
         };
 
-        long t1 = System.currentTimeMillis();
+        // Record the time before starting their program.
+        long t1 = System.nanoTime();
+        // Start their program.
         inputThread.start();
-        boolean completed = process.waitFor(timeLimit, TimeUnit.MILLISECONDS);
-        long time = System.currentTimeMillis() - t1;
-        t1 = Math.min(timeLimit, time);
-        longestTime = Math.max(longestTime, time);
-        totalTime += time;
-
-        Verdict res;
-        if (!completed) {
-            res = Verdict.TIME_LIMIT_EXCEEDED;
+        boolean completed = false;
+        // Wait for it to complete with a timeout of 105% of the timeLimit
+        try {
+            completed = process.waitFor(timeLimit * 105 / 100, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
             process.destroyForcibly();
+            return Verdict.INTERNAL_ERROR;
+        }
+
+        // Calculate the time it took in milliseconds.
+        long time = (System.nanoTime() - t1 + 999999) / 1000000;
+        t1 = Math.min(timeLimit, time);
+        // Keep track of the longest time and the total time.
+        longestTime = Math.max(longestTime, t1);
+        totalTime += t1;
+
+        // Get the result.
+        Verdict res;
+        if (!completed || time > timeLimit) {
+            res = Verdict.TIME_LIMIT_EXCEEDED;
+            if (!completed) {
+                process.destroyForcibly();
+            }
         } else {
             if (process.exitValue() != 0) {
                 res = Verdict.RUNTIME_ERROR;
             } else {
+                // Check the solution's output.
                 res = checker.check(new FastScanner(c.inputFile), new FastScanner(pOut), new FastScanner(c.answerFile));
             }
         }
+        // Return the result.
         return res;
     }
 
-    public void pipe(InputStream is, OutputStream os) throws IOException {
+    /**
+     * Pipes all data from an input stream to an output stream.
+     * @param is The input stream to read from.
+     * @param os The ouput stream to write to.
+     * @throws IOException if an io error occurred.
+     */
+    public static void pipe(InputStream is, OutputStream os) throws IOException {
         int n;
         byte[] buffer = new byte[1024*1024];
         while ((n = is.read(buffer)) > -1) {
@@ -329,23 +440,44 @@ public class Veris {
         os.close();
     }
 
-    void addDataFolder(File folder) {
+    /**
+     * Adds a folder and all its subfolders/files to the set of data files.
+     * @param folder The data folder to add.
+     */
+    private void addDataFolder(File folder) {
+        // If this is not a directory, just return.
+        if (!folder.isDirectory()) {
+            return;
+        }
+        // If this directory contains a file called ".nodata", skip this folder.
         for (File f : folder.listFiles()) {
+            if (f.getName().toLowerCase().equals(".nodata")) {
+                return;
+            }
+        }
+        // Go through each file in this data folder.
+        for (File f : folder.listFiles()) {
+            // If this file is a folder, add it recursively.
             if (f.isDirectory()) {
                 addDataFolder(f);
                 continue;
             }
+            // Get the file name and file type.
             String name = f.getName();
             String filetype = "";
             if (name.contains(".")) {
                 filetype = name.substring(name.lastIndexOf('.') + 1);
                 name = name.substring(0, name.lastIndexOf('.'));
             }
+            // If this is an answer file or an input file,
+            // add it to the appropriate list.
             for (String t : ansFileTypes) {
                 if (filetype.equals(t.toLowerCase())) {
                     answerFiles.put(name, f);
                     break;
                 }
+                // If the filename contains the ansFileType string, add it.
+                // Ex: case.out5 case.5.out
                 if(f.getName().contains("." + t)) {
                     answerFiles.put(f.getName().replace("."+t, ""), f);
                     break;
@@ -356,6 +488,8 @@ public class Veris {
                     inputFiles.put(name, f);
                     break;
                 }
+                // If the filename contains the inFileType string, add it.
+                // Ex: case.in5 case.5.in
                 if(f.getName().contains("." + t)) {
                     answerFiles.put(f.getName().replace("."+t, ""), f);
                     break;
@@ -364,11 +498,11 @@ public class Veris {
         }
     }
 
-    class Case implements Comparable<Case> {
+    class TestCase implements Comparable<TestCase> {
         File inputFile, answerFile;
         String name;
 
-        public Case(File inputFile, File answerFile) {
+        public TestCase(File inputFile, File answerFile) {
             this.inputFile = inputFile;
             this.answerFile = answerFile;
             name = inputFile.getName();
@@ -382,7 +516,7 @@ public class Veris {
         }
 
         @Override
-        public int compareTo(Case o) {
+        public int compareTo(TestCase o) {
             return Long.compare(inputFile.length(), o.inputFile.length());
         }
     }
