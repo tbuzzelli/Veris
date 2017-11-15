@@ -22,7 +22,7 @@ import com.verisjudge.utils.NullOutputStream;
 
 public class Veris {
 
-    public static final String[] ansFileTypes = { "ans", "out", "sol", "a" };
+    public static final String[] ansFileTypes = { "ans", "out", "sol", "a", "sol" };
     public static final String[] inFileTypes = { "in", "data" };
     public static final long DEFAULT_TIME_LIMIT = 5000;
     
