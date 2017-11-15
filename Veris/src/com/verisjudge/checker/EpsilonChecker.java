@@ -1,10 +1,14 @@
 package com.verisjudge.checker;
 
 public class EpsilonChecker extends TokenChecker {
+	
+	public final static double DEFAULT_ABSOLUTE_EPSILON = 1e-6;
+	public final static double DEFAULT_RELATIVE_EPSILON = 1e-6;
+
     private final double absEps, relEps;
 
     public EpsilonChecker() {
-        this(1e-6, 1e-6);
+        this(DEFAULT_ABSOLUTE_EPSILON, DEFAULT_RELATIVE_EPSILON);
     }
 
     public EpsilonChecker(double absEps) {
@@ -17,6 +21,7 @@ public class EpsilonChecker extends TokenChecker {
         this.relEps = relEps;
     }
 
+    @Override
     boolean check(String answer, String participant) {
         try {
             double a = Double.parseDouble(answer), b = Double.parseDouble(participant);

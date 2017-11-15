@@ -5,13 +5,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ProcessBuilder.Redirect;
+import java.lang.ref.WeakReference;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import com.verisjudge.checker.Checker;
@@ -24,6 +24,8 @@ public class Veris {
 
     public static final String[] ansFileTypes = { "ans", "out", "sol", "a" };
     public static final String[] inFileTypes = { "in", "data" };
+    public static final long DEFAULT_TIME_LIMIT = 5000;
+    
     private HashMap<String, File> answerFiles, inputFiles;
 
     private BoxWriter boxWriter;
@@ -40,6 +42,7 @@ public class Veris {
     private File dataFolder;
     private boolean sortCasesBySize = true;
     private boolean isVerbose;
+    private WeakReference<VerisListener> listener;
 
     /**
      * Veris constructor which defaults to writing to System.out.
@@ -61,7 +64,7 @@ public class Veris {
             e.printStackTrace();
         }
         setChecker(new TokenChecker());
-        setTimeLimit(2000);
+        setTimeLimit(DEFAULT_TIME_LIMIT);
         setIsVerbose(false);
         boxWriter = new BoxWriter(out);
     }
@@ -83,6 +86,15 @@ public class Veris {
      */
     public void clearOutputStream() {
         setOutputStream(new NullOutputStream());
+    }
+    
+    /**
+     * Sets the listener to receive events while judging.
+     * @param listener The listener that should receive events while judging
+     * or null to clear the listener.
+     */
+    public void setListener(VerisListener listener) {
+    	this.listener = new WeakReference<VerisListener>(listener);
     }
 
     /**
@@ -130,6 +142,21 @@ public class Veris {
     public boolean isVerbose() {
         return isVerbose;
     }
+    
+    /**
+     * Checks whether or not this instance of Veris is ready to judge.
+     * @return True if there is a solution and data that is set up and ready
+     * to judge.
+     */
+    public boolean isReady() {
+    	if (getSourceFile() == null)
+    		return false;
+    	if (getDataFolder() == null)
+    		return false;
+    	if (cases == null || cases.size() == 0)
+    		return false;
+    	return true;
+    }
 
     /**
      * Sets the source file to judge.
@@ -139,15 +166,25 @@ public class Veris {
      * source file.
      */
     public void setSourceFile(File sourceFile) throws IOException {
+    	
         this.sourceFile = sourceFile;
         Path p = sourceFile.toPath();
         Path newSourceFile = directory.toPath().resolve(sourceFile.getName());
-        Files.createFile(newSourceFile);
+        if (!newSourceFile.toFile().exists())
+        	Files.createFile(newSourceFile);
 
         Files.copy(p, newSourceFile, StandardCopyOption.REPLACE_EXISTING);
         this.className = sourceFile.getName();
         this.language = className.substring(className.lastIndexOf('.')+1);
         className = className.substring(0, className.lastIndexOf('.'));
+    }
+    
+    /**
+     * Returns the source file which will be judged
+     * @return The source file which will be judged
+     */
+    public File getSourceFile() {
+    	return this.sourceFile;
     }
 
     /**
@@ -180,12 +217,22 @@ public class Veris {
             cases.add(new TestCase(inputFile, answerFile));
         }
     }
+    
+    /**
+     * Gets the data folder if it was set.
+     * @return The data folder if one was set or null otherwise.
+     */
+    public File getDataFolder(){
+        return dataFolder;
+    }
 
     /**
      * Test the code against all test cases
      * @return The Verdict.
      */
     public Verdict testCode() {
+    	if (listener.get() != null)
+    		listener.get().handleJudgingStarting(sourceFile.getName(), language, cases.size());
         // Print the header
         boxWriter.println();
         boxWriter.openBox(80);
@@ -202,20 +249,24 @@ public class Veris {
 
         Verdict result;
 
+        if (listener.get() != null)
+        	listener.get().handleCompileStarting();
         // Attempt to compile the code.
-        try {
-            result = compileCode();
-        } catch (Exception e) {
-            // Catch any exceptions and set result to INTERNAL_ERROR.
-            result = Verdict.INTERNAL_ERROR;
+        result = compileCode();
+        
+        if (Thread.currentThread().isInterrupted()) {
+        	return Verdict.INTERNAL_ERROR;
         }
+
+        if (listener.get() != null)
+        	listener.get().handleCompileFinished(result == Verdict.CORRECT);
 
         // As long as the code compiled, run it against the cases.
         String caseName = null;
         if (result == Verdict.CORRECT) {
             // Calculate the number of digits to use when printing each case.
-            int digits = 0;
             int n = cases.size();
+            int digits = 0;
             while (n > 0) {
                 digits++;
                 n /= 10;
@@ -228,15 +279,16 @@ public class Veris {
             int cnt = 1;
             boxWriter.println("Running " + cases.size() + " test case" + (cases.size() != 1 ? "s" : ""));
             boxWriter.println();
-            for (TestCase c : cases) {
+            for (int ci = 0; ci < cases.size(); ci++) {
+            	TestCase c = cases.get(ci);
+            	if (listener.get() != null)
+            		listener.get().handleTestCaseStarting(ci);
+            	TestCaseResult testCaseResult;
                 Verdict caseResult;
                 // Run the case and get the result.
-                try {
-                    caseResult = runCase(className, c);
-                } catch (Exception e) {
-                    // Catch any exceptions and set result to INTERNAL_ERROR.
-                    caseResult = Verdict.INTERNAL_ERROR;
-                }
+                testCaseResult = runCase(className, c);
+                caseResult = testCaseResult.verdict;
+                
                 // If the current result is still correct or if we had an
                 // internal error, set it to this one.
                 if (result == Verdict.CORRECT || caseResult == Verdict.INTERNAL_ERROR) {
@@ -263,6 +315,13 @@ public class Veris {
                     boxWriter.print("(" + c.name + ") ");
                 }
                 boxWriter.print("\033[0m");
+                
+                if (listener.get() != null)
+                	listener.get().handleTestCaseFinished(ci, testCaseResult);
+                
+                if (Thread.currentThread().isInterrupted()) {
+                	return Verdict.INTERNAL_ERROR;
+                }
             }
             boxWriter.println();
             boxWriter.println();
@@ -279,6 +338,9 @@ public class Veris {
         boxWriter.printf("Worst time: %.2fs\n", longestTime / 1000.0);
         boxWriter.printf("Total time: %.2fs\n", totalTime / 1000.0);
         boxWriter.closeBox();
+
+        if (listener.get() != null)
+        	listener.get().handleJudgingFinished(result);
 
         return result;
     }
@@ -298,8 +360,10 @@ public class Veris {
             builder = new ProcessBuilder("javac", className + ".java");
         } else if(language.equals("c")) {
             builder = new ProcessBuilder("gcc", className + ".c", "-std=c99", "-o", "a");
-        }  else if(language.equals("cpp")) {
+        } else if(language.equals("cpp")) {
             builder = new ProcessBuilder("g++", className + ".cpp", "-std=c++11", "-o", "a");
+        } else if(language.equals("cc")) {
+            builder = new ProcessBuilder("g++", className + ".cc", "-std=c++11", "-o", "a");
         } else if(language.equals("py")) {
             boxWriter.println("N/A");
             return Verdict.CORRECT;
@@ -311,11 +375,17 @@ public class Veris {
         builder.directory(directory);
         int resInt;
         // Attempt to compile the program/
+        Process process = null;
         try {
-            final Process process = builder.start();
+            process = builder.start();
             resInt = process.waitFor();
-        } catch (Exception e) {
+        } catch (IOException e) {
             return Verdict.INTERNAL_ERROR;
+        } catch (InterruptedException e) {
+        	if (process != null)
+        		process.destroyForcibly();
+        	Thread.currentThread().interrupt();
+        	return Verdict.INTERNAL_ERROR;
         }
         // Get the result and print it.
         Verdict res;
@@ -336,10 +406,14 @@ public class Veris {
      * Run a single test case against the solution.
      * @param className The Java or Python class/filenames to use.
      * @param c The test case to run.
-     * @return A Verdict reprenting the result from running the solution against
+     * @return A TestCaseResult reprenting the result from running the solution against
      * this test case. Returns INTERNAL_ERROR if an error occurred.
      */
-    public Verdict runCase(String className, TestCase c) {
+    public TestCaseResult runCase(String className, TestCase c) {
+    	TestCaseResult.Builder resultBuilder = new TestCaseResult.Builder()
+    			.setName(c.name)
+    			.setInputFile(c.inputFile)
+    			.setAnswerFile(c.answerFile);
         // Create the output file to use.
         File pOut = new File(directory, className + ".out");
         ProcessBuilder builder = null;
@@ -347,13 +421,16 @@ public class Veris {
             builder = new ProcessBuilder("java", className);
         } else if(language.equals("c")) {
             builder = new ProcessBuilder(directory  + "/a");
-        }  else if(language.equals("cpp")) {
+        } else if(language.equals("cpp")) {
+            builder = new ProcessBuilder(directory  + "/a");
+        } else if(language.equals("cc")) {
             builder = new ProcessBuilder(directory  + "/a");
         } else if(language.equals("py")) {
             builder = new ProcessBuilder("python3", className + ".py");
         } else {
             boxWriter.println("Unknown language " + language);
-            return Verdict.INTERNAL_ERROR;
+            resultBuilder.setVerdict(Verdict.INTERNAL_ERROR);
+        	return resultBuilder.build();
         }
         // Set the working directory and redirect their output to the file.
         builder.directory(directory);
@@ -368,8 +445,9 @@ public class Veris {
         Process process;
         try {
             process = builder.start();
-        } catch (Exception e) {
-            return Verdict.INTERNAL_ERROR;
+        } catch (IOException e) {
+        	resultBuilder.setVerdict(Verdict.INTERNAL_ERROR);
+        	return resultBuilder.build();
         }
     
         // Pipe them their input
@@ -394,9 +472,11 @@ public class Veris {
         // Wait for it to complete with a timeout of 105% of the timeLimit
         try {
             completed = process.waitFor(timeLimit * 105 / 100, TimeUnit.MILLISECONDS);
-        } catch (Exception e) {
-            process.destroyForcibly();
-            return Verdict.INTERNAL_ERROR;
+        } catch (InterruptedException e) {
+        	process.destroyForcibly();
+            resultBuilder.setVerdict(Verdict.INTERNAL_ERROR);
+        	Thread.currentThread().interrupt();
+        	return resultBuilder.build();
         }
 
         // Calculate the time it took in milliseconds.
@@ -421,8 +501,11 @@ public class Veris {
                 res = checker.check(new FastScanner(c.inputFile), new FastScanner(pOut), new FastScanner(c.answerFile));
             }
         }
-        // Return the result.
-        return res;
+        
+        resultBuilder.setVerdict(res);
+        resultBuilder.setRuntime(t1);
+
+    	return resultBuilder.build();
     }
 
     /**
@@ -496,6 +579,48 @@ public class Veris {
                 }
             }
         }
+    }
+    
+    /**
+     * Returns whether or not the file given is an acceptable source file.
+     * Makes sure that the file has a valid extension
+     * @param f
+     * @return whether or not this file is an acceptable solution file.
+     */
+    public static boolean isValidSolutionFile(File f) {
+    	String extension = getFileExtension(f).toLowerCase();
+    	switch (extension) {
+    		case "java":
+    		case "c":
+    		case "cc":
+    		case "cpp":
+    		case "py":
+    			return true;
+    		default:
+    			return false;
+    	}
+    }
+    
+    /**
+     * Returns the extension from the file given
+     * @param f The file
+     * @return The extension of the file or an empty string if there is
+     * no file extension.
+     */
+    public static String getFileExtension(File f) {
+    	return getFileExtension(f.getName());
+    }
+    
+    /**
+     * Returns the extension from the filename given
+     * @param name The file name
+     * @return The extension of the file or an empty string if there is
+     * no file extension.
+     */
+    public static String getFileExtension(String name) {
+    	int idx = name.indexOf(".");
+    	if (idx == -1) return "";
+    	return name.substring(idx + 1);
     }
 
     class TestCase implements Comparable<TestCase> {

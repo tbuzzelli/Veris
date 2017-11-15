@@ -31,7 +31,7 @@ public class TokenChecker extends Checker {
         return Verdict.CORRECT; // correct
     }
 
-    private boolean check(String answer, String participant) {
+    boolean check(String answer, String participant) {
         if (caseSensative) {
             return answer.equals(participant);
         } else {

@@ -135,6 +135,9 @@ public class Judge {
         // Set the time limit in Veris.
         veris.setTimeLimit(timeLimit);
 
+        // Don't sort the cases by size.
+        veris.setSortCasesBySize(false);
+
         // Test the code.
         veris.testCode();
         exited = true;
@@ -505,4 +508,5 @@ public class Judge {
         Judge judge = new Judge(args);
         judge.run();
     }
+    
 }

@@ -19,7 +19,7 @@ public class Problem {
     }
 
     public static final int MINIMUM_TIME_LIMIT = 100; // 100 milliseconds
-    public static final int MAXIMUM_TIME_LIMIT = 5 * 60 * 1000; // 5 minutes
+    public static final int MAXIMUM_TIME_LIMIT = 60 * 60 * 1000; // 1 hour
     public static final String JSON_FIELD_NAME = "name";
     public static final String JSON_FIELD_FILENAME = "filename";
     public static final String JSON_FIELD_DATA_PATH = "data_path";
