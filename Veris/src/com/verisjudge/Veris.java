@@ -25,6 +25,8 @@ public class Veris {
     public static final String[] ansFileTypes = { "ans", "out", "sol", "a", "sol" };
     public static final String[] inFileTypes = { "in", "data" };
     public static final long DEFAULT_TIME_LIMIT = 5000;
+    public static final long MINIMUM_TIME_LIMIT = 100;
+    public static final long MAXIMUM_TIME_LIMIT = 60 * 60 * 1000; // 1 hour
     
     private HashMap<String, File> answerFiles, inputFiles;
 
@@ -32,7 +34,7 @@ public class Veris {
     private Problem problem;
     private Checker checker;
     private ArrayList<TestCase> cases;
-    private File sourceFile;
+    private File solutionFile;
     private File directory;
     private String className;
     private String language;
@@ -149,7 +151,7 @@ public class Veris {
      * to judge.
      */
     public boolean isReady() {
-    	if (getSourceFile() == null)
+    	if (getSolutionFile() == null)
     		return false;
     	if (getDataFolder() == null)
     		return false;
@@ -159,22 +161,22 @@ public class Veris {
     }
 
     /**
-     * Sets the source file to judge.
-     * @param sourceFile The source file to judge. Absolute or relative to
+     * Sets the solution file to judge.
+     * @param solutionFile The source file to judge. Absolute or relative to
      * running directory.
      * @throws IOException If an IO error was encountered while reading the
      * source file.
      */
-    public void setSourceFile(File sourceFile) throws IOException {
+    public void setSolutionFile(File solutionFile) throws IOException {
     	
-        this.sourceFile = sourceFile;
-        Path p = sourceFile.toPath();
-        Path newSourceFile = directory.toPath().resolve(sourceFile.getName());
+        this.solutionFile = solutionFile;
+        Path p = solutionFile.toPath();
+        Path newSourceFile = directory.toPath().resolve(solutionFile.getName());
         if (!newSourceFile.toFile().exists())
         	Files.createFile(newSourceFile);
 
         Files.copy(p, newSourceFile, StandardCopyOption.REPLACE_EXISTING);
-        this.className = sourceFile.getName();
+        this.className = solutionFile.getName();
         this.language = className.substring(className.lastIndexOf('.')+1);
         className = className.substring(0, className.lastIndexOf('.'));
     }
@@ -183,8 +185,8 @@ public class Veris {
      * Returns the source file which will be judged
      * @return The source file which will be judged
      */
-    public File getSourceFile() {
-    	return this.sourceFile;
+    public File getSolutionFile() {
+    	return this.solutionFile;
     }
 
     /**
@@ -232,7 +234,7 @@ public class Veris {
      */
     public Verdict testCode() {
     	if (listener.get() != null)
-    		listener.get().handleJudgingStarting(sourceFile.getName(), language, cases.size());
+    		listener.get().handleJudgingStarting(solutionFile.getName(), language, cases.size());
         // Print the header
         boxWriter.println();
         boxWriter.openBox(80);
@@ -244,7 +246,7 @@ public class Veris {
             boxWriter.println();
             boxWriter.printDivider();
         }
-        boxWriter.println("Judging solution: " + sourceFile.getName());
+        boxWriter.println("Judging solution: " + solutionFile.getName());
         boxWriter.println();
 
         Verdict result;
@@ -646,36 +648,121 @@ public class Veris {
         }
     }
 
-    /*
-    public void gotoxy(int r, int c) {
-        char escCode = 0x1B;
-        boxWriter.print(String.format("%c[%d;%df", escCode, r, c));
+    public static class Builder {
+    	private File solutionFile;
+    	private File dataFolder;
+    	private Long timeLimit;
+    	private Boolean sortCasesBySize;
+    	private Boolean isVerbose;
+    	private Checker checker;
+    	private OutputStream outputStream;
+    	private VerisListener listener;
+    	
+    	public Veris build() throws IOException {
+    		Veris veris = new Veris();
+    		if (solutionFile != null)
+    			veris.setSolutionFile(solutionFile);
+    		if (dataFolder != null)
+    			veris.setDataFolder(dataFolder);
+    		if (timeLimit != null)
+    			veris.setTimeLimit(timeLimit);
+    		if (sortCasesBySize != null)
+    			veris.setSortCasesBySize(sortCasesBySize);
+    		if (isVerbose != null)
+    			veris.setIsVerbose(isVerbose);
+    		if (outputStream != null)
+    			veris.setOutputStream(outputStream);
+    		if (listener != null)
+    			veris.setListener(listener);
+    		
+    		return veris;
+    	}
+    	
+    	public boolean isReady() {
+    		if (getSolutionFile() == null)
+        		return false;
+        	if (getDataFolder() == null)
+        		return false;
+        	// if (cases == null || cases.size() == 0)
+        	// 	return false;
+        	return true;
+    	}
+
+    	public Builder setSolutionFile(File solutionFile) {
+    		this.solutionFile = solutionFile;
+    		return this;
+    	}
+    	
+    	public File getSolutionFile() {
+    		return solutionFile;
+    	}
+    	
+    	public Builder setDataFolder(File dataFolder) {
+    		this.dataFolder = dataFolder;
+    		return this;
+    	}
+    	
+    	public File getDataFolder() {
+    		return dataFolder;
+    	}
+    	
+    	public Builder setTimeLimit(Long timeLimit) {
+    		this.timeLimit = timeLimit;
+    		return this;
+    	}
+    	
+    	public Long getTimeLimit() {
+    		return timeLimit;
+    	}
+    	
+    	public Builder setSortCasesBySize(Boolean sortCasesBySize) {
+    		this.sortCasesBySize = sortCasesBySize;
+    		return this;
+    	}
+    	
+    	public Boolean getSortCasesBySize() {
+    		return sortCasesBySize;
+    	}
+    	
+    	public Builder setIsVerbose(Boolean isVerbose) {
+    		this.isVerbose = isVerbose;
+    		return this;
+    	}
+    	
+    	public Boolean isVerbose() {
+    		return isVerbose;
+    	}
+    	
+    	public Builder setChecker(Checker checker) {
+    		this.checker = checker;
+    		return this;
+    	}
+    	
+    	public Checker getChecker() {
+    		return checker;
+    	}
+    	
+    	public Builder setOutputStream(OutputStream outputStream) {
+    		this.outputStream = outputStream;
+    		return this;
+    	}
+    	
+    	public Builder clearOutputStream() {
+    		this.outputStream = new NullOutputStream();
+    		return this;
+    	}
+    	
+    	public OutputStream getOutputStream() {
+    		return outputStream;
+    	}
+    	
+    	public Builder setListener(VerisListener listener) {
+    		this.listener = listener;
+    		return this;
+    	}
+    	
+    	public VerisListener getListener() {
+    		return listener;
+    	}
     }
-
-    public void deltaxy(int dr, int dc) {
-        char escCode = 0x1B;
-        if (dr < 0)
-            boxWriter.print(String.format("%c[%dA", escCode, -dr));
-        if (dr > 0)
-            boxWriter.print(String.format("%c[%dB", escCode, dr));
-        if (dc < 0)
-            boxWriter.print(String.format("%c[%dD", escCode, -dc));
-        if (dc > 0)
-            boxWriter.print(String.format("%c[%dC", escCode, dc));
-    }
-
-    public void clear() {
-        try {
-            final String operatingSystem = System.getProperty("os.name");
-
-            if (operatingSystem.contains("Windows")) {
-                Runtime.getRuntime().exec("cls");
-            } else {
-                Runtime.getRuntime().exec("clear");
-            }
-        } catch (Exception e) {
-
-        }
-    }
-*/
 }

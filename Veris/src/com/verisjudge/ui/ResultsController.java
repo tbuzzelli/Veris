@@ -1,5 +1,7 @@
 package com.verisjudge.ui;
 
+import java.util.ArrayList;
+
 import com.verisjudge.TestCaseResult;
 import com.verisjudge.Verdict;
 import com.verisjudge.Veris;
@@ -8,7 +10,8 @@ import com.verisjudge.VerisListener;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
@@ -16,6 +19,10 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Paint;
+import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
@@ -67,7 +74,7 @@ public class ResultsController implements VerisListener {
 		updateTimeLabels();
 		veris.clearOutputStream();
 		veris.setListener(this);
-		labelMainTitle.setText("Judging " + veris.getSourceFile().getName());
+		labelMainTitle.setText("Judging " + veris.getSolutionFile().getName());
 		verisThread = new Thread() {
 			public void run() {
 				veris.testCode();
@@ -84,19 +91,66 @@ public class ResultsController implements VerisListener {
 		this.numTestCases = numTestCases;
 		testCaseResults = new TestCaseResult[numTestCases];
 		testCaseParents = new Pane[numTestCases];
+		ArrayList<Parent> allTestCases = new ArrayList<>(numTestCases);
 		for (int i = 0; i < numTestCases; i++) {
 			try {
-				FXMLLoader loader = new FXMLLoader(getClass().getResource("testCaseResult.fxml"));
-				Parent testCaseParent = (Parent) loader.load();
+				Parent testCaseParent = createTestCaseParent();
 				testCaseParents[i] = testCaseParent;
 				Label labelTestCaseNumber = (Label) testCaseParent.lookup("#labelTestCaseNumber");
 				labelTestCaseNumber.setText("" + (i + 1));
 				updateTestCase(i, null, false);
-				flowPaneTestCases.getChildren().add(testCaseParent);
+				allTestCases.add(testCaseParent);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				flowPaneTestCases.getChildren().addAll(allTestCases);
+			}
+		});
+	}
+	
+	private Parent createTestCaseParent() {
+		StackPane stackPane = new StackPane();
+		stackPane.setAlignment(Pos.CENTER_RIGHT);
+		
+		ImageView imageView = new ImageView();
+		imageView.setId("imageViewTestCase");
+		imageView.setFitWidth(63.0);
+		imageView.setPickOnBounds(true);
+		imageView.setPreserveRatio(true);
+		
+		Label label = new Label();
+		label.setId("labelTestCaseNumber");
+		label.setAlignment(Pos.CENTER);
+		label.setMaxWidth(1e300);
+		label.setText("000");
+		label.setTextAlignment(TextAlignment.CENTER);
+		label.setTextFill(Paint.valueOf("WHITE"));
+		label.setFont(new Font("Monospaced Bold", 16.0));
+		
+		ProgressIndicator progressIndicator = new ProgressIndicator();
+		progressIndicator.setId("progressIndicatorRunning");
+		progressIndicator.setFocusTraversable(false);
+		progressIndicator.setMaxHeight(Double.NEGATIVE_INFINITY);
+		progressIndicator.setMaxWidth(Double.NEGATIVE_INFINITY);
+		progressIndicator.setMinHeight(Double.NEGATIVE_INFINITY);
+		progressIndicator.setMinWidth(Double.NEGATIVE_INFINITY);
+		progressIndicator.setPrefHeight(18.0);
+		progressIndicator.setPrefWidth(18.0);
+		progressIndicator.setStyle("-fx-progress-color: white;");
+		
+		stackPane.getChildren().add(imageView);
+		stackPane.getChildren().add(label);
+		stackPane.getChildren().add(progressIndicator);
+		
+		StackPane.setMargin(label, new Insets(0.0, 22.0, 0.0, 2.0));
+		StackPane.setMargin(progressIndicator, new Insets(0.0, 3.0, 0.0, 0.0));
+		StackPane.setAlignment(progressIndicator, Pos.CENTER_RIGHT);
+		
+		return stackPane;
 	}
 	
 	private void updateTestCase(int caseNumber, Verdict verdict, boolean running) {
@@ -144,12 +198,7 @@ public class ResultsController implements VerisListener {
 	@Override
 	public void handleJudgingStarting(String solutionName, String language, int numTestCases) {
 		stage.setTitle("Verisimilitude - " + solutionName);
-		Platform.runLater(new Runnable() {
-			@Override
-			public void run() {
-				initializeTestCases(numTestCases);
-			}
-		});
+		initializeTestCases(numTestCases);
 	}
 
 	@Override
@@ -205,8 +254,25 @@ public class ResultsController implements VerisListener {
 		Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
-				labelVerdict.setText(finalVerdict.getName());
+				TestCaseResult smallestFailure = getSmallestFailure(finalVerdict);
+				if (smallestFailure == null)
+					labelVerdict.setText(finalVerdict.getName());
+				else
+					labelVerdict.setText(finalVerdict.getName() + "  \"" + smallestFailure.inputFile.getName() + "\"");
 			}
 		});
+	}
+	
+	private TestCaseResult getSmallestFailure(Verdict finalVerdict) {
+		if (finalVerdict == Verdict.CORRECT || finalVerdict == Verdict.COMPILE_ERROR)
+			return null;
+		TestCaseResult smallestFailure = null;
+		for (TestCaseResult result : testCaseResults) {
+			if (result.verdict == finalVerdict
+					&& (smallestFailure == null || result.inputFile.length() < smallestFailure.inputFile.length())) {
+				smallestFailure = result;
+			}
+		}
+		return smallestFailure;
 	}
 }

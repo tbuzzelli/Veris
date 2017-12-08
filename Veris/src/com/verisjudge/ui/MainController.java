@@ -1,7 +1,6 @@
 package com.verisjudge.ui;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
 import com.verisjudge.Veris;
@@ -52,12 +51,12 @@ public class MainController {
 	
 	public final static String DEFAULT_CHECKER_STR = "Token Checker";
 	
-	private Veris veris;
+	private Veris.Builder verisBuilder;
 	private Stage stage;
 	private boolean isJudging = false;
 
 	public MainController() {
-		veris = new Veris();
+		verisBuilder = new Veris.Builder();
 	}
 	
 	public void setStage(Stage stage) {
@@ -101,11 +100,11 @@ public class MainController {
     			File f = files.get(0);
     		    if (Veris.isValidSolutionFile(f)) {
     		    	setSolutionFile(f);
-    		    	if (veris.getDataFolder() == null) {
-    		    		setDataPath(f.getParentFile());
+    		    	if (verisBuilder.getDataFolder() == null) {
+    		    		setDataFolder(f.getParentFile());
     		    	}
     		    } else if (f.isDirectory()) {
-    		    	setDataPath(f);
+    		    	setDataFolder(f);
     		    }
     		}
         }
@@ -114,8 +113,8 @@ public class MainController {
 
     @FXML protected void handleSolutionButtonAction(ActionEvent event) {
     	FileChooser fileChooser = new FileChooser();
-    	if (veris.getSourceFile() != null)
-    		fileChooser.setInitialDirectory(veris.getSourceFile().getParentFile());
+    	if (verisBuilder.getSolutionFile() != null)
+    		fileChooser.setInitialDirectory(verisBuilder.getSolutionFile().getParentFile());
     	fileChooser.setTitle("Select Solution File");
     	fileChooser.getExtensionFilters().add(new ExtensionFilter("Solution files (*.java, *.c, *.cc, *.cpp, *.py)", "*.java", "*.c", "*.cc", "*.cpp", "*.py"));
     	File file = fileChooser.showOpenDialog(stage);
@@ -128,11 +127,11 @@ public class MainController {
     @FXML protected void handleDataPathButtonAction(ActionEvent event) {
     	DirectoryChooser directoryChooser = new DirectoryChooser();
     	directoryChooser.setTitle("Select Data Folder");
-    	if (veris.getDataFolder() != null)
-    		directoryChooser.setInitialDirectory(veris.getDataFolder().getParentFile());
+    	if (verisBuilder.getDataFolder() != null)
+    		directoryChooser.setInitialDirectory(verisBuilder.getDataFolder().getParentFile());
     	File file = directoryChooser.showDialog(stage);
     	if (file != null && file.isDirectory()) {
-    		setDataPath(file);
+    		setDataFolder(file);
     	}
 		event.consume();
 	}
@@ -146,43 +145,28 @@ public class MainController {
 		event.consume();
 	}
 	
-	private void remakeVeris(Veris oldVeris) {
-		veris = new Veris();
-		try {
-			veris.setSourceFile(oldVeris.getSourceFile());
-			veris.setDataFolder(oldVeris.getDataFolder());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
 	private void judge() {
-		Veris oldVeris = veris;
-		remakeVeris(oldVeris);
 		try {
+			Veris veris = verisBuilder.build();
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("results.fxml"));
 			Parent root = (Parent) loader.load();
 			ResultsController controller = (ResultsController) loader.getController();
-			 Stage stage = new Stage();
+			Stage stage = new Stage();
 			
 			controller.setStage(stage);
-			controller.setVeris(oldVeris);
+			controller.setVeris(veris);
 			
 	        Scene scene = new Scene(root, 652, 480);
 
-	        stage.setTitle("Verisimilitude - " + oldVeris.getSourceFile().getName());
+	        stage.setTitle("Verisimilitude - " + veris.getSolutionFile().getName());
 	        stage.setScene(scene);
 	        stage.setResizable(false);
 	        
-	        stage.show();
 	        controller.judge();
+	        stage.show();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
-	
-	private void reportIsJudgingStatus(boolean isJudging) {
-		this.isJudging = isJudging;
-		updateJudgeButton();
 	}
 	
 	private double getTimeLimit() {
@@ -263,41 +247,43 @@ public class MainController {
 	}
 
 	private void setChecker(Checker checker) {
-		veris.setChecker(checker);
+		verisBuilder.setChecker(checker);
 	}
 
 	private void setTimeLimit(double timeLimit) {
 		long millis = Math.round(timeLimit * 1000.0);
-		// TODO insert validation
-		veris.setTimeLimit(millis);
-		textFieldTimeLimit.setText("" + timeLimit);
+		millis = Math.max(millis, Veris.MINIMUM_TIME_LIMIT);
+		millis = Math.min(millis, Veris.MAXIMUM_TIME_LIMIT);
+		verisBuilder.setTimeLimit(millis);
+		textFieldTimeLimit.setText("" + millis / 1000.0);
 	}
 
-	private void setSolutionFile(File f) {
-    	try {
-			veris.setSourceFile(f);
-			buttonSolution.setText(f.getPath());
+	private void setSolutionFile(File solutionFile) {
+		verisBuilder.setSolutionFile(solutionFile);
+		if (solutionFile != null) {
+			buttonSolution.setText(solutionFile.getPath());
 			buttonSolution.setTextOverrun(OverrunStyle.LEADING_ELLIPSIS);
-			stage.setTitle("Verisimilitude - " + f.getName());
-		} catch (IOException e) {
-			e.printStackTrace();
+			stage.setTitle("Verisimilitude - " + solutionFile.getName());
+		} else {
+			buttonSolution.setText("?");
+			stage.setTitle("Verisimilitude - ?");
 		}
     	updateJudgeButton();
 	}
 	
-	private void setDataPath(File f) {
-		try {
-			veris.setDataFolder(f);
-			buttonDataPath.setText(f.getPath());
+	private void setDataFolder(File dataFolder) {
+		verisBuilder.setDataFolder(dataFolder);
+		if (dataFolder != null) {
+			buttonDataPath.setText(dataFolder.getPath());
 			buttonDataPath.setTextOverrun(OverrunStyle.LEADING_ELLIPSIS);
-		} catch (Exception e) {
-			e.printStackTrace();
+		} else {
+			buttonDataPath.setText("?");
 		}
 		updateJudgeButton();
 	}
 	
 	private void updateJudgeButton() {
-		boolean isReady = !isJudging && veris != null && veris.isReady();
+		boolean isReady = !isJudging && verisBuilder != null && verisBuilder.isReady();
 		buttonJudge.setDisable(!isReady);
 	}
 }

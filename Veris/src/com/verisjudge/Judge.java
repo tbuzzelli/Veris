@@ -97,7 +97,7 @@ public class Judge {
             dataFolderString = DEFAULT_DATA_FOLDER_PATH;
         }
         try {
-            veris.setSourceFile(new File(sourceFileString));
+            veris.setSolutionFile(new File(sourceFileString));
         } catch (Exception e) {
             exitWithError("Unable to find source file '" + sourceFileString + "'");
             return;
@@ -200,7 +200,7 @@ public class Judge {
                 boxWriter.println("===========================================================================\n");
                 boxWriter.printf("[%d / %d]: Judging %s ...\n", i + 1, solutions.length, solution.getPath());
                 try {
-                    veris.setSourceFile(solution);
+                    veris.setSolutionFile(solution);
                 } catch (Exception e) {
                     boxWriter.println("Unable to find source file '" + solution.getPath() + "'");
                     errorSolutons.add(solution);
@@ -264,7 +264,7 @@ public class Judge {
         String source = contest.getSubmissionsPath() + "/" + sourceName;
         // Attempt to set the source file in Veris.
         try {
-            veris.setSourceFile(new File(source));
+            veris.setSolutionFile(new File(source));
         } catch (Exception e) {
             // If the source file could not be set because of an IO error,
             // exit with an error message.

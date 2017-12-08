@@ -15,7 +15,7 @@
    <bottom>
       <GridPane hgap="10.0" style="-fx-background-color: #EEEEEE; -fx-border-width: 1; -fx-border-color: #AAAAAA;" vgap="10.0" BorderPane.alignment="CENTER">
          <columnConstraints>
-            <ColumnConstraints hgrow="NEVER" />
+            <ColumnConstraints hgrow="NEVER" minWidth="100.0" />
             <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" />
          </columnConstraints>
          <rowConstraints>
