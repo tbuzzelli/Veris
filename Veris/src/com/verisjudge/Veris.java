@@ -674,6 +674,8 @@ public class Veris {
     			veris.setOutputStream(outputStream);
     		if (listener != null)
     			veris.setListener(listener);
+    		if (checker != null)
+    			veris.setChecker(checker);
     		
     		return veris;
     	}
