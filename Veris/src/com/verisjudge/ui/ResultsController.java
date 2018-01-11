@@ -15,6 +15,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
@@ -153,11 +154,13 @@ public class ResultsController implements VerisListener {
 		return stackPane;
 	}
 	
-	private void updateTestCase(int caseNumber, Verdict verdict, boolean running) {
+	private void updateTestCase(int caseNumber, TestCaseResult result, boolean running) {
 		Parent testCaseParent = testCaseParents[caseNumber];
 		ImageView imageView =
 				(ImageView) testCaseParent.lookup("#imageViewTestCase");
-		imageView.setImage(getTestCaseImageForVerdict(verdict));
+		imageView.setImage(getTestCaseImageForVerdict(result == null ? null : result.verdict));
+		if(result != null)
+		 Tooltip.install(testCaseParent, new Tooltip("Test case " + result.name));
 		ProgressIndicator progressIndicator =
 				(ProgressIndicator) testCaseParent.lookup("#progressIndicatorRunning");
 		progressIndicator.setVisible(running);
@@ -189,7 +192,7 @@ public class ResultsController implements VerisListener {
 	
 	private void processTestCaseResult(int caseNumber, TestCaseResult result) {
 		testCaseResults[caseNumber] = result;
-		updateTestCase(caseNumber, result.verdict, false);
+		updateTestCase(caseNumber, result, false);
 		worstTime = Math.max(worstTime, result.runtime);
 		totalTime += result.runtime;
 		updateTimeLabels();
