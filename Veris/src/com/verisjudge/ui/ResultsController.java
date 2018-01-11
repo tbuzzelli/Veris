@@ -62,7 +62,7 @@ public class ResultsController implements VerisListener {
 				if (verisThread != null)
 					verisThread.interrupt();
 			}
-		});    
+		});
 	}
 	
 	public void setVeris(Veris veris) {
