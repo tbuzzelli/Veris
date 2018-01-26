@@ -1,9 +1,13 @@
 package com.verisjudge;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.lang.ProcessBuilder.Redirect;
 import java.lang.ref.WeakReference;
 import java.nio.file.Files;
@@ -16,9 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.verisjudge.checker.Checker;
 import com.verisjudge.checker.TokenChecker;
-import com.verisjudge.utils.BoxWriter;
 import com.verisjudge.utils.FastScanner;
-import com.verisjudge.utils.NullOutputStream;
 
 public class Veris {
 
@@ -30,7 +32,6 @@ public class Veris {
     
     private HashMap<String, File> answerFiles, inputFiles;
 
-    private BoxWriter boxWriter;
     private Problem problem;
     private Checker checker;
     private ArrayList<TestCase> cases;
@@ -44,20 +45,13 @@ public class Veris {
     private File dataFolder;
     private boolean sortCasesBySize = true;
     private boolean isVerbose;
+    private PrintStream logger = System.out;
     private WeakReference<VerisListener> listener;
 
     /**
-     * Veris constructor which defaults to writing to System.out.
+     * Veris constructor
      */
     public Veris() {
-        this(System.out);
-    }
-
-    /**
-     * Veris constructor which writes to given output stream.
-     * @param out The output stream to write to.
-     */
-    public Veris(OutputStream out) {
         Path tmpDir;
         try {
             tmpDir = Files.createTempDirectory("veris");
@@ -68,26 +62,6 @@ public class Veris {
         setChecker(new TokenChecker());
         setTimeLimit(DEFAULT_TIME_LIMIT);
         setIsVerbose(false);
-        boxWriter = new BoxWriter(out);
-    }
-
-    /**
-     * Set the output stream for veris to write to.
-     * @param out The output stream to have veris write to.
-     */
-    public void setOutputStream(OutputStream out) {
-        if (boxWriter != null) {
-            boxWriter.close();
-        }
-        boxWriter = new BoxWriter(out);
-    }
-
-    /**
-     * Sets the output stream to NullOutputStream so nothing
-     * will be written anywhere.
-     */
-    public void clearOutputStream() {
-        setOutputStream(new NullOutputStream());
     }
     
     /**
@@ -110,7 +84,7 @@ public class Veris {
         try {
             setDataFolder(new File(problem.getDataPath()));
         } catch (IOException e) {
-            boxWriter.println("Failed to find data folder '" + problem.getDataPath() + "'");
+            logger.println("Failed to find data folder '" + problem.getDataPath() + "'");
             System.exit(1);
         }
     }
@@ -235,19 +209,6 @@ public class Veris {
     public Verdict testCode() {
     	if (listener.get() != null)
     		listener.get().handleJudgingStarting(solutionFile.getName(), language, cases.size());
-        // Print the header
-        boxWriter.println();
-        boxWriter.openBox(80);
-        if (problem != null) {
-            boxWriter.println();
-            boxWriter.centerOn();
-            boxWriter.println(problem.getName() + " (" + problem.getFilename() + ")");
-            boxWriter.centerOff();
-            boxWriter.println();
-            boxWriter.printDivider();
-        }
-        boxWriter.println("Judging solution: " + solutionFile.getName());
-        boxWriter.println();
 
         Verdict result;
 
@@ -263,24 +224,11 @@ public class Veris {
         if (listener.get() != null)
         	listener.get().handleCompileFinished(result == Verdict.CORRECT);
 
-        // As long as the code compiled, run it against the cases.
-        String caseName = null;
         if (result == Verdict.CORRECT) {
-            // Calculate the number of digits to use when printing each case.
-            int n = cases.size();
-            int digits = 0;
-            while (n > 0) {
-                digits++;
-                n /= 10;
-            }
             // Sort our test cases if needed.
             if (sortCasesBySize) {
                 Collections.sort(cases);
             }
-            // Print a line saying how many test cases are being run.
-            int cnt = 1;
-            boxWriter.println("Running " + cases.size() + " test case" + (cases.size() != 1 ? "s" : ""));
-            boxWriter.println();
             for (int ci = 0; ci < cases.size(); ci++) {
             	TestCase c = cases.get(ci);
             	if (listener.get() != null)
@@ -295,28 +243,7 @@ public class Veris {
                 // internal error, set it to this one.
                 if (result == Verdict.CORRECT || caseResult == Verdict.INTERNAL_ERROR) {
                     result = caseResult;
-                    caseName = c.name;
                 }
-                // Calculate the case width we need to print.
-                int caseWidth = 4 + digits;
-                if (caseResult != Verdict.CORRECT && isVerbose()) {
-                    caseWidth += 2 + c.name.length();
-                }
-                // If this won't fit in the box when we print it, print a new line.
-                if (boxWriter.getLineLength() > 1
-                        && boxWriter.getRemainingWidth() < caseWidth) {
-                    boxWriter.println();
-                }
-                // Print this case as the colored block with the number/name.
-                boxWriter.print("\033[" + caseResult.getColorString() + "m");
-                boxWriter.print(" ");
-                boxWriter.printf(String.format("%%0%dd", digits), cnt++);
-                boxWriter.print(" " + caseResult.getCharacter());
-                boxWriter.print(" ");
-                if (caseResult != Verdict.CORRECT && isVerbose()) {
-                    boxWriter.print("(" + c.name + ") ");
-                }
-                boxWriter.print("\033[0m");
                 
                 if (listener.get() != null)
                 	listener.get().handleTestCaseFinished(ci, testCaseResult);
@@ -325,21 +252,7 @@ public class Veris {
                 	return Verdict.INTERNAL_ERROR;
                 }
             }
-            boxWriter.println();
-            boxWriter.println();
         }
-        boxWriter.printDivider();
-        // Print the verdict and what case was wrong if the verdict was not correct.
-        boxWriter.print("Verdict: ");
-        boxWriter.print(result.getName());
-        if (result != Verdict.CORRECT && caseName != null) {
-            boxWriter.print(" (on '" + caseName + "')");
-        }
-        boxWriter.printDivider();
-        // Print the worst time and the total time.
-        boxWriter.printf("Worst time: %.2fs\n", longestTime / 1000.0);
-        boxWriter.printf("Total time: %.2fs\n", totalTime / 1000.0);
-        boxWriter.closeBox();
 
         if (listener.get() != null)
         	listener.get().handleJudgingFinished(result);
@@ -354,8 +267,6 @@ public class Veris {
      * error occured.
      */
     public Verdict compileCode() {
-        // Print the header.
-        boxWriter.print("Compiling code: ");
         // Create the compile process.
         ProcessBuilder builder;
         if(language.equals("java")) {
@@ -367,10 +278,8 @@ public class Veris {
         } else if(language.equals("cc")) {
             builder = new ProcessBuilder("g++", className + ".cc", "-std=c++11", "-o", "a");
         } else if(language.equals("py")) {
-            boxWriter.println("N/A");
             return Verdict.CORRECT;
         } else {
-            boxWriter.println("Unknown language " + language);
             return Verdict.INTERNAL_ERROR;
         }
         // Set the working directory to the temporary directory.
@@ -396,10 +305,7 @@ public class Veris {
         } else {
             res = Verdict.COMPILE_ERROR;
         }
-        boxWriter.print("\033[" + res.getCompileColorString() + "m");
-        boxWriter.print(res.getCharacter());
-        boxWriter.print("\033[0m");
-        boxWriter.println();
+
         // Return the compile result.
         return res;
     }
@@ -431,7 +337,6 @@ public class Veris {
         } else if(language.equals("py")) {
             builder = new ProcessBuilder("python3", className + ".py");
         } else {
-            boxWriter.println("Unknown language " + language);
             resultBuilder.setVerdict(Verdict.INTERNAL_ERROR);
         	return resultBuilder.build();
         }
@@ -502,6 +407,49 @@ public class Veris {
             } else {
                 // Check the solution's output.
                 res = checker.check(new FastScanner(c.inputFile), new FastScanner(pOut), new FastScanner(c.answerFile));
+                
+                final int NUM_CHARS_TO_READ = 256;
+                
+                // Build the expectedOutput and output strings.
+                try {
+                	StringBuilder expectedOutputStringBuilder = new StringBuilder();
+                	StringBuilder outputStringBuilder = new StringBuilder();
+                	String line;
+					BufferedReader expectedOutputBufferedReader = new BufferedReader(new FileReader(c.answerFile));
+					while ((line = expectedOutputBufferedReader.readLine()) != null) {
+						if (line.length() + expectedOutputStringBuilder.length() <= NUM_CHARS_TO_READ) {
+							expectedOutputStringBuilder.append(line);
+						} else {
+							int numChars = Math.min(line.length(), NUM_CHARS_TO_READ - 1 - expectedOutputStringBuilder.length());
+							if (numChars > 0) {
+								expectedOutputStringBuilder.append('\n');
+								expectedOutputStringBuilder.append(line.substring(0, numChars));
+							}
+							break;
+						}
+					}
+					expectedOutputBufferedReader.close();
+					
+					BufferedReader outputBufferedReader = new BufferedReader(new FileReader(pOut));
+					while ((line = outputBufferedReader.readLine()) != null) {
+						if (line.length() + outputStringBuilder.length() <= NUM_CHARS_TO_READ) {
+							outputStringBuilder.append(line);
+						} else {
+							int numChars = Math.min(line.length(), NUM_CHARS_TO_READ - 1 - expectedOutputStringBuilder.length());
+							if (numChars > 0) {
+								outputStringBuilder.append('\n');
+								outputStringBuilder.append(line.substring(0, numChars));
+							}
+							break;
+						}
+					}
+					outputBufferedReader.close();
+					
+					resultBuilder.setExpectedOutput(expectedOutputStringBuilder.toString());
+					resultBuilder.setOutput(outputStringBuilder.toString());
+				} catch (IOException e) {
+					// Ignore any errors.
+				}
             }
         }
         
@@ -656,7 +604,6 @@ public class Veris {
     	private Boolean sortCasesBySize;
     	private Boolean isVerbose;
     	private Checker checker;
-    	private OutputStream outputStream;
     	private VerisListener listener;
     	
     	public Veris build() throws IOException {
@@ -671,8 +618,6 @@ public class Veris {
     			veris.setSortCasesBySize(sortCasesBySize);
     		if (isVerbose != null)
     			veris.setIsVerbose(isVerbose);
-    		if (outputStream != null)
-    			veris.setOutputStream(outputStream);
     		if (listener != null)
     			veris.setListener(listener);
     		if (checker != null)
@@ -743,20 +688,6 @@ public class Veris {
     	
     	public Checker getChecker() {
     		return checker;
-    	}
-    	
-    	public Builder setOutputStream(OutputStream outputStream) {
-    		this.outputStream = outputStream;
-    		return this;
-    	}
-    	
-    	public Builder clearOutputStream() {
-    		this.outputStream = new NullOutputStream();
-    		return this;
-    	}
-    	
-    	public OutputStream getOutputStream() {
-    		return outputStream;
     	}
     	
     	public Builder setListener(VerisListener listener) {

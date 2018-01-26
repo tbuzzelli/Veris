@@ -8,14 +8,22 @@ public class TestCaseResult {
 	public final Verdict verdict;
 	public final File inputFile;
 	public final File answerFile;
+	public final String expectedOutput;
+	public final String output;
 	public final long runtime;
 	
-	public TestCaseResult(String name, File inputFile, File answerFile, long runtime, Verdict verdict) {
+	public TestCaseResult(String name, File inputFile, File answerFile, long runtime, Verdict verdict, String expectedOutput, String output) {
 		this.name = name;
 		this.inputFile = inputFile;
 		this.answerFile = answerFile;
 		this.runtime = runtime;
 		this.verdict = verdict;
+		this.expectedOutput = expectedOutput;
+		this.output = output;
+	}
+	
+	public TestCaseResult(String name, File inputFile, File answerFile, long runtime, Verdict verdict) {
+		this(name, inputFile, answerFile, runtime, verdict, null, null);
 	}
 	
 	static class Builder {
@@ -23,6 +31,8 @@ public class TestCaseResult {
 		private Verdict verdict;
 		private File inputFile;
 		private File answerFile;
+		private String output;
+		private String expectedOutput;
 		private long runtime;
 		
 		public Builder setName(String name) {
@@ -50,6 +60,16 @@ public class TestCaseResult {
 			return this;
 		}
 		
+		public Builder setExpectedOutput(String expectedOutput) {
+			this.expectedOutput = expectedOutput;
+			return this;
+		}
+		
+		public Builder setOutput(String output) {
+			this.output = output;
+			return this;
+		}
+		
 		public String getName() {
 			return name;
 		}
@@ -69,8 +89,17 @@ public class TestCaseResult {
 		public long getRuntime() {
 			return runtime;
 		}
+		
+		public String getExpectedOutput() {
+			return expectedOutput;
+		}
+		
+		public String getOutput() {
+			return output;
+		}
+		
 		public TestCaseResult build() {
-			return new TestCaseResult(name, inputFile, answerFile, runtime, verdict);
+			return new TestCaseResult(name, inputFile, answerFile, runtime, verdict, expectedOutput, output);
 		}
 	}
 }

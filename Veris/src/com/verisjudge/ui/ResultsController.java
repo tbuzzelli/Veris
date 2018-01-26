@@ -1,12 +1,17 @@
 package com.verisjudge.ui;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import com.verisjudge.TestCaseResult;
 import com.verisjudge.Verdict;
 import com.verisjudge.Veris;
 import com.verisjudge.VerisListener;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -55,6 +60,32 @@ public class ResultsController implements VerisListener {
 	
 	private Thread verisThread;
 	
+	// Do some hacky stuff to fix our tooltip's timing
+	static {
+        try {
+            Tooltip obj = new Tooltip();
+            Class<?> clazz = obj.getClass().getDeclaredClasses()[0];
+            Constructor<?> constructor = clazz.getDeclaredConstructor(
+                    Duration.class,
+                    Duration.class,
+                    Duration.class,
+                    boolean.class);
+            constructor.setAccessible(true);
+            Object tooltipBehavior = constructor.newInstance(
+                    new Duration(250),  //open
+                    new Duration(20000), //visible
+                    new Duration(250),  //close
+                    false);
+            Field fieldBehavior = obj.getClass().getDeclaredField("BEHAVIOR");
+            fieldBehavior.setAccessible(true);
+            fieldBehavior.set(obj, tooltipBehavior);
+        }
+        catch (Exception e) {
+        	e.printStackTrace();
+        }
+    }
+
+	
 	public void setStage(Stage stage) {
 		this.stage = stage;
 		this.stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
@@ -74,7 +105,6 @@ public class ResultsController implements VerisListener {
 		totalTime = 0;
 		worstTime = 0;
 		updateTimeLabels();
-		veris.clearOutputStream();
 		veris.setListener(this);
 		labelMainTitle.setText("Judging " + veris.getSolutionFile().getName());
 		verisThread = new Thread() {
@@ -161,8 +191,17 @@ public class ResultsController implements VerisListener {
 				(ImageView) testCaseParent.lookup("#imageViewTestCase");
 		imageView.setImage(getTestCaseImageForVerdict(result == null ? null : result.verdict));
 		if(result != null) {
-			Tooltip tooltip = new Tooltip("Test case " + result.name);
-			tooltip.setShowDuration(new Duration(10000));
+			StringBuilder tooltipStringBuilder = new StringBuilder();
+			tooltipStringBuilder.append("Test case " + result.name);
+			if (result.verdict == Verdict.WRONG_ANSWER && result.expectedOutput != null && result.output != null) {
+				tooltipStringBuilder.append("\n\nExpected output:\n" + result.expectedOutput);
+				tooltipStringBuilder.append("\nYour output:\n" + result.output);
+			}
+			Tooltip tooltip = new Tooltip(tooltipStringBuilder.toString());
+			// This requires Java 9 to do but Eclipse can't build the Java 9 jar yet //
+			// tooltip.setShowDuration(new Duration(10000));
+			// So, we use some hacky stuff above
+			
 			Tooltip.install(testCaseParent, tooltip);
 		}
 		ProgressIndicator progressIndicator =
