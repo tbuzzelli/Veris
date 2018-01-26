@@ -26,6 +26,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import javafx.util.Duration;
 
 public class ResultsController implements VerisListener {
 	@FXML private Label labelMainTitle;
@@ -62,7 +63,7 @@ public class ResultsController implements VerisListener {
 				if (verisThread != null)
 					verisThread.interrupt();
 			}
-		});
+		});    
 	}
 	
 	public void setVeris(Veris veris) {
@@ -159,8 +160,11 @@ public class ResultsController implements VerisListener {
 		ImageView imageView =
 				(ImageView) testCaseParent.lookup("#imageViewTestCase");
 		imageView.setImage(getTestCaseImageForVerdict(result == null ? null : result.verdict));
-		if(result != null)
-		 Tooltip.install(testCaseParent, new Tooltip("Test case " + result.name));
+		if(result != null) {
+			Tooltip tooltip = new Tooltip("Test case " + result.name);
+			tooltip.setShowDuration(new Duration(10000));
+			Tooltip.install(testCaseParent, tooltip);
+		}
 		ProgressIndicator progressIndicator =
 				(ProgressIndicator) testCaseParent.lookup("#progressIndicatorRunning");
 		progressIndicator.setVisible(running);

@@ -1,6 +1,9 @@
 package com.verisjudge.checker;
 
-public class EpsilonChecker extends TokenChecker {
+import com.verisjudge.Verdict;
+import com.verisjudge.utils.FastScanner;
+
+public class EpsilonChecker extends Checker {
 	
 	public final static double DEFAULT_ABSOLUTE_EPSILON = 1e-6;
 	public final static double DEFAULT_RELATIVE_EPSILON = 1e-6;
@@ -20,8 +23,23 @@ public class EpsilonChecker extends TokenChecker {
         this.absEps = absEps;
         this.relEps = relEps;
     }
-
     @Override
+    public Verdict check(FastScanner input, FastScanner pScanner, FastScanner ansScanner) {
+        while(ansScanner.hasNext()) {
+            if(!pScanner.hasNext()) {
+                return Verdict.WRONG_ANSWER; // not enough output
+            }
+            String ans = ansScanner.next(), par = pScanner.next();
+            if(!check(ans,par)) {
+                return Verdict.WRONG_ANSWER; // output differs
+            }
+        }
+        if(pScanner.hasNext()) {
+            return Verdict.WRONG_ANSWER; // too much output
+        }
+        return Verdict.CORRECT; // correct
+    }
+
     boolean check(String answer, String participant) {
         try {
             double a = Double.parseDouble(answer), b = Double.parseDouble(participant);

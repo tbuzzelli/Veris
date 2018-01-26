@@ -316,8 +316,7 @@ public class BoxWriter extends Writer {
     }
 
     public void close() {
-    	flush();
-        // out.close();
+//        out.close();
     }
 
     @Override

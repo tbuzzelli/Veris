@@ -412,6 +412,7 @@ public class Veris {
      * this test case. Returns INTERNAL_ERROR if an error occurred.
      */
     public TestCaseResult runCase(String className, TestCase c) {
+    	System.out.println("Running case " + c.name + " with checker " + checker);
     	TestCaseResult.Builder resultBuilder = new TestCaseResult.Builder()
     			.setName(c.name)
     			.setInputFile(c.inputFile)
@@ -439,9 +440,9 @@ public class Veris {
         builder.redirectOutput(pOut);
 
         // If we are verbose, inherit their error stream.
-        if(isVerbose()) {
+//        if(isVerbose()) {
             builder.redirectError(Redirect.INHERIT);
-        }
+//        }
 
         // Create the process and attempt to start it.
         Process process;
@@ -576,7 +577,7 @@ public class Veris {
                 // If the filename contains the inFileType string, add it.
                 // Ex: case.in5 case.5.in
                 if(f.getName().contains("." + t)) {
-                    answerFiles.put(f.getName().replace("."+t, ""), f);
+                	inputFiles.put(f.getName().replace("."+t, ""), f);
                     break;
                 }
             }

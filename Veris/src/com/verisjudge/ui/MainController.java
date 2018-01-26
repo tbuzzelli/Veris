@@ -139,6 +139,7 @@ public class MainController {
 	@FXML protected void handleJudgeButtonAction(ActionEvent event) {
 		setTimeLimit(getTimeLimit());
 		setChecker(getChecker());
+		System.out.println("Checker set to " + getChecker());
 		
 		judge();
 		

@@ -231,26 +231,26 @@ public class Problem {
     public static Integer parseTimeLimit(String timeLimitString) {
         timeLimitString = timeLimitString.toLowerCase().replace(" ", "");
         try {
-            return (int) Math.ceil(Double.parseDouble(timeLimitString));
+            return Integer.parseInt(timeLimitString);
         } catch (Exception e) {}
         if (timeLimitString.endsWith("ms")) { // milliseconds
             try {
-                return (int) Math.ceil(Double.parseDouble(timeLimitString.substring(
-                    0, timeLimitString.length() - 2)));
+                return Integer.parseInt(timeLimitString.substring(
+                    0, timeLimitString.length() - 2));
             } catch (Exception e) {
                 return null;
             }
         } else if (timeLimitString.endsWith("ns")) { // nanoseconds
             try {
-                return (int) Math.ceil(Double.parseDouble(timeLimitString.substring(
-                    0, timeLimitString.length() - 2)) / 1000);
+                return (Integer.parseInt(timeLimitString.substring(
+                    0, timeLimitString.length() - 2)) + 999) / 1000;
             } catch (Exception e) {
                 return null;
             }
         } else if (timeLimitString.endsWith("s")) { // seconds
             try {
-                return (int) Math.ceil(Double.parseDouble(timeLimitString.substring(
-                    0, timeLimitString.length() - 1)) * 1000);
+                return Integer.parseInt(timeLimitString.substring(
+                    0, timeLimitString.length() - 1)) * 1000;
             } catch (Exception e) {
                 return null;
             }
