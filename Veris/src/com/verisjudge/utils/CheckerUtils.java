@@ -73,7 +73,7 @@ public class CheckerUtils {
      * @param checkerString A string describing the checker to be
      * created.<br/>
      * Examples:<br/>
-     * 'DiffChecker 1e-6 1e-6'  =>  new DiffChecker(1e-6, 1e-6)<br/>
+     * 'EpsilonChecker 1e-6 1e-6'  =>  new EpsilonChecker(1e-6, 1e-6)<br/>
      * 'SomeChecker string false 123'  =>  
      * new SomeChecker("string", false, 123)<br/>
      * @return The checker object if a Checker was found which
@@ -136,7 +136,7 @@ public class CheckerUtils {
                 types.add(type);
                 values.add(value);
             }
-
+            
             // Attempt to get the constructor for these arguments.
             Constructor<Checker> cons = c2.getConstructor(types.toArray(new Class<?>[0]));
             // Get the checker and return it.

@@ -2,16 +2,14 @@ package com.verisjudge.ui;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import com.verisjudge.TestCaseResult;
 import com.verisjudge.Verdict;
 import com.verisjudge.Veris;
 import com.verisjudge.VerisListener;
 
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -81,7 +79,7 @@ public class ResultsController implements VerisListener {
             fieldBehavior.set(obj, tooltipBehavior);
         }
         catch (Exception e) {
-        	e.printStackTrace();
+        	// Ignore the error.
         }
     }
 
@@ -191,16 +189,26 @@ public class ResultsController implements VerisListener {
 				(ImageView) testCaseParent.lookup("#imageViewTestCase");
 		imageView.setImage(getTestCaseImageForVerdict(result == null ? null : result.verdict));
 		if(result != null) {
-			StringBuilder tooltipStringBuilder = new StringBuilder();
-			tooltipStringBuilder.append("Test case " + result.name);
-			if (result.verdict == Verdict.WRONG_ANSWER && result.expectedOutput != null && result.output != null) {
-				tooltipStringBuilder.append("\n\nExpected output:\n" + result.expectedOutput);
-				tooltipStringBuilder.append("\nYour output:\n" + result.output);
-			}
-			Tooltip tooltip = new Tooltip(tooltipStringBuilder.toString());
-			// This requires Java 9 to do but Eclipse can't build the Java 9 jar yet //
+			Tooltip tooltip = new Tooltip(result.getTooltipString());
+			// This requires Java 9 to do but Eclipse can't build the Java 9 jar yet.
 			// tooltip.setShowDuration(new Duration(10000));
-			// So, we use some hacky stuff above
+			// So, we call these methods using reflection in case we are running on Java 9.
+			try {
+				Tooltip obj = new Tooltip();
+	            Class<?> c = obj.getClass();
+			    @SuppressWarnings("rawtypes")
+				Class[] argTypes = new Class[] { Duration.class };
+			    Method setShowDelayMethod = c.getDeclaredMethod("setShowDelay", argTypes);
+			    Method setHideDelayMethod = c.getDeclaredMethod("setHideDelay", argTypes);
+			    Method setShowDurationMethod = c.getDeclaredMethod("setShowDuration", argTypes);
+			    
+			    setShowDelayMethod.invoke(tooltip, (Object) new Duration(250));
+			    setHideDelayMethod.invoke(tooltip, (Object) new Duration(250));
+			    setShowDurationMethod.invoke(tooltip, (Object) new Duration(20000));
+	        }
+	        catch (Exception e) {
+	        	// Ignore the error.
+	        }
 			
 			Tooltip.install(testCaseParent, tooltip);
 		}

@@ -4,6 +4,9 @@ import java.io.File;
 
 public class TestCaseResult {
 
+	public final static int MAX_OUTPUT_BLOCK_WIDTH = 24;
+	public final static int MAX_OUTPUT_BLOCK_HEIGHT = 4;
+	
 	public final String name;
 	public final Verdict verdict;
 	public final File inputFile;
@@ -24,6 +27,51 @@ public class TestCaseResult {
 	
 	public TestCaseResult(String name, File inputFile, File answerFile, long runtime, Verdict verdict) {
 		this(name, inputFile, answerFile, runtime, verdict, null, null);
+	}
+	
+	public String getTooltipString() {
+		StringBuilder tooltipStringBuilder = new StringBuilder();
+		tooltipStringBuilder.append("Test case " + name);
+		if (verdict == Verdict.WRONG_ANSWER && expectedOutput != null && output != null) {
+			tooltipStringBuilder.append("\n\nExpected output:\n");
+			tooltipStringBuilder.append(getExpectedOutputBlockString());
+			tooltipStringBuilder.append("\nYour output:\n");
+			tooltipStringBuilder.append(getOutputBlockString());
+		}
+		return tooltipStringBuilder.toString();
+	}
+	
+	public String getExpectedOutputBlockString() {
+		return getBlockString(expectedOutput, MAX_OUTPUT_BLOCK_WIDTH, MAX_OUTPUT_BLOCK_HEIGHT);
+	}
+	
+	public String getOutputBlockString() {
+		return getBlockString(output, MAX_OUTPUT_BLOCK_WIDTH, MAX_OUTPUT_BLOCK_HEIGHT);
+	}
+	
+	public static String getBlockString(String str, int maxWidth, int maxHeight) {
+		if (str == null)
+			return "";
+		maxWidth = Math.max(maxWidth, 4);
+		maxHeight = Math.max(maxHeight, 2);
+
+		String[] lines = str.split("\n");
+		StringBuilder sb = new StringBuilder();
+		boolean lastLineIsEllipsis = lines.length > maxHeight;
+		
+		for (int i = 0; i < lines.length && i < maxHeight; i++) {
+			if (i > 0)
+				sb.append('\n');
+			String line = lines[i];
+			if (i == maxHeight - 1 && lastLineIsEllipsis) {
+				sb.append("...");
+			} else if (line.length() <= maxWidth) {
+				sb.append(line);
+			} else {
+				sb.append(line.substring(0, maxWidth - 3) + "...");
+			}
+		}
+		return sb.toString();
 	}
 	
 	static class Builder {
