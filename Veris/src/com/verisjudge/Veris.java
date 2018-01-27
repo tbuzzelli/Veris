@@ -418,6 +418,8 @@ public class Veris {
 					BufferedReader expectedOutputBufferedReader = new BufferedReader(new FileReader(c.answerFile));
 					while ((line = expectedOutputBufferedReader.readLine()) != null) {
 						if (line.length() + expectedOutputStringBuilder.length() <= NUM_CHARS_TO_READ) {
+							if (expectedOutputStringBuilder.length() > 0)
+								expectedOutputStringBuilder.append('\n');
 							expectedOutputStringBuilder.append(line);
 						} else {
 							int numChars = Math.min(line.length(), NUM_CHARS_TO_READ - 1 - expectedOutputStringBuilder.length());
@@ -433,6 +435,8 @@ public class Veris {
 					BufferedReader outputBufferedReader = new BufferedReader(new FileReader(pOut));
 					while ((line = outputBufferedReader.readLine()) != null) {
 						if (line.length() + outputStringBuilder.length() <= NUM_CHARS_TO_READ) {
+							if (outputStringBuilder.length() > 0)
+								outputStringBuilder.append('\n');
 							outputStringBuilder.append(line);
 						} else {
 							int numChars = Math.min(line.length(), NUM_CHARS_TO_READ - 1 - expectedOutputStringBuilder.length());
