@@ -2,7 +2,6 @@ package com.verisjudge;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,7 +23,7 @@ import com.verisjudge.utils.FastScanner;
 
 public class Veris {
 
-    public static final String[] ansFileTypes = { "ans", "out", "sol", "a", "sol" };
+    public static final String[] ansFileTypes = { "ans", "out", "sol", "a" };
     public static final String[] inFileTypes = { "in", "data" };
     public static final long DEFAULT_TIME_LIMIT = 5000;
     public static final long MINIMUM_TIME_LIMIT = 100;
@@ -32,11 +31,13 @@ public class Veris {
     
     private HashMap<String, File> answerFiles, inputFiles;
 
+    private Config config = Config.getConfig();
     private Problem problem;
     private Checker checker;
     private ArrayList<TestCase> cases;
     private File solutionFile;
     private File directory;
+    private LanguageSpec languageSpec;
     private String className;
     private String language;
     private long longestTime;
@@ -104,6 +105,14 @@ public class Veris {
      */
     public void setTimeLimit(long timeLimit) {
         this.timeLimit = timeLimit;
+    }
+    
+    /**
+     * Sets the languageSpec to use while judging this solution.
+     * @param languageSpec The languageSpec to use or null to auto detect language.
+     */
+    public void setLanguageSpec(LanguageSpec languageSpec) {
+        this.languageSpec = languageSpec;
     }
 
     /**
@@ -203,89 +212,97 @@ public class Veris {
     }
 
     /**
-     * Test the code against all test cases
+     * Compiles then tests the code against all test cases.
+     * This should be run in a separate thread.
      * @return The Verdict.
      */
     public Verdict testCode() {
+    	// Notify listener that judging has started.
     	if (listener.get() != null)
     		listener.get().handleJudgingStarting(solutionFile.getName(), language, cases.size());
 
-        Verdict result;
-
+    	// Notify listener that compiling has started.
         if (listener.get() != null)
         	listener.get().handleCompileStarting();
-        // Attempt to compile the code.
-        result = compileCode();
         
-        if (Thread.currentThread().isInterrupted()) {
+        LanguageSpec languageSpec = this.languageSpec != null ? this.languageSpec : config.getLanguageSpecForExtension(language);
+        // If we can't find a matching language spec or this language isn't allowed, return INTERNAL_ERROR.
+        if (languageSpec == null || !languageSpec.isAllowed())
         	return Verdict.INTERNAL_ERROR;
-        }
+        
+        // Attempt to compile the code.
+        Verdict result = compileCode(languageSpec);
+        
+        // If we were interrupted, return with an internal error.
+        if (Thread.currentThread().isInterrupted())
+        	return Verdict.INTERNAL_ERROR;
 
+        // Notify listener that compiling had finished.
         if (listener.get() != null)
         	listener.get().handleCompileFinished(result == Verdict.CORRECT);
 
+        // If the solution compiled successfully, run the cases.
         if (result == Verdict.CORRECT) {
             // Sort our test cases if needed.
-            if (sortCasesBySize) {
+            if (sortCasesBySize)
                 Collections.sort(cases);
-            }
+
             for (int ci = 0; ci < cases.size(); ci++) {
             	TestCase c = cases.get(ci);
+            	
+            	// Notify listener that this case is now being run.
             	if (listener.get() != null)
             		listener.get().handleTestCaseStarting(ci);
-            	TestCaseResult testCaseResult;
-                Verdict caseResult;
+
                 // Run the case and get the result.
-                testCaseResult = runCase(className, c);
-                caseResult = testCaseResult.verdict;
+                TestCaseResult testCaseResult = runCase(c, languageSpec);
+                Verdict caseResult = testCaseResult.verdict;
                 
                 // If the current result is still correct or if we had an
                 // internal error, set it to this one.
-                if (result == Verdict.CORRECT || caseResult == Verdict.INTERNAL_ERROR) {
+                if (result == Verdict.CORRECT || caseResult == Verdict.INTERNAL_ERROR)
                     result = caseResult;
-                }
-                
+
+                // Notify listener that this case has been judged.
                 if (listener.get() != null)
                 	listener.get().handleTestCaseFinished(ci, testCaseResult);
                 
-                if (Thread.currentThread().isInterrupted()) {
+                // If we were interrupted, return with an Internal Error.
+                if (Thread.currentThread().isInterrupted())
                 	return Verdict.INTERNAL_ERROR;
-                }
             }
         }
 
+        // Notify listener that judging has finished.
         if (listener.get() != null)
         	listener.get().handleJudgingFinished(result);
 
+        // Return the result.
         return result;
     }
 
     /**
      * Compile the solution
+     * @param languageSpec The languageSpec to use while compiling the code. (Cannot be null).
      * @return Either CORRECT or COMPILE_ERROR depending on whether or not
      * the solution compiled successfully. May return INTERNAL_ERROR if an
-     * error occured.
+     * error occurred.
      */
-    public Verdict compileCode() {
+    public Verdict compileCode(LanguageSpec languageSpec) {
         // Create the compile process.
-        ProcessBuilder builder;
-        if(language.equals("java")) {
-            builder = new ProcessBuilder("javac", className + ".java");
-        } else if(language.equals("c")) {
-            builder = new ProcessBuilder("gcc", className + ".c", "-std=c99", "-o", "a");
-        } else if(language.equals("cpp")) {
-            builder = new ProcessBuilder("g++", className + ".cpp", "-std=c++11", "-o", "a");
-        } else if(language.equals("cc")) {
-            builder = new ProcessBuilder("g++", className + ".cc", "-std=c++11", "-o", "a");
-        } else if(language.equals("py")) {
-            return Verdict.CORRECT;
-        } else {
-            return Verdict.INTERNAL_ERROR;
-        }
+        
+        // If this language doesn't need compiling, just return CORRECT.
+        if (!languageSpec.needsCompile())
+        	return Verdict.CORRECT;
+ 
+        // Build the compile process for this language.
+        ProcessBuilder builder = languageSpec.getCompileProcessBuilder(solutionFile.getName(), className);
+        
         // Set the working directory to the temporary directory.
         builder.directory(directory);
         int resInt;
-        // Attempt to compile the program/
+        
+        // Attempt to compile the program.
         Process process = null;
         try {
             process = builder.start();
@@ -312,12 +329,12 @@ public class Veris {
 
     /**
      * Run a single test case against the solution.
-     * @param className The Java or Python class/filenames to use.
      * @param c The test case to run.
-     * @return A TestCaseResult reprenting the result from running the solution against
+     * @param languageSpec The languageSpec to use while running the code. (Cannot be null).
+     * @return A TestCaseResult representing the result from running the solution against
      * this test case. Returns INTERNAL_ERROR if an error occurred.
      */
-    public TestCaseResult runCase(String className, TestCase c) {
+    public TestCaseResult runCase(TestCase c, LanguageSpec languageSpec) {
     	System.out.println("Running case " + c.name + " with checker " + checker);
     	TestCaseResult.Builder resultBuilder = new TestCaseResult.Builder()
     			.setName(c.name)
@@ -325,21 +342,12 @@ public class Veris {
     			.setAnswerFile(c.answerFile);
         // Create the output file to use.
         File pOut = new File(directory, className + ".out");
-        ProcessBuilder builder = null;
-        if(language.equals("java")) {
-            builder = new ProcessBuilder("java", className);
-        } else if(language.equals("c")) {
-            builder = new ProcessBuilder(directory  + "/a");
-        } else if(language.equals("cpp")) {
-            builder = new ProcessBuilder(directory  + "/a");
-        } else if(language.equals("cc")) {
-            builder = new ProcessBuilder(directory  + "/a");
-        } else if(language.equals("py")) {
-            builder = new ProcessBuilder("python3", className + ".py");
-        } else {
-            resultBuilder.setVerdict(Verdict.INTERNAL_ERROR);
-        	return resultBuilder.build();
-        }
+        
+        // Create the execution process.
+
+        // Build the execution process for this language.
+        ProcessBuilder builder = languageSpec.getExecutionProcessBuilder(solutionFile.getName(), className);
+        
         // Set the working directory and redirect their output to the file.
         builder.directory(directory);
         builder.redirectOutput(pOut);
@@ -609,6 +617,7 @@ public class Veris {
     	private File solutionFile;
     	private File dataFolder;
     	private Long timeLimit;
+    	private LanguageSpec languageSpec;
     	private Boolean sortCasesBySize;
     	private Boolean isVerbose;
     	private Checker checker;
@@ -622,6 +631,8 @@ public class Veris {
     			veris.setDataFolder(dataFolder);
     		if (timeLimit != null)
     			veris.setTimeLimit(timeLimit);
+    		if (languageSpec != null)
+    			veris.setLanguageSpec(languageSpec);
     		if (sortCasesBySize != null)
     			veris.setSortCasesBySize(sortCasesBySize);
     		if (isVerbose != null)
@@ -669,6 +680,15 @@ public class Veris {
     	
     	public Long getTimeLimit() {
     		return timeLimit;
+    	}
+    	
+    	public Builder setLanguageSpec(LanguageSpec languageSpec) {
+    		this.languageSpec = languageSpec;
+    		return this;
+    	}
+    	
+    	public LanguageSpec getLanguageSpec() {
+    		return languageSpec;
     	}
     	
     	public Builder setSortCasesBySize(Boolean sortCasesBySize) {

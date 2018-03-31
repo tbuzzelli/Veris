@@ -4,7 +4,13 @@ import java.io.File;
 
 public class TestCaseResult {
 
+	/**
+	 * The maximum number of characters wide of output to show in the tooltip.
+	 */
 	public final static int MAX_OUTPUT_BLOCK_WIDTH = 24;
+	/**
+	 * The maximum number of lines of output to show in the tooltip.
+	 */
 	public final static int MAX_OUTPUT_BLOCK_HEIGHT = 4;
 	
 	public final String name;
@@ -29,9 +35,17 @@ public class TestCaseResult {
 		this(name, inputFile, answerFile, runtime, verdict, null, null);
 	}
 	
+	/**
+	 * Gets the text to show in the tooltip when mousing over this test case
+	 * @return A potentially multiline string which includes the test case name, runtime, and some output (if WA)
+	 */
 	public String getTooltipString() {
 		StringBuilder tooltipStringBuilder = new StringBuilder();
-		tooltipStringBuilder.append("Test case " + name);
+		String runtimeString = String.format("%.3f s", runtime / 1000.0);
+		if (verdict == Verdict.TIME_LIMIT_EXCEEDED) {
+			runtimeString = ">" + runtimeString;
+		}
+		tooltipStringBuilder.append(String.format("Test case %s - Runtime: %s", name, runtimeString));
 		if (verdict == Verdict.WRONG_ANSWER && expectedOutput != null && output != null) {
 			tooltipStringBuilder.append("\n\nExpected output:\n");
 			tooltipStringBuilder.append(getExpectedOutputBlockString());
@@ -41,14 +55,30 @@ public class TestCaseResult {
 		return tooltipStringBuilder.toString();
 	}
 	
+	/**
+	 * Gets the text to display of the expected output cut to size.
+	 * @return A potentially multiline string of the expected output.
+	 */
 	public String getExpectedOutputBlockString() {
 		return getBlockString(expectedOutput, MAX_OUTPUT_BLOCK_WIDTH, MAX_OUTPUT_BLOCK_HEIGHT);
 	}
 	
+	/**
+	 * Gets the text to display of the submission's output cut to size.
+	 * @return A potentially multiline string of the submission's output.
+	 */
 	public String getOutputBlockString() {
 		return getBlockString(output, MAX_OUTPUT_BLOCK_WIDTH, MAX_OUTPUT_BLOCK_HEIGHT);
 	}
 	
+	/**
+	 * Takes a potentially multiline string and trims it to fit in the block of given size.
+	 * Will add ellipses (...) as appropriate.
+	 * @param str The initial multiline string to trim.
+	 * @param maxWidth The maximum width in number of characters. (Will be maxed with 4)
+	 * @param maxHeight The maximum number of lines allowed. (Will be maxed with 2)
+	 * @return A multiline string which is str but trimmed to fit the constraints.
+	 */
 	public static String getBlockString(String str, int maxWidth, int maxHeight) {
 		if (str == null)
 			return "";

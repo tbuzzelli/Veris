@@ -398,19 +398,19 @@ public class Judge {
         if (timeLimitString == null) {
             return -1;
         }
-        Integer timeLimitInteger = Problem.parseTimeLimit(timeLimitString);
-        if (timeLimitInteger == null) {
+        Long timeLimitLong = Problem.parseTimeLimit(timeLimitString);
+        if (timeLimitLong == null) {
             exitWithError("Failed to parse time limit from '" + timeLimitString + "'");
             return -1;
         }
-        int timeLimit = timeLimitInteger.intValue();
+        int timeLimit = timeLimitLong.intValue();
         if (timeLimit < Problem.MINIMUM_TIME_LIMIT
             || timeLimit > Problem.MAXIMUM_TIME_LIMIT) {
             exitWithError("Time limit of " + timeLimit + "ms is out of acceptable range ["
                 + Problem.MINIMUM_TIME_LIMIT + "ms, " + Problem.MAXIMUM_TIME_LIMIT + "ms]");
             return -1;
         }
-        return timeLimitInteger.intValue();
+        return timeLimitLong.intValue();
     }
 
     /**

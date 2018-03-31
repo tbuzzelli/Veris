@@ -1,0 +1,36 @@
+{
+  "inputFileTypes": ["in", "data"],
+  "outputFileTypes": ["ans", "out", "sol", "a"],
+  "defaultTimeLimit": 5000,
+  "minimumTimeLimit": 100,
+  "maximumTimeLimit": 3600000,
+  "languageSpecs": [
+    {
+      "languageName": "Java",
+      "fileExtensions": ["java"],
+      "needsCompile": true,
+      "compileArgs": ["javac", "[filename]"],
+      "runtimeArgs": ["java", "[classname]"]
+    },
+    {
+      "languageName": "C 11",
+      "fileExtensions": ["c"],
+      "needsCompile": true,
+      "compileArgs": ["gcc", "[filename]", "-std=c99", "-o", "a"],
+      "runtimeArgs": ["./a"]
+    },
+    {
+      "languageName": "C++ 11",
+      "fileExtensions": ["cpp", "cc"],
+      "needsCompile": true,
+      "compileArgs": ["g++", "[filename]", "-std=c++11", "-o", "a"],
+      "runtimeArgs": ["./a"]
+    },
+    {
+      "languageName": "Python 3",
+      "fileExtensions": ["py"],
+      "needsCompile": false,
+      "runtimeArgs": ["python3", "[filename]"]
+    }
+  ]
+}

@@ -25,6 +25,7 @@
                      </columnConstraints>
                      <rowConstraints>
                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
+                        <RowConstraints minHeight="10.0" vgrow="NEVER" />
                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
                         <RowConstraints minHeight="10.0" vgrow="NEVER" />
                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
@@ -42,18 +43,24 @@
                            </font>
                         </Label>
                         <Button fx:id="buttonDataPath" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleDataPathButtonAction" text="Select data path..." textOverrun="LEADING_ELLIPSIS" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                        <Label text="Time Limit (seconds):" GridPane.rowIndex="2">
+                        <Label text="Language:" GridPane.rowIndex="2">
                            <font>
                               <Font size="16.0" />
                            </font>
                         </Label>
-                        <TextField fx:id="textFieldTimeLimit" alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" text="5.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                        <Label text="Checker:" GridPane.rowIndex="3">
+                        <ChoiceBox fx:id="choiceBoxLanguage" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                        <Label text="Time Limit (seconds):" GridPane.rowIndex="3">
                            <font>
                               <Font size="16.0" />
                            </font>
                         </Label>
-                        <ChoiceBox fx:id="choiceBoxChecker" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                        <TextField fx:id="textFieldTimeLimit" alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" text="5.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                        <Label text="Checker:" GridPane.rowIndex="4">
+                           <font>
+                              <Font size="16.0" />
+                           </font>
+                        </Label>
+                        <ChoiceBox fx:id="choiceBoxChecker" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="4" />
                      </children>
                <BorderPane.margin>
                   <Insets bottom="10.0" top="10.0" />

@@ -3,6 +3,8 @@ package com.verisjudge.ui;
 import java.io.File;
 import java.util.List;
 
+import com.verisjudge.Config;
+import com.verisjudge.LanguageSpec;
 import com.verisjudge.Veris;
 import com.verisjudge.checker.Checker;
 import com.verisjudge.checker.DiffChecker;
@@ -12,6 +14,7 @@ import com.verisjudge.checker.TokenChecker;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -35,6 +38,7 @@ public class MainController {
 	@FXML private Button buttonDataPath;
 	@FXML private Button buttonSolution;
 	@FXML private Button buttonJudge;
+	@FXML private ChoiceBox<String> choiceBoxLanguage;
 	@FXML private ChoiceBox<String> choiceBoxChecker;
 	
 	@FXML private GridPane gridPaneTokenCheckerSettings;
@@ -49,6 +53,7 @@ public class MainController {
 	@FXML private TextField textFieldEpsilonCheckerAbsoluteEpsilon;
 	@FXML private TextField textFieldEpsilonCheckerRelativeEpsilon;
 	
+	public final static String DETECT_LANGUAGE_STR = "Detect Language";
 	public final static String DEFAULT_CHECKER_STR = "Token Checker";
 	
 	private Veris.Builder verisBuilder;
@@ -66,6 +71,14 @@ public class MainController {
 	@FXML
     protected void initialize() {
 		setTimeLimit(Veris.DEFAULT_TIME_LIMIT / 1000.0);
+		
+		ObservableList<String> languageList = FXCollections.observableArrayList();
+		languageList.add(DETECT_LANGUAGE_STR);
+		for (LanguageSpec languageSpec : Config.getConfig().getLanguageSpecsForDisplay())
+			languageList.add(languageSpec.getLanguageName());
+		choiceBoxLanguage.setItems(languageList);
+		choiceBoxLanguage.setValue(DETECT_LANGUAGE_STR);
+		
 		choiceBoxChecker.setItems(FXCollections.observableArrayList("Token Checker", "Diff Checker", "Epsilon Checker"));
 		choiceBoxChecker.setValue(DEFAULT_CHECKER_STR);
 		choiceBoxChecker.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
@@ -116,7 +129,7 @@ public class MainController {
     	if (verisBuilder.getSolutionFile() != null)
     		fileChooser.setInitialDirectory(verisBuilder.getSolutionFile().getParentFile());
     	fileChooser.setTitle("Select Solution File");
-    	fileChooser.getExtensionFilters().add(new ExtensionFilter("Solution files (*.java, *.c, *.cc, *.cpp, *.py)", "*.java", "*.c", "*.cc", "*.cpp", "*.py"));
+    	fileChooser.getExtensionFilters().add(new ExtensionFilter("Solution files (*.java, *.c, *.cc, *.cpp, *.py, *.exe)", "*.java", "*.c", "*.cc", "*.cpp", "*.py", "*.exe"));
     	File file = fileChooser.showOpenDialog(stage);
     	if (file != null && Veris.isValidSolutionFile(file)) {
     		setSolutionFile(file);
@@ -138,8 +151,9 @@ public class MainController {
     
 	@FXML protected void handleJudgeButtonAction(ActionEvent event) {
 		setTimeLimit(getTimeLimit());
-		setChecker(getChecker());
-		System.out.println("Checker set to " + getChecker());
+		setChecker(getSelectedChecker());
+		setLanguageSpec(getSelectedLanguageSpec());
+		System.out.println("Checker set to " + getSelectedChecker());
 		
 		judge();
 		
@@ -159,9 +173,11 @@ public class MainController {
 			
 	        Scene scene = new Scene(root, 652, 480);
 
-	        stage.setTitle("Verisimilitude - " + veris.getSolutionFile().getName());
+	        stage.setTitle(veris.getSolutionFile().getName() + " - Verisimilitude");
 	        stage.setScene(scene);
 	        stage.setResizable(false);
+	        if (JudgeUI.MAIN_ICON != null)
+	        	stage.getIcons().add(JudgeUI.MAIN_ICON);
 	        
 	        controller.judge();
 	        stage.show();
@@ -197,7 +213,15 @@ public class MainController {
 		}
 	}
 	
-	private Checker getChecker() {
+	private LanguageSpec getSelectedLanguageSpec() {
+		String str = choiceBoxLanguage.getValue();
+		for (LanguageSpec languageSpec : Config.getConfig().getLanguageSpecsForDisplay())
+			if (languageSpec.getLanguageName().equals(str))
+				return languageSpec;
+		return null;
+	}
+	
+	private Checker getSelectedChecker() {
 		String str = choiceBoxChecker.getValue();
 		switch (str) {
 			case "Token Checker":
@@ -249,6 +273,10 @@ public class MainController {
 
 	private void setChecker(Checker checker) {
 		verisBuilder.setChecker(checker);
+	}
+	
+	private void setLanguageSpec(LanguageSpec languageSpec) {
+		verisBuilder.setLanguageSpec(languageSpec);
 	}
 
 	private void setTimeLimit(double timeLimit) {

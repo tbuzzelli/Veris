@@ -12,10 +12,13 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 public class JudgeUI extends Application {
 
+	public final static Image MAIN_ICON = new Image(JudgeUI.class.getResourceAsStream("/res/icon.png"));
+	
 	public static void main(String[] args) {
 		launch(args);
     }
@@ -34,19 +37,19 @@ public class JudgeUI extends Application {
         if (timeLimitString == null) {
             return -1;
         }
-        Integer timeLimitInteger = Problem.parseTimeLimit(timeLimitString);
-        if (timeLimitInteger == null) {
+        Long timeLimitLong = Problem.parseTimeLimit(timeLimitString);
+        if (timeLimitLong == null) {
             exitWithError("Failed to parse time limit from '" + timeLimitString + "'");
             return -1;
         }
-        int timeLimit = timeLimitInteger.intValue();
+        int timeLimit = timeLimitLong.intValue();
         if (timeLimit < Problem.MINIMUM_TIME_LIMIT
             || timeLimit > Problem.MAXIMUM_TIME_LIMIT) {
             exitWithError("Time limit of " + timeLimit + "ms is out of acceptable range ["
                 + Problem.MINIMUM_TIME_LIMIT + "ms, " + Problem.MAXIMUM_TIME_LIMIT + "ms]");
             return -1;
         }
-        return timeLimitInteger.intValue();
+        return timeLimitLong.intValue();
     }
 	
 	public Checker parseChecker(String checkerString) {
@@ -76,6 +79,8 @@ public class JudgeUI extends Application {
 	        stage.setTitle("Verisimilitude");
 	        stage.setScene(scene);
 	        stage.setResizable(false);
+	        if (MAIN_ICON != null)
+	        	stage.getIcons().add(MAIN_ICON); 
 	        stage.show();
 		} else {
 			Veris.Builder verisBuilder = new Veris.Builder();

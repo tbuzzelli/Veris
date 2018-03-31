@@ -18,8 +18,8 @@ public class Problem {
         CHECKER_ERROR
     }
 
-    public static final int MINIMUM_TIME_LIMIT = 100; // 100 milliseconds
-    public static final int MAXIMUM_TIME_LIMIT = 60 * 60 * 1000; // 1 hour
+    public static final long MINIMUM_TIME_LIMIT = 100; // 100 milliseconds
+    public static final long MAXIMUM_TIME_LIMIT = 60 * 60 * 1000; // 1 hour
     public static final String JSON_FIELD_NAME = "name";
     public static final String JSON_FIELD_FILENAME = "filename";
     public static final String JSON_FIELD_DATA_PATH = "data_path";
@@ -30,7 +30,7 @@ public class Problem {
     private final String name;
     private final String filename;
     private final String dataPath;
-    private final int timeLimit;
+    private final long timeLimit;
     private final String timeLimitString;
     private final String checkerString;
     private final Checker checker;
@@ -73,14 +73,14 @@ public class Problem {
             errorsList.add(Error.MISSING_TIME_LIMIT);
             errorMessagesList.add("Missing time limit");
         } else {
-            Integer timeLimitInteger = parseTimeLimit(timeLimitString);
-            if (timeLimitInteger == null) {
+            Long timeLimitLong = parseTimeLimit(timeLimitString);
+            if (timeLimitLong == null) {
                 timeLimit = -1;
                 errorsList.add(Error.INVALID_TIME_LIMIT);
                 errorMessagesList.add(
                     "Unable to parse time limit from '" + timeLimitString + "'");
             } else {
-                timeLimit = timeLimitInteger.intValue();
+                timeLimit = timeLimitLong.longValue();
                 if (timeLimit < MINIMUM_TIME_LIMIT || timeLimit > MAXIMUM_TIME_LIMIT) {
                     errorsList.add(Error.INVALID_TIME_LIMIT);
                     errorMessagesList.add(
@@ -151,7 +151,7 @@ public class Problem {
         return dataPath;
     }
 
-    public int getTimeLimit() {
+    public long getTimeLimit() {
         return timeLimit;
     }
 
@@ -228,34 +228,40 @@ public class Problem {
         return true;
     }
 
-    public static Integer parseTimeLimit(String timeLimitString) {
+    public static Long parseTimeLimit(String timeLimitString) {
         timeLimitString = timeLimitString.toLowerCase().replace(" ", "");
         try {
-            return Integer.parseInt(timeLimitString);
+            return Long.parseLong(timeLimitString);
         } catch (Exception e) {}
         if (timeLimitString.endsWith("ms")) { // milliseconds
             try {
-                return Integer.parseInt(timeLimitString.substring(
+                return Long.parseLong(timeLimitString.substring(
                     0, timeLimitString.length() - 2));
             } catch (Exception e) {
                 return null;
             }
         } else if (timeLimitString.endsWith("ns")) { // nanoseconds
             try {
-                return (Integer.parseInt(timeLimitString.substring(
+                return (Long.parseLong(timeLimitString.substring(
                     0, timeLimitString.length() - 2)) + 999) / 1000;
             } catch (Exception e) {
                 return null;
             }
         } else if (timeLimitString.endsWith("s")) { // seconds
             try {
-                return Integer.parseInt(timeLimitString.substring(
+                return Long.parseLong(timeLimitString.substring(
                     0, timeLimitString.length() - 1)) * 1000;
             } catch (Exception e) {
                 return null;
             }
+        } else { // assume milliseconds
+        	try {
+                return Long.parseLong(timeLimitString.substring(
+                    0, timeLimitString.length() - 2));
+            } catch (Exception e) {
+                return null;
+            }
         }
-        return null;
     }
 
     static class Builder {
