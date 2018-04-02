@@ -1,0 +1,78 @@
+{
+  "inputFileTypes": ["in", "data"],
+  "outputFileTypes": ["ans", "out", "sol", "a"],
+  "defaultTimeLimit": "5000 ms",
+  "minimumTimeLimit": "100 ms",
+  "maximumTimeLimit": "3600000 ms",
+  "languageSpecs": [
+    {
+      "languageName": "Java",
+      "detectLanguagePriority": 1,
+      "isAllowed": true,
+      "fileExtensions": ["java"],
+      "needsCompile": true,
+      "compileArgs": ["javac", "-cp", ".;*", "{file}"],
+      "runtimeArgs": ["java", "-Xmx1024M", "-Xss512M", "-DONLINE_JUDGE=true", "-Duser.language=en", "-Duser.region=US", "-Duser.variant=US", "{filename}"]
+    },
+    {
+      "languageName": "GNU GCC C11 5.1.0",
+      "detectLanguagePriority": 1,
+      "isAllowed": true,
+      "fileExtensions": ["c"],
+      "needsCompile": true,
+      "compileArgs": ["gcc", "-static", "-fno-optimize-sibling-calls", "-fno-strict-aliasing", "-DONLINE_JUDGE", "-fno-asm", "-lm", "-s", "-Wl,--stack=268435456", -O2", "-std=c11", "-o", "{filename}.exe", "{file}"],
+      "runtimeArgs": ["./{filename}.exe"]
+    },
+    {
+      "languageName": "GNU G++11 5.1.0",
+      "detectLanguagePriority": 1,
+      "isAllowed": true,
+      "fileExtensions": ["cpp", "cc"],
+      "needsCompile": true,
+      "compileArgs": ["g++", "-static", "-DONLINE_JUDGE", "-lm", "-s", "-x", "c++", "-Wl,--stack=268435456", "-O2", "-std=c++11", "-D__USE_MINGW_ANSI_STDIO=0", "-o", "{filename}.exe", "{file}"],
+      "runtimeArgs": ["./{filename}.exe"]
+    },
+    {
+      "languageName": "GNU G++14 6.4.0",
+      "detectLanguagePriority": 1,
+      "isAllowed": true,
+      "fileExtensions": ["cpp", "cc"],
+      "needsCompile": true,
+      "compileArgs": ["g++", "-static", "-DONLINE_JUDGE", "-lm", "-s", "-x", "c++", "-Wl,--stack=268435456", "-O2", "-std=c++14", "-D__USE_MINGW_ANSI_STDIO=0", "-o", "{filename}.exe", "{file}"],
+      "runtimeArgs": ["./{filename}.exe"]
+    },
+    {
+      "languageName": "GNU G++17 7.2.0",
+      "detectLanguagePriority": 1,
+      "isAllowed": true,
+      "fileExtensions": ["cpp", "cc"],
+      "needsCompile": true,
+      "compileArgs": ["g++", "-static", "-DONLINE_JUDGE", "-lm", "-s", "-x", "c++", "-Wl,--stack=268435456", "-O2", "-std=c++17", "-D__USE_MINGW_ANSI_STDIO=0", "-o", "{filename}.exe", "{file}"],
+      "runtimeArgs": ["./{filename}.exe"]
+    },
+    {
+      "languageName": "Python 3.6",
+      "detectLanguagePriority": 1,
+      "isAllowed": true,
+      "fileExtensions": ["py"],
+      "needsCompile": false,
+      "runtimeArgs": ["python3", "{file}"]
+    },
+    {
+      "languageName": "Python 2.7",
+      "detectLanguagePriority": 2,
+      "isAllowed": true,
+      "fileExtensions": ["py"],
+      "needsCompile": false,
+      "runtimeArgs": ["python2", "{file}"]
+    },
+    {
+      "languageName": "Pre-Compiled Executable",
+      "detectLanguagePriority": 2,
+      "isAllowed": true,
+      "fileExtensions": ["exe"],
+      "needsCompile": false,
+      "runtimeArgs": ["./{file}"]
+    }
+  ]
+}

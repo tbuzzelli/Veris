@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jnlp spec="1.0" xmlns:jfx="http://javafx.com" href="Veris.jnlp">
+  <information>
+    <title>Veris</title>
+    <vendor>UCFPT</vendor>
+    <description>Verisimilitude</description>
+    <offline-allowed/>
+  </information>
+  <resources>
+    <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
+    <jar href="Veris.jar" size="106965" download="eager" />
+    <jar href="libs\gson-2.6.2.jar" size="229650" download="eager" />
+    <jar href="libs\jfxswt.jar" size="33932" download="eager" />
+  </resources>
+  <jfx:javafx-desc  width="500" height="500" main-class="com.verisjudge.ui.Main"  name="Verisimilitude" />
+  <update check="background"/>
+</jnlp>

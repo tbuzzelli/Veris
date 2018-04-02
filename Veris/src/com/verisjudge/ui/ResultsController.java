@@ -40,12 +40,12 @@ public class ResultsController implements VerisListener {
 	@FXML private Label labelTotalTime;
 	@FXML private Label labelVerdict;
 	
-	private final Image TEST_CASE_BACKGROUND_CORRECT = new Image(this.getClass().getResourceAsStream("/res/verdictAccepted.png"));
-	private final Image TEST_CASE_BACKGROUND_INTERNAL_ERROR = new Image(this.getClass().getResourceAsStream("/res/verdictInternalError.png"));
-	private final Image TEST_CASE_BACKGROUND_WRONG_ANSWER = new Image(this.getClass().getResourceAsStream("/res/verdictWrongAnswer.png"));
-	private final Image TEST_CASE_BACKGROUND_RUNTIME_ERROR = new Image(this.getClass().getResourceAsStream("/res/verdictRuntimeError.png"));
-	private final Image TEST_CASE_BACKGROUND_TIME_LIMIT_EXCEEDED = new Image(this.getClass().getResourceAsStream("/res/verdictTimeLimitExceeded.png"));
-	private final Image TEST_CASE_BACKGROUND_QUEUED = new Image(this.getClass().getResourceAsStream("/res/verdictQueued.png"));
+	private final Image TEST_CASE_BACKGROUND_CORRECT = new Image(this.getClass().getResourceAsStream("/images/verdictAccepted.png"));
+	private final Image TEST_CASE_BACKGROUND_INTERNAL_ERROR = new Image(this.getClass().getResourceAsStream("/images/verdictInternalError.png"));
+	private final Image TEST_CASE_BACKGROUND_WRONG_ANSWER = new Image(this.getClass().getResourceAsStream("/images/verdictWrongAnswer.png"));
+	private final Image TEST_CASE_BACKGROUND_RUNTIME_ERROR = new Image(this.getClass().getResourceAsStream("/images/verdictRuntimeError.png"));
+	private final Image TEST_CASE_BACKGROUND_TIME_LIMIT_EXCEEDED = new Image(this.getClass().getResourceAsStream("/images/verdictTimeLimitExceeded.png"));
+	private final Image TEST_CASE_BACKGROUND_QUEUED = new Image(this.getClass().getResourceAsStream("/images/verdictQueued.png"));
 	
 	private Parent[] testCaseParents;
 	private TestCaseResult[] testCaseResults;

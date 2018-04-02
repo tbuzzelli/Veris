@@ -163,7 +163,8 @@ public class MainController {
 	private void judge() {
 		try {
 			Veris veris = verisBuilder.build();
-			FXMLLoader loader = new FXMLLoader(getClass().getResource("results.fxml"));
+			FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/results.fxml"));
+			//loader.setController(new ResultsController());
 			Parent root = (Parent) loader.load();
 			ResultsController controller = (ResultsController) loader.getController();
 			Stage stage = new Stage();
@@ -176,8 +177,8 @@ public class MainController {
 	        stage.setTitle(veris.getSolutionFile().getName() + " - Verisimilitude");
 	        stage.setScene(scene);
 	        stage.setResizable(false);
-	        if (JudgeUI.MAIN_ICON != null)
-	        	stage.getIcons().add(JudgeUI.MAIN_ICON);
+	        if (Main.MAIN_ICON != null)
+	        	stage.getIcons().add(Main.MAIN_ICON);
 	        
 	        controller.judge();
 	        stage.show();

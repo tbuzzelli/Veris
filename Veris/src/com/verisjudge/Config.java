@@ -3,6 +3,7 @@ package com.verisjudge;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,8 +64,17 @@ public class Config {
 	
 	public static Config fromConfigFile(File f) {
 		try {
+            return fromConfigInputStream(new FileInputStream(f));
+        } catch (Exception e) {
+        	e.printStackTrace();
+            return null;
+        }
+	}
+	
+	public static Config fromConfigInputStream(InputStream inputStream) {
+		try {
             StringBuilder sb = new StringBuilder();
-            BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(f)));
+            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
             String line;
             while ((line = br.readLine()) != null) {
                 sb.append(line);
@@ -73,6 +83,7 @@ public class Config {
             br.close();
             return fromJsonString(sb.toString());
         } catch (Exception e) {
+        	e.printStackTrace();
             return null;
         }
 	}
@@ -215,13 +226,23 @@ public class Config {
 				}
 			}
 		}
+		builder.setLanguageSpecs(languageSpecs.toArray(new LanguageSpec[0]));
 		return builder.build();
 	}
 
 	public static Config getConfig() {
 		if (CONFIG != null)
 			return CONFIG;
-		CONFIG = fromConfigFile(Config.class.getResource("/res/config.json").getFile());
+		CONFIG = fromConfigInputStream(Config.class.getResourceAsStream("/default_config.json"));
+		if (CONFIG == null) {
+			System.err.println("Failed to load internal config!");
+			System.exit(1);
+			// TODO: Show pop-up error message.
+		}
+		Config userConfig = fromConfigFile("../config.json");
+		if (userConfig != null) {
+			CONFIG = merge(CONFIG, userConfig);
+		}
 		return CONFIG;
 	}
 	
