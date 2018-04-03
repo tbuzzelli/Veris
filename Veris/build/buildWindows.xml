@@ -179,6 +179,10 @@
 	
 			<fx:application refId="fxApplication"/>
 			<fx:resources refid="appRes"/>
+			
+			<fx:secondaryLauncher
+				name="veris"
+				shortcut="true" />
 		</fx:deploy>
 	
 	

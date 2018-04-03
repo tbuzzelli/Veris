@@ -1,2 +1,5 @@
 #!/bin/bash
-java -jar veris.jar $*
+export VERIS_WRAPPER="`readlink -f "$0"`"
+HERE="`dirname "$VERIS_WRAPPER"`"
+
+exec -a "$0" "$HERE/Verisimilitude" "$@"
