@@ -76,7 +76,7 @@
                       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                     </rowConstraints>
                      <children>
-                        <CheckBox fx:id="checkBoxTokenCheckerCaseSensative" mnemonicParsing="false" text="Case Sensative" />
+                        <CheckBox fx:id="checkBoxTokenCheckerCaseSensitive" mnemonicParsing="false" text="Case Sensitive" />
                      </children>
                      <StackPane.margin>
                         <Insets />

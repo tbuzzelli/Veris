@@ -315,6 +315,7 @@ public class Veris {
         	Thread.currentThread().interrupt();
         	return Verdict.INTERNAL_ERROR;
         }
+        
         // Get the result and print it.
         Verdict res;
         if (resInt == 0) {
@@ -336,14 +337,14 @@ public class Veris {
      */
     public TestCaseResult runCase(TestCase c, LanguageSpec languageSpec) {
     	System.out.println("Running case " + c.name + " with checker " + checker);
+    	
     	TestCaseResult.Builder resultBuilder = new TestCaseResult.Builder()
     			.setName(c.name)
     			.setInputFile(c.inputFile)
     			.setAnswerFile(c.answerFile);
+    	
         // Create the output file to use.
         File pOut = new File(directory, className + ".out");
-        
-        // Create the execution process.
 
         // Build the execution process for this language.
         ProcessBuilder builder = languageSpec.getExecutionProcessBuilder(solutionFile.getName(), className);
@@ -353,9 +354,8 @@ public class Veris {
         builder.redirectOutput(pOut);
 
         // If we are verbose, inherit their error stream.
-//        if(isVerbose()) {
+        // if(isVerbose())
             builder.redirectError(Redirect.INHERIT);
-//        }
 
         // Create the process and attempt to start it.
         Process process;
@@ -382,9 +382,11 @@ public class Veris {
 
         // Record the time before starting their program.
         long t1 = System.nanoTime();
+        
         // Start their program.
         inputThread.start();
         boolean completed = false;
+        
         // Wait for it to complete with a timeout of 105% of the timeLimit
         try {
             completed = process.waitFor(timeLimit * 105 / 100, TimeUnit.MILLISECONDS);
@@ -398,6 +400,7 @@ public class Veris {
         // Calculate the time it took in milliseconds.
         long time = (System.nanoTime() - t1 + 999999) / 1000000;
         t1 = Math.min(timeLimit, time);
+        
         // Keep track of the longest time and the total time.
         longestTime = Math.max(longestTime, t1);
         totalTime += t1;
@@ -414,7 +417,15 @@ public class Veris {
                 res = Verdict.RUNTIME_ERROR;
             } else {
                 // Check the solution's output.
-                res = checker.check(new FastScanner(c.inputFile), new FastScanner(pOut), new FastScanner(c.answerFile));
+            	FastScanner inputScanner = new FastScanner(c.inputFile);
+            	FastScanner pScanner = new FastScanner(pOut);
+            	FastScanner ansScanner = new FastScanner(c.answerFile);
+            	
+                res = checker.check(inputScanner, pScanner, ansScanner);
+                
+                inputScanner.close();
+                pScanner.close();
+                ansScanner.close();
                 
                 final int NUM_CHARS_TO_READ = 256;
                 
@@ -478,12 +489,12 @@ public class Veris {
     /**
      * Pipes all data from an input stream to an output stream.
      * @param is The input stream to read from.
-     * @param os The ouput stream to write to.
-     * @throws IOException if an io error occurred.
+     * @param os The output stream to write to.
+     * @throws IOException if an IO error occurred.
      */
     public static void pipe(InputStream is, OutputStream os) throws IOException {
         int n;
-        byte[] buffer = new byte[1024*1024];
+        byte[] buffer = new byte[1024 * 1024];
         while ((n = is.read(buffer)) > -1) {
             os.write(buffer, 0, n);
         }
@@ -491,7 +502,7 @@ public class Veris {
     }
 
     /**
-     * Adds a folder and all its subfolders/files to the set of data files.
+     * Adds a folder and all its sub folders/files to the set of data files.
      * @param folder The data folder to add.
      */
     private void addDataFolder(File folder) {

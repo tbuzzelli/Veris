@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ASCII"?>
 <anttasks:AntTask xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:anttasks="http://org.eclipse.fx.ide.jdt/1.0" buildDirectory="${project}/build">
   <deploy height="500" width="500" packagingFormat="all">
-    <application name="Checker" mainclass="com.verisjudge.ui.Main" version="1.0" toolkit="fx"/>
+    <application name="Checker" mainclass="com.verisjudge.Mainersion="1.0" toolkit="fx"/>
     <info title="Verisimilitude" vendor="UCFPT"/>
   </deploy>
   <signjar alias="veris" keypass="verisimilitude" keystore="" storepass="verisimilitude" storetype="pkcs12"/>

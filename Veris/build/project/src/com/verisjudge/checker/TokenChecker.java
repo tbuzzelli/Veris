@@ -4,14 +4,14 @@ import com.verisjudge.utils.FastScanner;
 
 public class TokenChecker extends Checker {
 
-    private final boolean caseSensative;
+    private final boolean caseSensitive;
 
     public TokenChecker() {
         this(true);
     }
 
-    public TokenChecker(boolean caseSensative) {
-        this.caseSensative = caseSensative;
+    public TokenChecker(boolean caseSensitive) {
+        this.caseSensitive = caseSensitive;
     }
 
     @Override
@@ -32,7 +32,7 @@ public class TokenChecker extends Checker {
     }
 
     boolean check(String answer, String participant) {
-        if (caseSensative) {
+        if (caseSensitive) {
             return answer.equals(participant);
         } else {
             return answer.equalsIgnoreCase(participant);

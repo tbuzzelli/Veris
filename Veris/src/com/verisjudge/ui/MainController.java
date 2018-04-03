@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.verisjudge.Config;
 import com.verisjudge.LanguageSpec;
+import com.verisjudge.Main;
 import com.verisjudge.Veris;
 import com.verisjudge.checker.Checker;
 import com.verisjudge.checker.DiffChecker;
@@ -45,7 +46,7 @@ public class MainController {
 	@FXML private GridPane gridPaneDiffCheckerSettings;
 	@FXML private GridPane gridPaneEpsilonCheckerSettings;
 	
-	@FXML private CheckBox checkBoxTokenCheckerCaseSensative;
+	@FXML private CheckBox checkBoxTokenCheckerCaseSensitive;
 	
 	@FXML private CheckBox checkBoxDiffCheckerIgnoreTrailingWhitespace;
 	@FXML private CheckBox checkBoxDiffCheckerIgnoreTrailingBlankLines;
@@ -237,9 +238,9 @@ public class MainController {
 	}
 	
 	private Checker createTokenChecker() {
-		boolean caseSensative =
-				checkBoxTokenCheckerCaseSensative.isSelected();
-		return new TokenChecker(caseSensative);
+		boolean caseSensitive =
+				checkBoxTokenCheckerCaseSensitive.isSelected();
+		return new TokenChecker(caseSensitive);
 	}
 	
 	private Checker createDiffChecker() {
