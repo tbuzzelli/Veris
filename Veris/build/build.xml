@@ -34,12 +34,12 @@
 		<mkdir dir="project" />
 		<copy todir="project">
 			<fileset dir="C:\Users\elect\git\Veris\Veris">
-				<include name="src/**" />
+				<include name="resources/**" />
 			</fileset>
 		</copy>
 		<copy todir="project">
 			<fileset dir="C:\Users\elect\git\Veris\Veris">
-				<include name="resources/**" />
+				<include name="src/**" />
 			</fileset>
 		</copy>
 	
@@ -106,6 +106,7 @@
 			</fileset>
 		</copy>
 	
+	
 		<mkdir dir="dist/resources" />
 		<copy todir="dist/resources" >
 		    <fileset dir="../resources" />
@@ -170,7 +171,7 @@
 			includeDT="false"
 			offlineAllowed="true"
 			outdir="${basedir}/deploy"
-			outfile="Veris" nativeBundles="exe"
+			outfile="Veris" nativeBundles="all"
 			updatemode="background" >
 	
 			<fx:platform basedir="${java.home}"/>
