@@ -266,18 +266,16 @@ public class ResultsController implements VerisListener {
 	}
 
 	@Override
-	public void handleCompileFinished(boolean wasSuccess) {
+	public void handleCompileFinished(Verdict compileVerdict) {
 		Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
-				if (wasSuccess) {
-					labelCompilingCode.setText("Compiling code. . . SUCCESS");
+				labelCompilingCode.setText("Compiling code. . . " + compileVerdict.getName().toUpperCase());
+				if (compileVerdict == Verdict.COMPILE_SUCCESS) {
 					labelRunningTestCases.setText(
 							String.format("Running %d test case%s",
 									testCaseParents.length,
 									testCaseParents.length == 1 ? "" : "s"));
-				} else {
-					labelCompilingCode.setText("Compiling code. . . COMPILE ERROR");
 				}
 			}
 		});
@@ -318,10 +316,12 @@ public class ResultsController implements VerisListener {
 	}
 	
 	private TestCaseResult getSmallestFailure(Verdict finalVerdict) {
-		if (finalVerdict == Verdict.CORRECT || finalVerdict == Verdict.COMPILE_ERROR)
+		if (finalVerdict == Verdict.COMPILE_SUCCESS || finalVerdict == Verdict.COMPILE_ERROR || testCaseResults == null)
 			return null;
 		TestCaseResult smallestFailure = null;
 		for (TestCaseResult result : testCaseResults) {
+			if (result == null)
+				continue;
 			if (result.verdict == finalVerdict
 					&& (smallestFailure == null || result.inputFile.length() < smallestFailure.inputFile.length())) {
 				smallestFailure = result;

@@ -74,6 +74,7 @@ security.provider.6=sun.security.jgss.SunProvider
 security.provider.7=com.sun.security.sasl.Provider
 security.provider.8=org.jcp.xml.dsig.internal.dom.XMLDSigRI
 security.provider.9=sun.security.smartcardio.SunPCSC
+security.provider.10=sun.security.mscapi.SunMSCAPI
 
 #
 # Sun Provider SecureRandom seed source.
@@ -126,7 +127,7 @@ securerandom.source=file:/dev/random
 # This is a comma-separated list of algorithm and/or algorithm:provider
 # entries.
 #
-securerandom.strongAlgorithms=NativePRNGBlocking:SUN
+securerandom.strongAlgorithms=Windows-PRNG:SunMSCAPI,SHA1PRNG:SUN
 
 #
 # Class to instantiate as the javax.security.auth.login.Configuration
@@ -224,6 +225,7 @@ package.access=sun.,\
                jdk.nashorn.tools.,\
                jdk.xml.internal.,\
                com.sun.activation.registries.,\
+               com.sun.java.accessibility.,\
                com.sun.browser.,\
                com.sun.glass.,\
                com.sun.javafx.,\
@@ -285,6 +287,7 @@ package.definition=sun.,\
                    jdk.nashorn.tools.,\
                    jdk.xml.internal.,\
                    com.sun.activation.registries.,\
+                   com.sun.java.accessibility.,\
                    com.sun.browser.,\
                    com.sun.glass.,\
                    com.sun.javafx.,\
@@ -907,8 +910,6 @@ jdk.xml.dsig.secureValidationPolicy=\
 # If the pattern is equal to the class name, it matches.
 # Otherwise, the status is UNDECIDED.
 #
-# Primitive types are not configurable with this filter.
-#
 #jdk.serialFilter=pattern;pattern
 
 #
@@ -920,12 +921,9 @@ jdk.xml.dsig.secureValidationPolicy=\
 # to increase limits.
 # If the limits (maxdepth, maxrefs, or maxbytes) are exceeded, the object is rejected.
 #
-# The maxdepth of any array passed to the RMI Registry is set to
-# 10000.  The maximum depth of the graph is set to 20.
-# These limits can be reduced via the maxarray, maxdepth limits.
-#
-#sun.rmi.registry.registryFilter=pattern;pattern
-
+# Each non-array type is allowed or rejected if it matches one of the patterns,
+# evaluated from left to right, and is otherwise allowed. Arrays of any
+# component type, including subarrays and arrays of primitives, are allowed.
 #
 # Array construction of any component type, including subarrays and arrays of
 # primitives, are allowed unless the length is greater than the maxarray limit.

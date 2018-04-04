@@ -227,50 +227,67 @@ public class Veris {
         
         LanguageSpec languageSpec = this.languageSpec != null ? this.languageSpec : config.getLanguageSpecForExtension(language);
         // If we can't find a matching language spec or this language isn't allowed, return INTERNAL_ERROR.
-        if (languageSpec == null || !languageSpec.isAllowed())
+        if (languageSpec == null || !languageSpec.isAllowed()) {
+        	// Notify listener of the internal error.
+            if (listener.get() != null) {
+            	listener.get().handleCompileFinished(Verdict.INTERNAL_ERROR);
+            	listener.get().handleJudgingFinished(Verdict.INTERNAL_ERROR);
+            }
         	return Verdict.INTERNAL_ERROR;
+        }
         
         // Attempt to compile the code.
-        Verdict result = compileCode(languageSpec);
+        Verdict compileVerdict = compileCode(languageSpec);
         
         // If we were interrupted, return with an internal error.
-        if (Thread.currentThread().isInterrupted())
+        if (Thread.currentThread().isInterrupted()) {
+        	// Notify listener of the internal error.
+            if (listener.get() != null)
+            	listener.get().handleJudgingFinished(Verdict.INTERNAL_ERROR);
         	return Verdict.INTERNAL_ERROR;
-
+        }
+        
         // Notify listener that compiling had finished.
         if (listener.get() != null)
-        	listener.get().handleCompileFinished(result == Verdict.CORRECT);
+        	listener.get().handleCompileFinished(compileVerdict);
+        
+        // If the compiling failed, return.
+        if (compileVerdict != Verdict.COMPILE_SUCCESS) {
+        	// Notify listener of the internal error.
+            if (listener.get() != null)
+            	listener.get().handleJudgingFinished(compileVerdict);
+        	return compileVerdict;
+        }
 
-        // If the solution compiled successfully, run the cases.
-        if (result == Verdict.CORRECT) {
-            // Sort our test cases if needed.
-            if (sortCasesBySize)
-                Collections.sort(cases);
+        Verdict result = Verdict.CORRECT;
+        
+        // Sort our test cases if needed.
+        if (sortCasesBySize)
+            Collections.sort(cases);
 
-            for (int ci = 0; ci < cases.size(); ci++) {
-            	TestCase c = cases.get(ci);
-            	
-            	// Notify listener that this case is now being run.
-            	if (listener.get() != null)
-            		listener.get().handleTestCaseStarting(ci);
+        for (int ci = 0; ci < cases.size(); ci++) {
+        	TestCase c = cases.get(ci);
+        	
+        	// Notify listener that this case is now being run.
+        	if (listener.get() != null)
+        		listener.get().handleTestCaseStarting(ci);
 
-                // Run the case and get the result.
-                TestCaseResult testCaseResult = runCase(c, languageSpec);
-                Verdict caseResult = testCaseResult.verdict;
-                
-                // If the current result is still correct or if we had an
-                // internal error, set it to this one.
-                if (result == Verdict.CORRECT || caseResult == Verdict.INTERNAL_ERROR)
-                    result = caseResult;
+            // Run the case and get the result.
+            TestCaseResult testCaseResult = runCase(c, languageSpec);
+            Verdict caseResult = testCaseResult.verdict;
+            
+            // If the current result is still correct or if we had an
+            // internal error, set it to this one.
+            if (result == Verdict.CORRECT || caseResult == Verdict.INTERNAL_ERROR)
+                result = caseResult;
 
-                // Notify listener that this case has been judged.
-                if (listener.get() != null)
-                	listener.get().handleTestCaseFinished(ci, testCaseResult);
-                
-                // If we were interrupted, return with an Internal Error.
-                if (Thread.currentThread().isInterrupted())
-                	return Verdict.INTERNAL_ERROR;
-            }
+            // Notify listener that this case has been judged.
+            if (listener.get() != null)
+            	listener.get().handleTestCaseFinished(ci, testCaseResult);
+            
+            // If we were interrupted, return with an Internal Error.
+            if (Thread.currentThread().isInterrupted())
+            	return Verdict.INTERNAL_ERROR;
         }
 
         // Notify listener that judging has finished.
@@ -293,11 +310,11 @@ public class Veris {
         
         // If this language doesn't need compiling, just return CORRECT.
         if (!languageSpec.needsCompile())
-        	return Verdict.CORRECT;
+        	return Verdict.COMPILE_SUCCESS;
  
         // Build the compile process for this language.
         ProcessBuilder builder = languageSpec.getCompileProcessBuilder(solutionFile.getName(), className);
-        
+
         // Set the working directory to the temporary directory.
         builder.directory(directory);
         int resInt;
@@ -319,7 +336,7 @@ public class Veris {
         // Get the result and print it.
         Verdict res;
         if (resInt == 0) {
-            res = Verdict.CORRECT;
+            res = Verdict.COMPILE_SUCCESS;
         } else {
             res = Verdict.COMPILE_ERROR;
         }

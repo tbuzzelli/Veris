@@ -182,7 +182,9 @@
 			
 			<fx:secondaryLauncher
 				name="veris"
-				shortcut="true" />
+				shortcut="true">
+				<fx:bundleArgument arg="icon" value="../resources/Verisimilitude.ico"/>
+			</fx:secondaryLauncher>
 		</fx:deploy>
 	
 	

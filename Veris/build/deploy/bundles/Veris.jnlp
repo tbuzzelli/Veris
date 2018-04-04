@@ -8,8 +8,8 @@
   </information>
   <resources>
     <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
-    <jar href="Veris.jar" size="86147" download="eager" />
-    <jar href="libs/gson-2.6.2.jar" size="229650" download="eager" />
+    <jar href="Veris.jar" size="89932" download="eager" />
+    <jar href="libs\gson-2.6.2.jar" size="229650" download="eager" />
   </resources>
   <jfx:javafx-desc  width="652" height="480" main-class="com.verisjudge.Main"  name="Verisimilitude" />
   <update check="background"/>

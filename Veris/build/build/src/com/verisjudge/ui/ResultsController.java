@@ -308,6 +308,7 @@ public class ResultsController implements VerisListener {
 		Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
+				System.err.println(finalVerdict);
 				TestCaseResult smallestFailure = getSmallestFailure(finalVerdict);
 				if (smallestFailure == null)
 					labelVerdict.setText(finalVerdict.getName());
