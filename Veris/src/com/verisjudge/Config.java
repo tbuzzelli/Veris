@@ -13,6 +13,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
+import com.verisjudge.utils.FileUtils;
 
 public class Config {
 
@@ -72,20 +73,7 @@ public class Config {
 	}
 	
 	public static Config fromConfigInputStream(InputStream inputStream) {
-		try {
-            StringBuilder sb = new StringBuilder();
-            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-            String line;
-            while ((line = br.readLine()) != null) {
-                sb.append(line);
-                sb.append('\n');
-            }
-            br.close();
-            return fromJsonString(sb.toString());
-        } catch (Exception e) {
-        	e.printStackTrace();
-            return null;
-        }
+		return fromJsonString(FileUtils.readEntireInputStream(inputStream));
 	}
 	
 	public static Config fromJsonString(String str) {

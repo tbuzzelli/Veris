@@ -165,7 +165,6 @@ public class MainController {
 		try {
 			Veris veris = verisBuilder.build();
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/results.fxml"));
-			//loader.setController(new ResultsController());
 			Parent root = (Parent) loader.load();
 			ResultsController controller = (ResultsController) loader.getController();
 			Stage stage = new Stage();

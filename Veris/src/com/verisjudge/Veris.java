@@ -37,6 +37,7 @@ public class Veris {
     private ArrayList<TestCase> cases;
     private File solutionFile;
     private File directory;
+    private File errorStreamsDirectory;
     private LanguageSpec languageSpec;
     private String className;
     private String language;
@@ -57,6 +58,7 @@ public class Veris {
         try {
             tmpDir = Files.createTempDirectory("veris");
             this.directory = tmpDir.toFile();
+            this.errorStreamsDirectory = Files.createTempDirectory("verisErrorStreams").toFile();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -230,26 +232,29 @@ public class Veris {
         if (languageSpec == null || !languageSpec.isAllowed()) {
         	// Notify listener of the internal error.
             if (listener.get() != null) {
-            	listener.get().handleCompileFinished(Verdict.INTERNAL_ERROR);
+            	listener.get().handleCompileFinished(new CompileResult.Builder().setVerdict(Verdict.INTERNAL_ERROR).build());
             	listener.get().handleJudgingFinished(Verdict.INTERNAL_ERROR);
             }
         	return Verdict.INTERNAL_ERROR;
         }
         
         // Attempt to compile the code.
-        Verdict compileVerdict = compileCode(languageSpec);
+        CompileResult compileResult = compileCode(languageSpec);
+        Verdict compileVerdict = compileResult.getVerdict();
         
         // If we were interrupted, return with an internal error.
         if (Thread.currentThread().isInterrupted()) {
         	// Notify listener of the internal error.
-            if (listener.get() != null)
+            if (listener.get() != null) {
+            	listener.get().handleCompileFinished(compileResult);
             	listener.get().handleJudgingFinished(Verdict.INTERNAL_ERROR);
+            }
         	return Verdict.INTERNAL_ERROR;
         }
         
         // Notify listener that compiling had finished.
         if (listener.get() != null)
-        	listener.get().handleCompileFinished(compileVerdict);
+        	listener.get().handleCompileFinished(compileResult);
         
         // If the compiling failed, return.
         if (compileVerdict != Verdict.COMPILE_SUCCESS) {
@@ -301,22 +306,35 @@ public class Veris {
     /**
      * Compile the solution
      * @param languageSpec The languageSpec to use while compiling the code. (Cannot be null).
-     * @return Either CORRECT or COMPILE_ERROR depending on whether or not
+     * @return A compile result with either COMPILE_SUCCESS or COMPILE_ERROR depending on whether or not
      * the solution compiled successfully. May return INTERNAL_ERROR if an
      * error occurred.
      */
-    public Verdict compileCode(LanguageSpec languageSpec) {
-        // Create the compile process.
-        
+    public CompileResult compileCode(LanguageSpec languageSpec) {
+    	CompileResult.Builder compileResultBuilder = new CompileResult.Builder();
+    	
         // If this language doesn't need compiling, just return CORRECT.
         if (!languageSpec.needsCompile())
-        	return Verdict.COMPILE_SUCCESS;
+        	return compileResultBuilder.setVerdict(Verdict.COMPILE_SUCCESS).build();
  
         // Build the compile process for this language.
         ProcessBuilder builder = languageSpec.getCompileProcessBuilder(solutionFile.getName(), className);
 
+        File compileErrorStreamFile = null;
+		try {
+			compileErrorStreamFile = Files.createTempFile(errorStreamsDirectory.toPath(), "compileErrorStream", ".txt").toFile();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+			// Ignore error.
+		}
+		
         // Set the working directory to the temporary directory.
         builder.directory(directory);
+        
+        // Redirect the compile error stream to a file for later use.
+        if (compileErrorStreamFile != null)
+        	builder.redirectError(compileErrorStreamFile);
+        
         int resInt;
         
         // Attempt to compile the program.
@@ -325,24 +343,27 @@ public class Veris {
             process = builder.start();
             resInt = process.waitFor();
         } catch (IOException e) {
-            return Verdict.INTERNAL_ERROR;
+            return compileResultBuilder.setVerdict(Verdict.INTERNAL_ERROR).build();
         } catch (InterruptedException e) {
         	if (process != null)
         		process.destroyForcibly();
         	Thread.currentThread().interrupt();
-        	return Verdict.INTERNAL_ERROR;
+        	return compileResultBuilder.setVerdict(Verdict.INTERNAL_ERROR).build();
         }
         
+        // Set the error stream file.
+        if (compileErrorStreamFile != null)
+        	compileResultBuilder.setErrorStreamFile(compileErrorStreamFile);
+        
         // Get the result and print it.
-        Verdict res;
         if (resInt == 0) {
-            res = Verdict.COMPILE_SUCCESS;
+        	compileResultBuilder.setVerdict(Verdict.COMPILE_SUCCESS);
         } else {
-            res = Verdict.COMPILE_ERROR;
+        	compileResultBuilder.setVerdict(Verdict.COMPILE_ERROR);
         }
 
         // Return the compile result.
-        return res;
+        return compileResultBuilder.build();
     }
 
     /**
@@ -366,13 +387,21 @@ public class Veris {
         // Build the execution process for this language.
         ProcessBuilder builder = languageSpec.getExecutionProcessBuilder(solutionFile.getName(), className);
         
+        File errorStreamFile = null;
+		try {
+			errorStreamFile = Files.createTempFile(errorStreamsDirectory.toPath(), "errorStream", ".txt").toFile();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+			// Ignore error.
+		}
+        
         // Set the working directory and redirect their output to the file.
         builder.directory(directory);
         builder.redirectOutput(pOut);
-
-        // If we are verbose, inherit their error stream.
-        // if(isVerbose())
-            builder.redirectError(Redirect.INHERIT);
+        
+        // Redirect the error stream to a file so we can show it later.
+        if (errorStreamFile != null)
+        	builder.redirectError(errorStreamFile);
 
         // Create the process and attempt to start it.
         Process process;
@@ -499,6 +528,8 @@ public class Veris {
         
         resultBuilder.setVerdict(res);
         resultBuilder.setRuntime(t1);
+        if (errorStreamFile != null)
+        	resultBuilder.setErrorStreamFile(errorStreamFile);
 
     	return resultBuilder.build();
     }

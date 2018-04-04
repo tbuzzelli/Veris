@@ -5,22 +5,29 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
+import com.verisjudge.CompileResult;
 import com.verisjudge.TestCaseResult;
 import com.verisjudge.Verdict;
 import com.verisjudge.Veris;
 import com.verisjudge.VerisListener;
 
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.Side;
 import javafx.scene.Parent;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
@@ -47,6 +54,9 @@ public class ResultsController implements VerisListener {
 	private final Image TEST_CASE_BACKGROUND_TIME_LIMIT_EXCEEDED = new Image(this.getClass().getResourceAsStream("/images/verdictTimeLimitExceeded.png"));
 	private final Image TEST_CASE_BACKGROUND_QUEUED = new Image(this.getClass().getResourceAsStream("/images/verdictQueued.png"));
 	
+	private final ContextMenu testCaseContextMenu = new ContextMenu();;
+	
+	private TestCaseResult activeContextMenuTestCaseResult;
 	private Parent[] testCaseParents;
 	private TestCaseResult[] testCaseResults;
 	private int numTestCases;
@@ -115,6 +125,63 @@ public class ResultsController implements VerisListener {
 
 	@FXML
     protected void initialize() {
+		initTestCaseContextMenu();
+	}
+	
+	private void initTestCaseContextMenu() {
+		testCaseContextMenu.setOnShowing(new EventHandler<WindowEvent>() {
+		    public void handle(WindowEvent e) {
+		        // Do nothing.
+		    }
+		});
+		testCaseContextMenu.setOnShown(new EventHandler<WindowEvent>() {
+		    public void handle(WindowEvent e) {
+		        // Do nothing.
+		    }
+		});
+
+		MenuItem itemOpenInputFile = new MenuItem("Open input file");
+		itemOpenInputFile.setOnAction(new EventHandler<ActionEvent>() {
+		    public void handle(ActionEvent e) {
+		        // TODO: implement this.
+		    }
+		});
+		
+		MenuItem itemOpenAnswerFile = new MenuItem("Open answer file");
+		itemOpenAnswerFile.setOnAction(new EventHandler<ActionEvent>() {
+		    public void handle(ActionEvent e) {
+		    	// TODO: implement this.
+		    }
+		});
+		
+		MenuItem itemOpenProgramOutputFile = new MenuItem("Open program output");
+		itemOpenProgramOutputFile.setOnAction(new EventHandler<ActionEvent>() {
+		    public void handle(ActionEvent e) {
+		    	// TODO: implement this.
+		    }
+		});
+		
+		MenuItem itemViewErrorStream = new MenuItem("View error stream");
+		itemViewErrorStream.setOnAction(new EventHandler<ActionEvent>() {
+		    public void handle(ActionEvent e) {
+		    	if (activeContextMenuTestCaseResult != null) {
+		    		TestCaseResult result = activeContextMenuTestCaseResult;
+		    		if (result.getErrorStreamFile() != null) {
+		    			TextViewerController.createAndOpenTextViewer(
+		    					"Verisimilitude - " + result.name,
+		    					result.name + " - Error Stream",
+		    					result.getErrorStreamFile());
+		    		} else {
+		    			// TODO: show error message "Failed to open error stream file."
+		    		}
+		    	}
+		    }
+		});
+		testCaseContextMenu.getItems().addAll(
+				itemOpenInputFile,
+				itemOpenAnswerFile,
+				itemOpenProgramOutputFile,
+				itemViewErrorStream);
 	}
 
 	private void initializeTestCases(int numTestCases) {
@@ -188,8 +255,10 @@ public class ResultsController implements VerisListener {
 		ImageView imageView =
 				(ImageView) testCaseParent.lookup("#imageViewTestCase");
 		imageView.setImage(getTestCaseImageForVerdict(result == null ? null : result.verdict));
+		
 		if(result != null) {
 			Tooltip tooltip = new Tooltip(result.getTooltipString());
+			
 			// This requires Java 9 to do but Eclipse can't build the Java 9 jar yet.
 			// tooltip.setShowDuration(new Duration(10000));
 			// So, we call these methods using reflection in case we are running on Java 9.
@@ -210,8 +279,20 @@ public class ResultsController implements VerisListener {
 	        	// Ignore the error.
 	        }
 			
+			// Set the tooltip to show.
 			Tooltip.install(testCaseParent, tooltip);
+			
+			// Set the context menu to show on rightclick.
+			testCaseParent.setOnMouseClicked(new EventHandler<MouseEvent>() {
+				public void handle(MouseEvent e) {
+					if (e.getButton() == MouseButton.SECONDARY) {
+						activeContextMenuTestCaseResult = result;
+						testCaseContextMenu.show(imageView, Side.BOTTOM, 0, 0);
+					}
+				}
+			});
 		}
+		
 		ProgressIndicator progressIndicator =
 				(ProgressIndicator) testCaseParent.lookup("#progressIndicatorRunning");
 		progressIndicator.setVisible(running);
@@ -266,7 +347,8 @@ public class ResultsController implements VerisListener {
 	}
 
 	@Override
-	public void handleCompileFinished(Verdict compileVerdict) {
+	public void handleCompileFinished(CompileResult compileResult) {
+		Verdict compileVerdict = compileResult.getVerdict();
 		Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
@@ -276,6 +358,14 @@ public class ResultsController implements VerisListener {
 							String.format("Running %d test case%s",
 									testCaseParents.length,
 									testCaseParents.length == 1 ? "" : "s"));
+				} else if (compileResult.getErrorStreamFile() != null) {
+					labelCompilingCode.setOnMouseClicked(new EventHandler<MouseEvent>() {
+						public void handle(MouseEvent e) {
+							if (e.getButton() == MouseButton.PRIMARY) {
+								TextViewerController.createAndOpenTextViewer("Verisimilitude - Compile Error", "Compile Error", compileResult.getErrorStreamFile());
+							}
+						}
+					});
 				}
 			}
 		});
@@ -328,5 +418,9 @@ public class ResultsController implements VerisListener {
 			}
 		}
 		return smallestFailure;
+	}
+	
+	private void openTextViewer() {
+		TextViewerController.createAndOpenTextViewer("Compile Error", "Compile Error", "BLAH");
 	}
 }
