@@ -7,7 +7,8 @@ public enum Verdict {
     RUNTIME_ERROR("Runtime Error", '!', "1;37;101", "1;33"),
     COMPILE_ERROR("Compilation Error", 'c', "1;37;43", "1;33"),
     TIME_LIMIT_EXCEEDED("Time-Limit Exceeded", '\u231a', "1;37;44", "1;33"),
-    INTERNAL_ERROR("Internal Error", '?', "1;37;45", "1;33");
+    INTERNAL_ERROR("Internal Error", '?', "1;37;45", "1;33"),
+	COMPILE_SUCCESS("Success", '\u2713', "1;37;42", "1;51;32");
 
     private final String name;
     private final char character;

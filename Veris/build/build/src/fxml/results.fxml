@@ -8,12 +8,12 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="652.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.verisjudge.ui.ResultsController">
+<BorderPane minHeight="-Infinity" minWidth="-Infinity" prefHeight="480.0" prefWidth="652.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.verisjudge.ui.ResultsController" stylesheets="@../css/styles.css">
    <padding>
       <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
    </padding>
    <bottom>
-      <GridPane hgap="10.0" style="-fx-background-color: #EEEEEE; -fx-border-width: 1; -fx-border-color: #AAAAAA;" vgap="10.0" BorderPane.alignment="CENTER">
+      <GridPane hgap="10.0" styleClass="box-with-border" vgap="10.0" BorderPane.alignment="CENTER">
          <columnConstraints>
             <ColumnConstraints hgrow="NEVER" minWidth="100.0" />
             <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" />
@@ -93,13 +93,13 @@
       </GridPane>
    </top>
    <center>
-      <ScrollPane fitToWidth="true" focusTraversable="false" hbarPolicy="NEVER" prefViewportWidth="630.0" style="-fx-focus-color: transparent; -fx-faint-focus-color: transparent;" vbarPolicy="NEVER" BorderPane.alignment="CENTER">
+      <ScrollPane fitToWidth="true" fitToHeight="true" focusTraversable="false" hbarPolicy="NEVER" prefViewportWidth="630.0" style="-fx-focus-color: transparent; -fx-faint-focus-color: transparent; -fx-border-width: 0;" vbarPolicy="NEVER" BorderPane.alignment="CENTER">
          <content>
-            <FlowPane fx:id="flowPaneTestCases" maxWidth="1.7976931348623157E308" nodeOrientation="LEFT_TO_RIGHT" style="-fx-focus-color: transparent;" GridPane.rowIndex="3" />
+            <FlowPane fx:id="flowPaneTestCases" maxWidth="1.7976931348623157E308" maxHeight="1.7976931348623157E308" nodeOrientation="LEFT_TO_RIGHT" styleClass="box-with-border" style="-fx-focus-color: transparent;" GridPane.rowIndex="3" />
          </content>
          <BorderPane.margin>
             <Insets top="10.0" />
          </BorderPane.margin>
       </ScrollPane>
    </center>
-      </BorderPane>
+</BorderPane>

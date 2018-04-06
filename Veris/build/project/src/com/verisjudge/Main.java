@@ -18,6 +18,8 @@ import javafx.stage.Stage;
 public class Main extends Application {
 
 	public final static Image MAIN_ICON = new Image(Main.class.getResourceAsStream("/images/icon.png"));
+	public final static String DARK_THEME = Main.class.getResource("/css/styles-dark.css").toExternalForm();
+	public final static boolean useDarkTheme = true;
 	
 	public static void main(String[] args) {
 		launch(args);
@@ -70,18 +72,19 @@ public class Main extends Application {
 		String[] args = getParameters().getRaw().toArray(new String[0]);
 		if (args.length == 0) {			
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/main.fxml"));
-			//loader.setController(new MainController());
 			Parent root = (Parent) loader.load();
+			
 			MainController controller = (MainController) loader.getController();
-			controller.setStage(stage);
 			
 	        Scene scene = new Scene(root);
 	    
 	        stage.setTitle("Verisimilitude");
 	        stage.setScene(scene);
 	        stage.setResizable(false);
-	        if (MAIN_ICON != null)
-	        	stage.getIcons().add(MAIN_ICON); 
+	        addIconToStage(stage);
+	        
+	        controller.setStage(stage);
+	        
 	        stage.show();
 		} else {
 			Veris.Builder verisBuilder = new Veris.Builder();
@@ -132,30 +135,24 @@ public class Main extends Application {
 						usage();
 				}
 			}
-			try {
-				Veris veris = verisBuilder.build();
-				try {
-					FXMLLoader loader = new FXMLLoader(getClass().getResource("results.fxml"));
-					Parent root = (Parent) loader.load();
-					ResultsController controller = (ResultsController) loader.getController();
-
-					controller.setStage(stage);
-					controller.setVeris(veris);
-					
-			        Scene scene = new Scene(root, 652, 480);
-
-			        stage.setTitle("Verisimilitude - " + veris.getSolutionFile().getName());
-			        stage.setScene(scene);
-			        stage.setResizable(false);
-			        
-			        controller.judge();
-			        stage.show();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			} catch (IOException e) {
+			
+			boolean status = ResultsController.createAndJudge(verisBuilder);
+			if (!status) {
 				exitWithError("Failed to read solution file and/or data folder");
 			}
 		}
+	}
+	
+	public static void addIconToStage(Stage stage) {
+		if (stage == null || MAIN_ICON == null)
+			return;
+		stage.getIcons().add(MAIN_ICON); 
+	}
+	
+	public static void updateTheme(Stage stage) {
+		if (stage == null || stage.getScene() == null)
+			return;
+		if (useDarkTheme)
+			stage.getScene().getStylesheets().add(DARK_THEME);
 	}
 }

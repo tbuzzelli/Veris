@@ -67,6 +67,7 @@ public class MainController {
 	
 	public void setStage(Stage stage) {
 		this.stage = stage;
+		Main.updateTheme(this.stage);
 	}
 	
 	@FXML
@@ -162,29 +163,9 @@ public class MainController {
 	}
 	
 	private void judge() {
-		try {
-			Veris veris = verisBuilder.build();
-			FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/results.fxml"));
-			//loader.setController(new ResultsController());
-			Parent root = (Parent) loader.load();
-			ResultsController controller = (ResultsController) loader.getController();
-			Stage stage = new Stage();
-			
-			controller.setStage(stage);
-			controller.setVeris(veris);
-			
-	        Scene scene = new Scene(root, 652, 480);
-
-	        stage.setTitle(veris.getSolutionFile().getName() + " - Verisimilitude");
-	        stage.setScene(scene);
-	        stage.setResizable(false);
-	        if (Main.MAIN_ICON != null)
-	        	stage.getIcons().add(Main.MAIN_ICON);
-	        
-	        controller.judge();
-	        stage.show();
-		} catch (Exception e) {
-			e.printStackTrace();
+		boolean status = ResultsController.createAndJudge(verisBuilder);
+		if (!status) {
+			// TODO: Show error message.
 		}
 	}
 	
