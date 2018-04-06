@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 
 public class FileUtils {
 
@@ -70,5 +71,19 @@ public class FileUtils {
 			return "";
 		}
         return sb.toString();
+	}
+	
+	public static boolean writeStringToFile(File file, String str) {
+		if (file == null || str == null)
+			return false;
+		try {
+			PrintWriter out = new PrintWriter(file);
+			out.println(str);
+			out.close();
+			return true;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 }

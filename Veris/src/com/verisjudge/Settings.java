@@ -40,6 +40,212 @@ public class Settings {
 	}
 	
 	/**
+	 * Gets the value for the setting object with the given key.
+	 * @param key The key defining the setting to get.
+	 * @return The value of the setting with the given key or null if no setting exists (or the value is null).
+	 * @throws IllegalArgumentException if key is null.
+	 */
+	public Object get(String key) throws IllegalArgumentException {
+		Setting<?> setting = getSetting(key);
+		if (setting == null)
+			return null;
+		return setting.get();
+	}
+	
+	/**
+	 * Gets the value for the setting object with the given key and defaults to default if the value is null.
+	 * @param key The key defining the setting to get.
+	 * @param default The default value to resort to if the value is null.
+	 * @return The value of the setting with the given key or defaultValue if no setting exists (or the value was null).
+	 * @throws IllegalArgumentException if key is null.
+	 */
+	public Object getOrDefault(String key, Object defaultValue) throws IllegalArgumentException {
+		Object value = get(key);
+		return value == null ? defaultValue : value;
+	}
+	
+	/**
+	 * Gets the String value for the setting object with the given key.
+	 * @param key The key defining the setting to get.
+	 * @return The value of the setting with the given key or null if no setting exists (or the value is null or not a string).
+	 * @throws IllegalArgumentException if key is null.
+	 */
+	public String getString(String key) throws IllegalArgumentException {
+		Object value = get(key);
+		if (value == null || !(value instanceof String))
+			return null;
+		return (String) value;
+	}
+	
+	/**
+	 * Gets the String value for the setting object with the given key and defaults to default if the value is null.
+	 * @param key The key defining the setting to get.
+	 * @param default The default value to resort to if the value is null.
+	 * @return The value of the setting with the given key or defaultValue if no setting exists (or the value was null or not a string).
+	 * @throws IllegalArgumentException if key is null.
+	 */
+	public String getStringOrDefault(String key, String defaultValue) throws IllegalArgumentException {
+		String value = getString(key);
+		return value == null ? defaultValue : value;
+	}
+	
+	/**
+	 * Gets the String value for the setting object with the given key.
+	 * @param key The key defining the setting to get.
+	 * @return The value of the setting with the given key or null if no setting exists (or the value is null or not a string).
+	 * @throws IllegalArgumentException if key is null.
+	 */
+	public Boolean getBoolean(String key) throws IllegalArgumentException {
+		Object value = get(key);
+		if (value == null || !(value instanceof Boolean))
+			return null;
+		return (Boolean) value;
+	}
+	
+	/**
+	 * Gets the Boolean value for the setting object with the given key and defaults to default if the value is null.
+	 * @param key The key defining the setting to get.
+	 * @param default The default value to resort to if the value is null.
+	 * @return The value of the setting with the given key or defaultValue if no setting exists (or the value was null or not a boolean).
+	 * @throws IllegalArgumentException if key is null.
+	 */
+	public Boolean getBooleanOrDefault(String key, Boolean defaultValue) throws IllegalArgumentException {
+		Boolean value = getBoolean(key);
+		return value == null ? defaultValue : value;
+	}
+	
+	/**
+	 * Gets the Character value for the setting object with the given key.
+	 * @param key The key defining the setting to get.
+	 * @return The value of the setting with the given key or null if no setting exists (or the value is null or not a character).
+	 * @throws IllegalArgumentException if key is null.
+	 */
+	public Character getCharacter(String key) throws IllegalArgumentException {
+		Object value = get(key);
+		if (value == null || !(value instanceof Character))
+			return null;
+		return (Character) value;
+	}
+	
+	/**
+	 * Gets the Character value for the setting object with the given key and defaults to default if the value is null.
+	 * @param key The key defining the setting to get.
+	 * @param default The default value to resort to if the value is null.
+	 * @return The value of the setting with the given key or defaultValue if no setting exists (or the value was null or not a character).
+	 * @throws IllegalArgumentException if key is null.
+	 */
+	public Character getCharacterOrDefault(String key, Character defaultValue) throws IllegalArgumentException {
+		Character value = getCharacter(key);
+		return value == null ? defaultValue : value;
+	}
+	
+	/**
+	 * Gets the Number value for the setting object with the given key.
+	 * @param key The key defining the setting to get.
+	 * @return The value of the setting with the given key or null if no setting exists (or the value is null or not a Number).
+	 * @throws IllegalArgumentException if key is null.
+	 */
+	public Number getNumber(String key) throws IllegalArgumentException {
+		Object value = get(key);
+		if (value == null || !(value instanceof Number))
+			return null;
+		return (Number) value;
+	}
+	
+	/**
+	 * Gets the Number value for the setting object with the given key and defaults to default if the value is null.
+	 * @param key The key defining the setting to get.
+	 * @param default The default value to resort to if the value is null.
+	 * @return The value of the setting with the given key or defaultValue if no setting exists (or the value was null or not a Number).
+	 * @throws IllegalArgumentException if key is null.
+	 */
+	public Number getNumberOrDefault(String key, Number defaultValue) throws IllegalArgumentException {
+		Number value = getInt(key);
+		return value == null ? defaultValue : value;
+	}
+	
+	/**
+	 * Gets the Integer value for the setting object with the given key.
+	 * @param key The key defining the setting to get.
+	 * @return The value of the setting with the given key or null if no setting exists (or the value is null or not an integer).
+	 * @throws IllegalArgumentException if key is null.
+	 */
+	public Integer getInt(String key) throws IllegalArgumentException {
+		Number value = getNumber(key);
+		if (value == null)
+			return null;
+		long longValue = value.longValue();
+		if (longValue < Integer.MIN_VALUE || longValue > Integer.MAX_VALUE)
+			return null;
+		return (int) longValue;
+	}
+	
+	/**
+	 * Gets the Integer value for the setting object with the given key and defaults to default if the value is null.
+	 * @param key The key defining the setting to get.
+	 * @param default The default value to resort to if the value is null.
+	 * @return The value of the setting with the given key or defaultValue if no setting exists (or the value was null or not an integer).
+	 * @throws IllegalArgumentException if key is null.
+	 */
+	public Integer getIntOrDefault(String key, Integer defaultValue) throws IllegalArgumentException {
+		Integer value = getInt(key);
+		return value == null ? defaultValue : value;
+	}
+	
+	/**
+	 * Gets the Long value for the setting object with the given key.
+	 * @param key The key defining the setting to get.
+	 * @return The value of the setting with the given key or null if no setting exists (or the value is null or not a long).
+	 * @throws IllegalArgumentException if key is null.
+	 */
+	public Long getLong(String key) throws IllegalArgumentException {
+		Number value = getNumber(key);
+		if (value == null)
+			return null;
+		long longValue = value.longValue();
+		if (longValue < Integer.MIN_VALUE || longValue > Integer.MAX_VALUE)
+			return null;
+		return longValue;
+	}
+	
+	/**
+	 * Gets the Long value for the setting object with the given key and defaults to default if the value is null.
+	 * @param key The key defining the setting to get.
+	 * @param default The default value to resort to if the value is null.
+	 * @return The value of the setting with the given key or defaultValue if no setting exists (or the value was null or not a long).
+	 * @throws IllegalArgumentException if key is null.
+	 */
+	public Long getLongOrDefault(String key, Long defaultValue) throws IllegalArgumentException {
+		Long value = getLong(key);
+		return value == null ? defaultValue : value;
+	}
+	
+	/**
+	 * Gets the Double value for the setting object with the given key.
+	 * @param key The key defining the setting to get.
+	 * @return The value of the setting with the given key or null if no setting exists (or the value is null or not a double).
+	 * @throws IllegalArgumentException if key is null.
+	 */
+	public Double getDouble(String key) throws IllegalArgumentException {
+		Number value = getNumber(key);
+		if (value == null)
+			return null;
+		return value.doubleValue();
+	}
+	
+	/**
+	 * Gets the Double value for the setting object with the given key and defaults to default if the value is null.
+	 * @param key The key defining the setting to get.
+	 * @param default The default value to resort to if the value is null.
+	 * @return The value of the setting with the given key or defaultValue if no setting exists (or the value was null or not a double).
+	 * @throws IllegalArgumentException if key is null.
+	 */
+	public Double getDoubleOrDefault(String key, Double defaultValue) throws IllegalArgumentException {
+		Double value = getDouble(key);
+		return value == null ? defaultValue : value;
+	}
+	
+	/**
 	 * Adds a setting or replaces the current setting if one exists with the same key.
 	 * @param setting The setting to be added.
 	 * @return The setting being replaced or null if no previous setting existed with the same key.

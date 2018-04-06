@@ -11,6 +11,7 @@ import com.verisjudge.checker.Checker;
 import com.verisjudge.checker.DiffChecker;
 import com.verisjudge.checker.EpsilonChecker;
 import com.verisjudge.checker.TokenChecker;
+import com.verisjudge.utils.FileUtils;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -68,6 +69,46 @@ public class MainController {
 	public void setStage(Stage stage) {
 		this.stage = stage;
 		Main.updateTheme(this.stage);
+	}
+	
+	public boolean loadPrevious() {
+		String previousSolutionPath = FileUtils.readEntireFile(new File("../previousSolutionPath.txt")).trim();
+		String previousDataPath = FileUtils.readEntireFile(new File("../previousDataPath.txt")).trim();
+		
+		clearPrevious();
+		
+		if (previousSolutionPath.isEmpty() || previousDataPath.isEmpty())
+			return false;
+		
+		File previousSolutionFile = new File(previousSolutionPath);
+		File previousDataFolder = new File(previousDataPath);
+		if (!previousSolutionFile.exists() || !previousDataFolder.isDirectory())
+			return false;
+		if (!Veris.isValidSolutionFile(previousSolutionFile))
+			return false;
+		setSolutionFile(previousSolutionFile);
+		setDataFolder(previousDataFolder);
+		return true;
+	}
+	
+	private boolean clearPrevious() {
+		boolean status = FileUtils.writeStringToFile(new File("../previousSolutionPath.txt"), "");
+		status &= FileUtils.writeStringToFile(new File("../previousDataPath.txt"), "");
+		
+		return status;
+	}
+	
+	private boolean savePrevious() {
+		File solutionFile = verisBuilder.getSolutionFile();
+		String solutionPath = solutionFile == null ? "" : solutionFile.getAbsolutePath();
+		
+		File dataFolder = verisBuilder.getDataFolder();
+		String dataPath = dataFolder == null ? "" : dataFolder.getAbsolutePath();
+		
+		boolean status = FileUtils.writeStringToFile(new File("../previousSolutionPath.txt"), solutionPath);
+		status &= FileUtils.writeStringToFile(new File("../previousDataPath.txt"), dataPath);
+		
+		return status;
 	}
 	
 	@FXML
@@ -164,8 +205,11 @@ public class MainController {
 	
 	private void judge() {
 		boolean status = ResultsController.createAndJudge(verisBuilder);
-		if (!status) {
+		if (status) {
+			savePrevious();
+		} else {
 			// TODO: Show error message.
+			clearPrevious();
 		}
 	}
 	

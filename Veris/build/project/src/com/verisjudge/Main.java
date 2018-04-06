@@ -85,6 +85,8 @@ public class Main extends Application {
 	        
 	        controller.setStage(stage);
 	        
+	        controller.loadPrevious();
+	        
 	        stage.show();
 		} else {
 			Veris.Builder verisBuilder = new Veris.Builder();
