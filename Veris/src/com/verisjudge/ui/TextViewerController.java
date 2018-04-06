@@ -17,6 +17,8 @@ public class TextViewerController {
 	public final static int DEFAULT_TEXT_VIEWER_WIDTH = 652;
 	public final static int DEFAULT_TEXT_VIEWER_HEIGHT = 480;
 	
+	public final static long DEFAULT_MAX_TEXT_LENGTH = 1_000_000;
+	
 	@FXML private Label labelMainTitle;
 	@FXML private TextArea mainTextArea;
 
@@ -25,7 +27,7 @@ public class TextViewerController {
 	public static boolean createAndOpenTextViewer(String title, String label, File file) {
 		if (file == null)
 			return false;
-		String text = FileUtils.readEntireFile(file);
+		String text = FileUtils.readLimitedFile(file, DEFAULT_MAX_TEXT_LENGTH);
 		return createAndOpenTextViewer(title, label, text);
 	}
 	
@@ -38,16 +40,15 @@ public class TextViewerController {
 			controller.setText(text);
 			
 			Stage stage = new Stage();
-			
-			controller.setStage(stage);
 
 	        Scene scene = new Scene(root, DEFAULT_TEXT_VIEWER_WIDTH, DEFAULT_TEXT_VIEWER_HEIGHT);
 
 	        stage.setTitle(title);
 	        stage.setScene(scene);
 	        stage.setResizable(true);
-	        if (Main.MAIN_ICON != null)
-	        	stage.getIcons().add(Main.MAIN_ICON);
+	        Main.addIconToStage(stage);
+	        
+	        controller.setStage(stage);
 	        
 	        stage.show();
 	        
@@ -60,6 +61,7 @@ public class TextViewerController {
 
 	public void setStage(Stage stage) {
 		this.stage = stage;
+		Main.updateTheme(this.stage);
 	}
 
 	@FXML

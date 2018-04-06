@@ -1,8 +1,11 @@
 package com.verisjudge;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -31,6 +34,9 @@ public class Config {
 	public final static String JSON_FIELD_LANGUAGE_SPEC_NEEDS_COMPILE = "needsCompile";
 	public final static String JSON_FIELD_LANGUAGE_SPEC_COMPILE_ARGS = "compileArgs";
 	public final static String JSON_FIELD_LANGUAGE_SPEC_EXECUTION_ARGS = "runtimeArgs";
+	
+	public final static String USER_CONFIG_FILE_PATH = "../config.json";
+	public final static String DEFAULT_CONFIG_RESOURCE_PATH = "/default_config.json";
 	
 	private static Config CONFIG;
 	
@@ -221,17 +227,46 @@ public class Config {
 	public static Config getConfig() {
 		if (CONFIG != null)
 			return CONFIG;
-		CONFIG = fromConfigInputStream(Config.class.getResourceAsStream("/default_config.json"));
+		CONFIG = fromConfigInputStream(Config.class.getResourceAsStream(DEFAULT_CONFIG_RESOURCE_PATH));
 		if (CONFIG == null) {
 			System.err.println("Failed to load internal config!");
 			System.exit(1);
 			// TODO: Show pop-up error message.
 		}
-		Config userConfig = fromConfigFile("../config.json");
+		createUserConfigFileIfNeeded();
+		Config userConfig = fromConfigFile(USER_CONFIG_FILE_PATH);
 		if (userConfig != null) {
 			CONFIG = merge(CONFIG, userConfig);
 		}
 		return CONFIG;
+	}
+	
+	public static boolean createUserConfigFileIfNeeded() {
+		File userConfigFile = new File(USER_CONFIG_FILE_PATH);
+		// If the user config file already exists, we don't need to create it.
+		if (userConfigFile.exists()) {
+			return true;
+		}
+		
+		// Copy the default config to the user config file.
+		try {
+			InputStream inputStream = Config.class.getResourceAsStream(DEFAULT_CONFIG_RESOURCE_PATH);
+			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+			BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(userConfigFile));
+			String line;
+			while ((line = bufferedReader.readLine()) != null) {
+				bufferedWriter.write(line);
+				bufferedWriter.newLine();
+			}
+			bufferedWriter.close();
+			bufferedReader.close();
+			
+			return true;
+		} catch (IOException e) {
+			e.printStackTrace();
+			
+			return false;
+		}
 	}
 	
 	public String[] getInputFileTypes() {

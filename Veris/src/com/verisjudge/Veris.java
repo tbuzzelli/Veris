@@ -38,6 +38,7 @@ public class Veris {
     private File solutionFile;
     private File directory;
     private File errorStreamsDirectory;
+    private File programOutputsDirectory;
     private LanguageSpec languageSpec;
     private String className;
     private String language;
@@ -58,6 +59,7 @@ public class Veris {
         try {
             tmpDir = Files.createTempDirectory("veris");
             this.directory = tmpDir.toFile();
+            this.programOutputsDirectory = Files.createTempDirectory("verisProgramOutputs").toFile();
             this.errorStreamsDirectory = Files.createTempDirectory("verisErrorStreams").toFile();
         } catch (IOException e) {
             e.printStackTrace();
@@ -374,15 +376,22 @@ public class Veris {
      * this test case. Returns INTERNAL_ERROR if an error occurred.
      */
     public TestCaseResult runCase(TestCase c, LanguageSpec languageSpec) {
-    	System.out.println("Running case " + c.name + " with checker " + checker);
-    	
     	TestCaseResult.Builder resultBuilder = new TestCaseResult.Builder()
     			.setName(c.name)
     			.setInputFile(c.inputFile)
     			.setAnswerFile(c.answerFile);
     	
         // Create the output file to use.
-        File pOut = new File(directory, className + ".out");
+        File programOutputFile;
+        try {
+        	programOutputFile = Files.createTempFile(programOutputsDirectory.toPath(), "programOutput", ".out").toFile();
+        } catch (Exception e) {
+        	e.printStackTrace();
+        	
+        	// Return internal error.
+        	resultBuilder.setVerdict(Verdict.INTERNAL_ERROR);
+        	return resultBuilder.build();
+        }
 
         // Build the execution process for this language.
         ProcessBuilder builder = languageSpec.getExecutionProcessBuilder(solutionFile.getName(), className);
@@ -390,14 +399,14 @@ public class Veris {
         File errorStreamFile = null;
 		try {
 			errorStreamFile = Files.createTempFile(errorStreamsDirectory.toPath(), "errorStream", ".txt").toFile();
-		} catch (IOException e1) {
-			e1.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
 			// Ignore error.
 		}
         
         // Set the working directory and redirect their output to the file.
         builder.directory(directory);
-        builder.redirectOutput(pOut);
+        builder.redirectOutput(programOutputFile);
         
         // Redirect the error stream to a file so we can show it later.
         if (errorStreamFile != null)
@@ -464,7 +473,7 @@ public class Veris {
             } else {
                 // Check the solution's output.
             	FastScanner inputScanner = new FastScanner(c.inputFile);
-            	FastScanner pScanner = new FastScanner(pOut);
+            	FastScanner pScanner = new FastScanner(programOutputFile);
             	FastScanner ansScanner = new FastScanner(c.answerFile);
             	
                 res = checker.check(inputScanner, pScanner, ansScanner);
@@ -499,7 +508,7 @@ public class Veris {
 					}
 					expectedOutputBufferedReader.close();
 					
-					BufferedReader outputBufferedReader = new BufferedReader(new FileReader(pOut));
+					BufferedReader outputBufferedReader = new BufferedReader(new FileReader(programOutputFile));
 					while ((line = outputBufferedReader.readLine()) != null) {
 						if (outputStringBuilder.length() > 0)
 							outputStringBuilder.append('\n');
@@ -530,6 +539,9 @@ public class Veris {
         resultBuilder.setRuntime(t1);
         if (errorStreamFile != null)
         	resultBuilder.setErrorStreamFile(errorStreamFile);
+        
+        // Set the program output file in the result builder.
+        resultBuilder.setProgramOutputFile(programOutputFile);
 
     	return resultBuilder.build();
     }

@@ -17,12 +17,13 @@ public class TestCaseResult {
 	public final Verdict verdict;
 	public final File inputFile;
 	public final File answerFile;
+	public final File programOutputFile;
 	public final File errorStreamFile;
 	public final String expectedOutput;
 	public final String output;
 	public final long runtime;
 	
-	public TestCaseResult(String name, File inputFile, File answerFile, long runtime, Verdict verdict, String expectedOutput, String output, File errorStreamFile) {
+	public TestCaseResult(String name, File inputFile, File answerFile, long runtime, Verdict verdict, String expectedOutput, String output, File programOutputFile, File errorStreamFile) {
 		this.name = name;
 		this.inputFile = inputFile;
 		this.answerFile = answerFile;
@@ -30,11 +31,24 @@ public class TestCaseResult {
 		this.verdict = verdict;
 		this.expectedOutput = expectedOutput;
 		this.output = output;
+		this.programOutputFile = programOutputFile;
 		this.errorStreamFile = errorStreamFile;
 	}
 	
 	public TestCaseResult(String name, File inputFile, File answerFile, long runtime, Verdict verdict) {
-		this(name, inputFile, answerFile, runtime, verdict, null, null, null);
+		this(name, inputFile, answerFile, runtime, verdict, null, null, null, null);
+	}
+	
+	public File getInputFile() {
+		return inputFile;
+	}
+	
+	public File getAnswerFile() {
+		return answerFile;
+	}
+	
+	public File getProgramOutputFile() {
+		return programOutputFile;
 	}
 	
 	public File getErrorStreamFile() {
@@ -115,6 +129,7 @@ public class TestCaseResult {
 		private Verdict verdict;
 		private File inputFile;
 		private File answerFile;
+		private File programOutputFile;
 		private File errorStreamFile;
 		private String output;
 		private String expectedOutput;
@@ -137,6 +152,11 @@ public class TestCaseResult {
 		
 		public Builder setAnswerFile(File answerFile) {
 			this.answerFile = answerFile;
+			return this;
+		}
+		
+		public Builder setProgramOutputFile(File programOutputFile) {
+			this.programOutputFile = programOutputFile;
 			return this;
 		}
 		
@@ -176,6 +196,10 @@ public class TestCaseResult {
 			return answerFile;
 		}
 		
+		public File getProgramOutputFile() {
+			return programOutputFile;
+		}
+		
 		public File getErrorStreamFile() {
 			return errorStreamFile;
 		}
@@ -193,7 +217,7 @@ public class TestCaseResult {
 		}
 		
 		public TestCaseResult build() {
-			return new TestCaseResult(name, inputFile, answerFile, runtime, verdict, expectedOutput, output, errorStreamFile);
+			return new TestCaseResult(name, inputFile, answerFile, runtime, verdict, expectedOutput, output, programOutputFile, errorStreamFile);
 		}
 	}
 }

@@ -7,7 +7,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane onDragDropped="#handleDragDropped" onDragOver="#handleDragOver" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.verisjudge.ui.MainController">
+<BorderPane onDragDropped="#handleDragDropped" onDragOver="#handleDragOver" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.verisjudge.ui.MainController" stylesheets="@../css/styles.css">
          <center>
       <GridPane>
          <columnConstraints>
@@ -66,7 +66,7 @@
                   <Insets bottom="10.0" top="10.0" />
                </BorderPane.margin>
                   </GridPane>
-            <StackPane style="-fx-background-color: #EEEEEE; -fx-border-width: 1; -fx-border-color: #AAAAAA;" GridPane.rowIndex="1">
+            <StackPane styleClass="box-with-border" GridPane.rowIndex="1">
                <children>
                   <GridPane fx:id="gridPaneTokenCheckerSettings" nodeOrientation="LEFT_TO_RIGHT">
                     <columnConstraints>
@@ -135,4 +135,4 @@
    <padding>
       <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
    </padding>
-      </BorderPane>
+</BorderPane>

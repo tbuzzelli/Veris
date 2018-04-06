@@ -1,11 +1,13 @@
 package com.verisjudge.ui;
 
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 import com.verisjudge.CompileResult;
+import com.verisjudge.Main;
 import com.verisjudge.TestCaseResult;
 import com.verisjudge.Verdict;
 import com.verisjudge.Veris;
@@ -15,10 +17,12 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Side;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
@@ -93,6 +97,40 @@ public class ResultsController implements VerisListener {
         }
     }
 
+	public static boolean createAndJudge(Veris.Builder verisBuilder) {
+		try {
+			return createAndJudge(verisBuilder.build());
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	public static boolean createAndJudge(Veris veris) {
+		try {
+			FXMLLoader loader = new FXMLLoader(ResultsController.class.getResource("/fxml/results.fxml"));
+			Parent root = (Parent) loader.load();
+			ResultsController controller = (ResultsController) loader.getController();
+			Stage stage = new Stage();
+			
+	        Scene scene = new Scene(root);
+
+	        stage.setTitle(veris.getSolutionFile().getName() + " - Verisimilitude");
+	        stage.setScene(scene);
+	        stage.setResizable(false);
+	        Main.addIconToStage(stage);
+	        
+	        controller.setStage(stage);
+			controller.setVeris(veris);
+	        controller.judge();
+	        stage.show();
+	        
+	        return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
 	
 	public void setStage(Stage stage) {
 		this.stage = stage;
@@ -102,7 +140,8 @@ public class ResultsController implements VerisListener {
 				if (verisThread != null)
 					verisThread.interrupt();
 			}
-		});    
+		});
+		Main.updateTheme(this.stage);
 	}
 	
 	public void setVeris(Veris veris) {
@@ -143,21 +182,51 @@ public class ResultsController implements VerisListener {
 		MenuItem itemOpenInputFile = new MenuItem("Open input file");
 		itemOpenInputFile.setOnAction(new EventHandler<ActionEvent>() {
 		    public void handle(ActionEvent e) {
-		        // TODO: implement this.
+		    	if (activeContextMenuTestCaseResult != null) {
+		    		TestCaseResult result = activeContextMenuTestCaseResult;
+		    		if (result.getInputFile() != null) {
+		    			TextViewerController.createAndOpenTextViewer(
+		    					"Verisimilitude - " + result.name,
+		    					result.getInputFile().getName(),
+		    					result.getInputFile());
+		    		} else {
+		    			// TODO: show error message "Failed to open input file."
+		    		}
+		    	}
 		    }
 		});
 		
 		MenuItem itemOpenAnswerFile = new MenuItem("Open answer file");
 		itemOpenAnswerFile.setOnAction(new EventHandler<ActionEvent>() {
 		    public void handle(ActionEvent e) {
-		    	// TODO: implement this.
+		    	if (activeContextMenuTestCaseResult != null) {
+		    		TestCaseResult result = activeContextMenuTestCaseResult;
+		    		if (result.getAnswerFile() != null) {
+		    			TextViewerController.createAndOpenTextViewer(
+		    					"Verisimilitude - " + result.name,
+		    					result.getAnswerFile().getName(),
+		    					result.getAnswerFile());
+		    		} else {
+		    			// TODO: show error message "Failed to open answer file."
+		    		}
+		    	}
 		    }
 		});
 		
 		MenuItem itemOpenProgramOutputFile = new MenuItem("Open program output");
 		itemOpenProgramOutputFile.setOnAction(new EventHandler<ActionEvent>() {
 		    public void handle(ActionEvent e) {
-		    	// TODO: implement this.
+		    	if (activeContextMenuTestCaseResult != null) {
+		    		TestCaseResult result = activeContextMenuTestCaseResult;
+		    		if (result.getProgramOutputFile() != null) {
+		    			TextViewerController.createAndOpenTextViewer(
+		    					"Verisimilitude - " + result.name,
+		    					result.name + " - Program Output",
+		    					result.getProgramOutputFile());
+		    		} else {
+		    			// TODO: show error message "Failed to open program output."
+		    		}
+		    	}
 		    }
 		});
 		
