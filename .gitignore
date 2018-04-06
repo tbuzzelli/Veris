@@ -1,0 +1,6 @@
+Veris/build
+*.class
+*.exe
+*.rpm
+*.o
+*.a
