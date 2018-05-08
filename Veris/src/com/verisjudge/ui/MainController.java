@@ -6,36 +6,43 @@ import java.util.List;
 import com.verisjudge.Config;
 import com.verisjudge.LanguageSpec;
 import com.verisjudge.Main;
+import com.verisjudge.Settings;
 import com.verisjudge.Veris;
 import com.verisjudge.checker.Checker;
 import com.verisjudge.checker.DiffChecker;
 import com.verisjudge.checker.EpsilonChecker;
 import com.verisjudge.checker.TokenChecker;
-import com.verisjudge.utils.FileUtils;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
+import javafx.geometry.Side;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.OverrunStyle;
 import javafx.scene.control.TextField;
 import javafx.scene.input.DragEvent;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 public class MainController {
+	@FXML private BorderPane borderPaneMain;
+	
 	@FXML private TextField textFieldTimeLimit;
 	@FXML private Button buttonDataPath;
 	@FXML private Button buttonSolution;
@@ -58,6 +65,8 @@ public class MainController {
 	public final static String DETECT_LANGUAGE_STR = "Detect Language";
 	public final static String DEFAULT_CHECKER_STR = "Token Checker";
 	
+	private final ContextMenu mainContextMenu = new ContextMenu();
+	
 	private Veris.Builder verisBuilder;
 	private Stage stage;
 	private boolean isJudging = false;
@@ -72,48 +81,143 @@ public class MainController {
 	}
 	
 	public boolean loadPrevious() {
-		String previousSolutionPath = FileUtils.readEntireFile(new File("../previousSolutionPath.txt")).trim();
-		String previousDataPath = FileUtils.readEntireFile(new File("../previousDataPath.txt")).trim();
+		// If we shouldn't remember the judging settings, clear the settings then return.
+		if (!Settings.getSettings().getBooleanOrDefault(Settings.REMEMBER_JUDGING_SETTINGS, true)) {
+			clearPrevious();
+			return true;
+		}
 		
-		clearPrevious();
+		Long previousUseTime = Settings.getSettings().getLong(Settings.PREVIOUS_USE_TIME);
+		// If we have no record of previous use or the previous use was over 15 minutes ago, don't load.
+		if (previousUseTime == null || System.currentTimeMillis() - previousUseTime >= 15 * 60 * 1000)
+			return true;
 		
-		if (previousSolutionPath.isEmpty() || previousDataPath.isEmpty())
+		String previousSolutionPath = Settings.getSettings().getString(Settings.PREVIOUS_SOLUTION_PATH);
+		String previousDataPath = Settings.getSettings().getString(Settings.PREVIOUS_DATA_PATH);
+		String previousLanguageString = Settings.getSettings().getString(Settings.PREVIOUS_LANGUAGE);
+		String previousTimeLimitString = Settings.getSettings().getString(Settings.PREVIOUS_TIME_LIMIT);
+		String previousCheckerString = Settings.getSettings().getString(Settings.PREVIOUS_CHECKER);
+		Boolean previousTokenCheckerCaseSensitive =
+				Settings.getSettings().getBoolean(Settings.PREVIOUS_TOKEN_CHECKER_CASE_SENSITIVE);
+		Boolean previousDiffCheckerIgnoreTrailingWhitespace =
+				Settings.getSettings().getBoolean(Settings.PREVIOUS_DIFF_CHECKER_IGNORE_TRAILING_WHITESPACE);
+		Boolean previousDiffCheckerIgnoreTrailingBlanklines =
+				Settings.getSettings().getBoolean(Settings.PREVIOUS_DIFF_CHECKER_IGNORE_TRAILING_BLANKLINES);
+		String previousEpsilonCheckerAbsoluteEpsilon =
+				Settings.getSettings().getString(Settings.PREVIOUS_EPSILON_CHECKER_ABSOLUTE_EPSILON);
+		String previousEpsilonCheckerRelativeEpsilon =
+				Settings.getSettings().getString(Settings.PREVIOUS_EPSILON_CHECKER_RELATIVE_EPSILON);
+		
+		// If we don't have a previous solution path or data path, return.
+		if (previousSolutionPath == null || previousDataPath == null)
 			return false;
 		
 		File previousSolutionFile = new File(previousSolutionPath);
 		File previousDataFolder = new File(previousDataPath);
+		
+		// If either the solution file or data folder don't exist, return.
 		if (!previousSolutionFile.exists() || !previousDataFolder.isDirectory())
 			return false;
 		if (!Veris.isValidSolutionFile(previousSolutionFile))
 			return false;
+		
 		setSolutionFile(previousSolutionFile);
 		setDataFolder(previousDataFolder);
+		
+		// Load all other settings we have.
+		if (choiceBoxLanguage != null && previousLanguageString != null) {
+			choiceBoxLanguage.getSelectionModel().select(previousLanguageString);
+		}
+		if (textFieldTimeLimit != null && previousTimeLimitString != null) {
+			textFieldTimeLimit.setText(previousTimeLimitString);
+		}
+		if (choiceBoxChecker != null && previousCheckerString != null) {
+			choiceBoxChecker.getSelectionModel().select(previousCheckerString);
+		}
+		if (checkBoxTokenCheckerCaseSensitive != null && previousTokenCheckerCaseSensitive != null) {
+			checkBoxTokenCheckerCaseSensitive.setSelected(previousTokenCheckerCaseSensitive);
+		}
+		if (checkBoxDiffCheckerIgnoreTrailingWhitespace != null && previousDiffCheckerIgnoreTrailingWhitespace != null) {
+			checkBoxDiffCheckerIgnoreTrailingWhitespace.setSelected(previousDiffCheckerIgnoreTrailingWhitespace);
+		}
+		if (checkBoxDiffCheckerIgnoreTrailingBlankLines != null && previousDiffCheckerIgnoreTrailingBlanklines != null) {
+			checkBoxDiffCheckerIgnoreTrailingBlankLines.setSelected(previousDiffCheckerIgnoreTrailingBlanklines);
+		}
+		if (textFieldEpsilonCheckerAbsoluteEpsilon != null && previousEpsilonCheckerAbsoluteEpsilon != null) {
+			textFieldEpsilonCheckerAbsoluteEpsilon.setText(previousEpsilonCheckerAbsoluteEpsilon);
+		}
+		if (textFieldEpsilonCheckerRelativeEpsilon != null && previousEpsilonCheckerRelativeEpsilon != null) {
+			textFieldEpsilonCheckerRelativeEpsilon.setText(previousEpsilonCheckerRelativeEpsilon);
+		}
+		
 		return true;
 	}
 	
+	private boolean updatePreviousUseTime() {
+		Settings.getSettings().set(Settings.PREVIOUS_USE_TIME, System.currentTimeMillis());
+		return Settings.saveSettings();
+	}
+	
 	private boolean clearPrevious() {
-		boolean status = FileUtils.writeStringToFile(new File("../previousSolutionPath.txt"), "");
-		status &= FileUtils.writeStringToFile(new File("../previousDataPath.txt"), "");
-		
-		return status;
+		Settings.getSettings().clear(Settings.PREVIOUS_SOLUTION_PATH);
+		Settings.getSettings().clear(Settings.PREVIOUS_DATA_PATH);
+		Settings.getSettings().clear(Settings.PREVIOUS_LANGUAGE);
+		Settings.getSettings().clear(Settings.PREVIOUS_TIME_LIMIT);
+		Settings.getSettings().clear(Settings.PREVIOUS_CHECKER);
+		Settings.getSettings().clear(Settings.PREVIOUS_TOKEN_CHECKER_CASE_SENSITIVE);
+		Settings.getSettings().clear(Settings.PREVIOUS_DIFF_CHECKER_IGNORE_TRAILING_WHITESPACE);
+		Settings.getSettings().clear(Settings.PREVIOUS_DIFF_CHECKER_IGNORE_TRAILING_BLANKLINES);
+		Settings.getSettings().clear(Settings.PREVIOUS_EPSILON_CHECKER_ABSOLUTE_EPSILON);
+		Settings.getSettings().clear(Settings.PREVIOUS_EPSILON_CHECKER_RELATIVE_EPSILON);
+		return Settings.saveSettings();
 	}
 	
 	private boolean savePrevious() {
+		// If we shouldn't remember the judging settings, clear the settings then return.
+		if (!Settings.getSettings().getBooleanOrDefault(Settings.REMEMBER_JUDGING_SETTINGS, true)) {
+			clearPrevious();
+			return true;
+		}
+		
 		File solutionFile = verisBuilder.getSolutionFile();
-		String solutionPath = solutionFile == null ? "" : solutionFile.getAbsolutePath();
+		String solutionPath = solutionFile == null ? null : solutionFile.getAbsolutePath();
 		
 		File dataFolder = verisBuilder.getDataFolder();
-		String dataPath = dataFolder == null ? "" : dataFolder.getAbsolutePath();
+		String dataPath = dataFolder == null ? null : dataFolder.getAbsolutePath();
 		
-		boolean status = FileUtils.writeStringToFile(new File("../previousSolutionPath.txt"), solutionPath);
-		status &= FileUtils.writeStringToFile(new File("../previousDataPath.txt"), dataPath);
+		Settings.getSettings().set(Settings.PREVIOUS_SOLUTION_PATH, solutionPath);
+		Settings.getSettings().set(Settings.PREVIOUS_DATA_PATH, dataPath);
+		Settings.getSettings().set(Settings.PREVIOUS_LANGUAGE,
+				choiceBoxLanguage == null ? null : choiceBoxLanguage.getValue());
+		Settings.getSettings().set(Settings.PREVIOUS_TIME_LIMIT,
+				textFieldTimeLimit == null ? null : textFieldTimeLimit.getText());
+		Settings.getSettings().set(Settings.PREVIOUS_CHECKER,
+				choiceBoxChecker == null ? null : choiceBoxChecker.getValue());
+		Settings.getSettings().set(Settings.PREVIOUS_TOKEN_CHECKER_CASE_SENSITIVE,
+				checkBoxTokenCheckerCaseSensitive == null ? null : checkBoxTokenCheckerCaseSensitive.isSelected());
+		Settings.getSettings().set(Settings.PREVIOUS_DIFF_CHECKER_IGNORE_TRAILING_WHITESPACE,
+				checkBoxDiffCheckerIgnoreTrailingWhitespace == null ? null
+						: checkBoxDiffCheckerIgnoreTrailingWhitespace.isSelected());
+		Settings.getSettings().set(Settings.PREVIOUS_DIFF_CHECKER_IGNORE_TRAILING_BLANKLINES,
+				checkBoxDiffCheckerIgnoreTrailingBlankLines == null ? null
+						: checkBoxDiffCheckerIgnoreTrailingBlankLines.isSelected());
+		Settings.getSettings().set(Settings.PREVIOUS_EPSILON_CHECKER_ABSOLUTE_EPSILON,
+				textFieldEpsilonCheckerAbsoluteEpsilon == null ? null
+						: textFieldEpsilonCheckerAbsoluteEpsilon.getText());
+		Settings.getSettings().set(Settings.PREVIOUS_EPSILON_CHECKER_RELATIVE_EPSILON,
+				textFieldEpsilonCheckerRelativeEpsilon == null ? null
+						: textFieldEpsilonCheckerRelativeEpsilon.getText());
 		
-		return status;
+		updatePreviousUseTime();
+		
+		return Settings.saveSettings();
 	}
 	
 	@FXML
     protected void initialize() {
 		setTimeLimit(Veris.DEFAULT_TIME_LIMIT / 1000.0);
+		
+		initContextMenu();
 		
 		ObservableList<String> languageList = FXCollections.observableArrayList();
 		languageList.add(DETECT_LANGUAGE_STR);
@@ -132,6 +236,42 @@ public class MainController {
 		});
 		onCheckerSelected(DEFAULT_CHECKER_STR);
 		updateJudgeButton();
+	}
+	
+	private void initContextMenu() {
+		mainContextMenu.setOnShowing(new EventHandler<WindowEvent>() {
+		    public void handle(WindowEvent e) {
+		        // Do nothing.
+		    }
+		});
+		mainContextMenu.setOnShown(new EventHandler<WindowEvent>() {
+		    public void handle(WindowEvent e) {
+		        // Do nothing.
+		    }
+		});
+
+		MenuItem itemOpenSettings = new MenuItem("Settings");
+		itemOpenSettings.setOnAction(new EventHandler<ActionEvent>() {
+		    public void handle(ActionEvent e) {
+		    	boolean status = SettingsController.createAndOpen();
+	    		if (!status) {
+	    			// TODO: show error message "Failed to open settings."
+	    		}
+		    }
+		});
+		
+		mainContextMenu.getItems().addAll(
+				itemOpenSettings);
+		
+		borderPaneMain.setOnMouseClicked(new EventHandler<MouseEvent>() {
+			public void handle(MouseEvent e) {
+				if (e.getButton() == MouseButton.SECONDARY) {
+					mainContextMenu.show(borderPaneMain, e.getScreenX(), e.getScreenY());
+				} else {
+					mainContextMenu.hide();
+				}
+			}
+		});
 	}
 
 	@FXML protected void handleDragOver(DragEvent event) {
@@ -193,23 +333,25 @@ public class MainController {
 	}
     
 	@FXML protected void handleJudgeButtonAction(ActionEvent event) {
-		setTimeLimit(getTimeLimit());
-		setChecker(getSelectedChecker());
-		setLanguageSpec(getSelectedLanguageSpec());
-		System.out.println("Checker set to " + getSelectedChecker());
-		
 		judge();
 		
 		event.consume();
 	}
 	
 	private void judge() {
+		setTimeLimit(getTimeLimit());
+		setChecker(getSelectedChecker());
+		setLanguageSpec(getSelectedLanguageSpec());
+		verisBuilder.setSortCasesBySize(
+				Settings.getSettings().getBooleanOrDefault(
+						Settings.SORT_CASES_BY_SIZE,
+						Veris.DEFAULT_SORT_CASES_BY_SIZE));
+		
 		boolean status = ResultsController.createAndJudge(verisBuilder);
 		if (status) {
 			savePrevious();
 		} else {
 			// TODO: Show error message.
-			clearPrevious();
 		}
 	}
 	

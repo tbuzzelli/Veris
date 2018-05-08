@@ -1,5 +1,6 @@
 package com.verisjudge;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -8,10 +9,30 @@ import java.util.Map.Entry;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
+import com.verisjudge.utils.FileUtils;
 
 public class Settings {
 
+	private static Settings SETTINGS;
+	private final static String SETTINGS_FILE_PATH = "../settings.json";
+	
+	public final static String REMEMBER_JUDGING_SETTINGS = "rememberJudgingSettings";
+	public final static String PREVIOUS_SOLUTION_PATH = "previousSolutionPath";
+	public final static String PREVIOUS_DATA_PATH = "previousDataPath";
+	public final static String PREVIOUS_LANGUAGE = "previousLanguage";
+	public final static String PREVIOUS_TIME_LIMIT = "previousTimeLimit";
+	public final static String PREVIOUS_CHECKER = "previousChecker";
+	public final static String PREVIOUS_TOKEN_CHECKER_CASE_SENSITIVE = "previousTokenCheckerCaseSensitive";
+	public final static String PREVIOUS_DIFF_CHECKER_IGNORE_TRAILING_WHITESPACE = "previousDiffCheckerIgnoreTrailingWhitespace";
+	public final static String PREVIOUS_DIFF_CHECKER_IGNORE_TRAILING_BLANKLINES = "previousDiffCheckerIgnoreTrailingBlanklines";
+	public final static String PREVIOUS_EPSILON_CHECKER_ABSOLUTE_EPSILON = "previousEpsilonCheckerAbsoluteEpsilon";
+	public final static String PREVIOUS_EPSILON_CHECKER_RELATIVE_EPSILON = "previousEpsilonCheckerRelativeEpsilon";
+	public final static String PREVIOUS_USE_TIME = "previousUseTime";
+	public final static String USE_DARK_THEME = "useDarkTheme";
+	public final static String SORT_CASES_BY_SIZE = "sortCasesBySize";
+	
 	private final Map<String, Setting<?>> settings;
 	
 	public Settings() {
@@ -27,6 +48,24 @@ public class Settings {
 				throw new IllegalArgumentException("Found more than one setting with the key '" + setting.getKey() + "'!");
 			}
 		}
+	}
+	
+	public static Settings getSettings() {
+		if (SETTINGS != null)
+			return SETTINGS;
+		SETTINGS = fromJsonString(FileUtils.readEntireFile(new File(SETTINGS_FILE_PATH)));
+		if (SETTINGS == null) {
+			SETTINGS = new Settings();
+			saveSettings();
+		}
+		return SETTINGS;
+	}
+	
+	public static boolean saveSettings() {
+		if (SETTINGS != null) {
+			return FileUtils.writeStringToFile(new File(SETTINGS_FILE_PATH), SETTINGS.toJsonString());
+		}
+		return false;
 	}
 	
 	/**
@@ -160,7 +199,7 @@ public class Settings {
 	 * @throws IllegalArgumentException if key is null.
 	 */
 	public Number getNumberOrDefault(String key, Number defaultValue) throws IllegalArgumentException {
-		Number value = getInt(key);
+		Number value = getNumber(key);
 		return value == null ? defaultValue : value;
 	}
 	
@@ -203,8 +242,6 @@ public class Settings {
 		if (value == null)
 			return null;
 		long longValue = value.longValue();
-		if (longValue < Integer.MIN_VALUE || longValue > Integer.MAX_VALUE)
-			return null;
 		return longValue;
 	}
 	
@@ -359,6 +396,16 @@ public class Settings {
 		return jsonObject;
 	}
 	
+	public static Settings fromJsonString(String str) {
+        JsonParser parser = new JsonParser();
+        try {
+        	return fromJsonObject(parser.parse(str).getAsJsonObject());
+        } catch (Exception e) {
+        	e.printStackTrace();
+        	return null;
+        }
+    }
+	
 	public static Settings fromJsonObject(JsonObject jsonObject) {
 		Settings settings = new Settings();
 		for (Entry<String, JsonElement> entry : jsonObject.entrySet()) {
@@ -369,5 +416,10 @@ public class Settings {
 				settings.add(setting);
 		}
 		return settings;
+	}
+	
+	@Override
+	public String toString() {
+		return settings.toString();
 	}
 }

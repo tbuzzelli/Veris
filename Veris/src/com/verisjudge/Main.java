@@ -19,7 +19,6 @@ public class Main extends Application {
 
 	public final static Image MAIN_ICON = new Image(Main.class.getResourceAsStream("/images/icon.png"));
 	public final static String DARK_THEME = Main.class.getResource("/css/styles-dark.css").toExternalForm();
-	public final static boolean useDarkTheme = true;
 	
 	public static void main(String[] args) {
 		launch(args);
@@ -154,7 +153,7 @@ public class Main extends Application {
 	public static void updateTheme(Stage stage) {
 		if (stage == null || stage.getScene() == null)
 			return;
-		if (useDarkTheme)
+		if (Settings.getSettings().getBooleanOrDefault(Settings.USE_DARK_THEME, false))
 			stage.getScene().getStylesheets().add(DARK_THEME);
 	}
 }

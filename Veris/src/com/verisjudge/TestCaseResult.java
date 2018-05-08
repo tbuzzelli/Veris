@@ -15,6 +15,7 @@ public class TestCaseResult {
 	
 	public final String name;
 	public final Verdict verdict;
+	public final String checkerMessage;
 	public final File inputFile;
 	public final File answerFile;
 	public final File programOutputFile;
@@ -23,12 +24,13 @@ public class TestCaseResult {
 	public final String output;
 	public final long runtime;
 	
-	public TestCaseResult(String name, File inputFile, File answerFile, long runtime, Verdict verdict, String expectedOutput, String output, File programOutputFile, File errorStreamFile) {
+	public TestCaseResult(String name, File inputFile, File answerFile, long runtime, Verdict verdict, String checkerMessage, String expectedOutput, String output, File programOutputFile, File errorStreamFile) {
 		this.name = name;
 		this.inputFile = inputFile;
 		this.answerFile = answerFile;
 		this.runtime = runtime;
 		this.verdict = verdict;
+		this.checkerMessage = checkerMessage;
 		this.expectedOutput = expectedOutput;
 		this.output = output;
 		this.programOutputFile = programOutputFile;
@@ -36,7 +38,11 @@ public class TestCaseResult {
 	}
 	
 	public TestCaseResult(String name, File inputFile, File answerFile, long runtime, Verdict verdict) {
-		this(name, inputFile, answerFile, runtime, verdict, null, null, null, null);
+		this(name, inputFile, answerFile, runtime, verdict, null, null, null, null, null);
+	}
+	
+	public String getCheckerMessage() {
+		return checkerMessage;
 	}
 	
 	public File getInputFile() {
@@ -66,12 +72,17 @@ public class TestCaseResult {
 			runtimeString = ">" + runtimeString;
 		}
 		tooltipStringBuilder.append(String.format("Test case %s - Runtime: %s", name, runtimeString));
+		if (getCheckerMessage() != null && !getCheckerMessage().isEmpty()) {
+			tooltipStringBuilder.append("\n\n" + getCheckerMessage());
+		}
+		/*
 		if (verdict == Verdict.WRONG_ANSWER && expectedOutput != null && output != null) {
 			tooltipStringBuilder.append("\n\nExpected output:\n");
 			tooltipStringBuilder.append(getExpectedOutputBlockString());
 			tooltipStringBuilder.append("\nYour output:\n");
 			tooltipStringBuilder.append(getOutputBlockString());
 		}
+		*/
 		return tooltipStringBuilder.toString();
 	}
 	
@@ -127,6 +138,7 @@ public class TestCaseResult {
 	static class Builder {
 		private String name;
 		private Verdict verdict;
+		private String checkerMessage;
 		private File inputFile;
 		private File answerFile;
 		private File programOutputFile;
@@ -142,6 +154,11 @@ public class TestCaseResult {
 		
 		public Builder setVerdict(Verdict verdict) {
 			this.verdict = verdict;
+			return this;
+		}
+		
+		public Builder setCheckerMessage(String checkerMessage) {
+			this.checkerMessage = checkerMessage;
 			return this;
 		}
 		
@@ -188,6 +205,10 @@ public class TestCaseResult {
 			return verdict;
 		}
 		
+		public String getCheckerMessage() {
+			return checkerMessage;
+		}
+		
 		public File getInputFile() {
 			return inputFile;
 		}
@@ -217,7 +238,7 @@ public class TestCaseResult {
 		}
 		
 		public TestCaseResult build() {
-			return new TestCaseResult(name, inputFile, answerFile, runtime, verdict, expectedOutput, output, programOutputFile, errorStreamFile);
+			return new TestCaseResult(name, inputFile, answerFile, runtime, verdict, checkerMessage, expectedOutput, output, programOutputFile, errorStreamFile);
 		}
 	}
 }

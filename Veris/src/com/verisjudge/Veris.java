@@ -7,17 +7,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.lang.ProcessBuilder.Redirect;
 import java.lang.ref.WeakReference;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
 import com.verisjudge.checker.Checker;
+import com.verisjudge.checker.CheckerVerdict;
 import com.verisjudge.checker.TokenChecker;
 import com.verisjudge.utils.FastScanner;
 
@@ -29,6 +30,8 @@ public class Veris {
     public static final long MINIMUM_TIME_LIMIT = 100;
     public static final long MAXIMUM_TIME_LIMIT = 60 * 60 * 1000; // 1 hour
     
+    public final static boolean DEFAULT_SORT_CASES_BY_SIZE = false;
+	
     private HashMap<String, File> answerFiles, inputFiles;
 
     private Config config = Config.getConfig();
@@ -46,7 +49,7 @@ public class Veris {
     private long totalTime;
     private long timeLimit;
     private File dataFolder;
-    private boolean sortCasesBySize = true;
+    private boolean sortCasesBySize = DEFAULT_SORT_CASES_BY_SIZE;
     private boolean isVerbose;
     private PrintStream logger = System.out;
     private WeakReference<VerisListener> listener;
@@ -268,9 +271,14 @@ public class Veris {
 
         Verdict result = Verdict.CORRECT;
         
-        // Sort our test cases if needed.
-        if (sortCasesBySize)
-            Collections.sort(cases);
+        // Sort our test cases as appropriate.
+        if (sortCasesBySize) {
+        	Comparator<TestCase> testCaseComparator = Comparator.comparingLong(a -> a.inputFile.length());
+        	testCaseComparator = testCaseComparator.thenComparing(Comparator.naturalOrder());
+            Collections.sort(cases, testCaseComparator);
+        } else {
+        	Collections.sort(cases);
+        }
 
         for (int ci = 0; ci < cases.size(); ci++) {
         	TestCase c = cases.get(ci);
@@ -461,22 +469,26 @@ public class Veris {
         totalTime += t1;
 
         // Get the result.
-        Verdict res;
+        Verdict verdict;
+        String checkerMessage = null;
         if (!completed || time > timeLimit) {
-            res = Verdict.TIME_LIMIT_EXCEEDED;
+            verdict = Verdict.TIME_LIMIT_EXCEEDED;
             if (!completed) {
                 process.destroyForcibly();
             }
         } else {
             if (process.exitValue() != 0) {
-                res = Verdict.RUNTIME_ERROR;
+                verdict = Verdict.RUNTIME_ERROR;
+                checkerMessage = "Exit code: " + process.exitValue();
             } else {
                 // Check the solution's output.
             	FastScanner inputScanner = new FastScanner(c.inputFile);
             	FastScanner pScanner = new FastScanner(programOutputFile);
             	FastScanner ansScanner = new FastScanner(c.answerFile);
             	
-                res = checker.check(inputScanner, pScanner, ansScanner);
+                CheckerVerdict checkerVerdict = checker.check(inputScanner, pScanner, ansScanner);
+                verdict = checkerVerdict.getVerdict();
+                checkerMessage = checkerVerdict.getMessage();
                 
                 inputScanner.close();
                 pScanner.close();
@@ -535,7 +547,8 @@ public class Veris {
             }
         }
         
-        resultBuilder.setVerdict(res);
+        resultBuilder.setVerdict(verdict);
+        resultBuilder.setCheckerMessage(checkerMessage);
         resultBuilder.setRuntime(t1);
         if (errorStreamFile != null)
         	resultBuilder.setErrorStreamFile(errorStreamFile);
@@ -680,7 +693,7 @@ public class Veris {
 
         @Override
         public int compareTo(TestCase o) {
-            return Long.compare(inputFile.length(), o.inputFile.length());
+        	return name.compareTo(o.name);
         }
     }
 
@@ -721,8 +734,6 @@ public class Veris {
         		return false;
         	if (getDataFolder() == null)
         		return false;
-        	// if (cases == null || cases.size() == 0)
-        	// 	return false;
         	return true;
     	}
 

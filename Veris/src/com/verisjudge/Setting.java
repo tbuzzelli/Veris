@@ -131,4 +131,9 @@ public class Setting<T> implements Comparable<Setting<?>> {
 			return false;
 		return true;
 	}
+	
+	@Override
+	public String toString() {
+		return getKey() + " -> " + get();
+	}
 }

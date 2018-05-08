@@ -58,7 +58,7 @@ public class ResultsController implements VerisListener {
 	private final Image TEST_CASE_BACKGROUND_TIME_LIMIT_EXCEEDED = new Image(this.getClass().getResourceAsStream("/images/verdictTimeLimitExceeded.png"));
 	private final Image TEST_CASE_BACKGROUND_QUEUED = new Image(this.getClass().getResourceAsStream("/images/verdictQueued.png"));
 	
-	private final ContextMenu testCaseContextMenu = new ContextMenu();;
+	private final ContextMenu testCaseContextMenu = new ContextMenu();
 	
 	private TestCaseResult activeContextMenuTestCaseResult;
 	private Parent[] testCaseParents;
@@ -466,10 +466,10 @@ public class ResultsController implements VerisListener {
 			@Override
 			public void run() {
 				TestCaseResult smallestFailure = getSmallestFailure(finalVerdict);
-				if (smallestFailure == null)
+				if (finalVerdict == Verdict.CORRECT || smallestFailure == null)
 					labelVerdict.setText(finalVerdict.getName());
 				else
-					labelVerdict.setText(finalVerdict.getName() + "  \"" + smallestFailure.inputFile.getName() + "\"");
+					labelVerdict.setText(finalVerdict.getName() + " - \"" + smallestFailure.inputFile.getName() + "\"");
 			}
 		});
 	}

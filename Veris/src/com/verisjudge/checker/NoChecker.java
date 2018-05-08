@@ -5,7 +5,10 @@ import com.verisjudge.utils.FastScanner;
 public class NoChecker extends Checker {
 
     @Override
-    public Verdict check(FastScanner input, FastScanner pScanner, FastScanner ansScanner) {
-        return Verdict.CORRECT;
+    public CheckerVerdict check(FastScanner input, FastScanner pScanner, FastScanner ansScanner) {
+    	return new CheckerVerdict.Builder()
+    			.setVerdict(Verdict.CORRECT)
+    			.setMessage("Ignoring checking. Judged as Correct.")
+    			.build();
 	}
 }
