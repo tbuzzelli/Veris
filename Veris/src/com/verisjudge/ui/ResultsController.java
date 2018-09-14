@@ -60,6 +60,7 @@ public class ResultsController implements VerisListener {
 	private final Image TEST_CASE_BACKGROUND_QUEUED = new Image(this.getClass().getResourceAsStream("/images/verdictQueued.png"));
 	
 	private final ContextMenu testCaseContextMenu = new ContextMenu();
+	private final ContextMenu verdictContextMenu = new ContextMenu();
 	
 	private Integer activeContextMenuTestCaseNumber;
 	private Parent[] testCaseParents;
@@ -160,6 +161,21 @@ public class ResultsController implements VerisListener {
 		verisThread.start();
 	}
 	
+	private void rejudge() {
+		for (int caseNumber = 0; caseNumber < testCaseResults.length; caseNumber++) {
+			testCaseResults[caseNumber] = null;
+			refreshTestCase(caseNumber);
+		}
+		refreshTimeLabels();
+		labelMainTitle.setText("Judging " + veris.getSolutionFile().getName());
+		verisThread = new Thread() {
+			public void run() {
+				veris.reTestCode(null);
+			}
+		};
+		verisThread.start();
+	}
+	
 	private void rerunCase(int caseNumber) {
 		if (isJudging())
 			return;
@@ -175,10 +191,44 @@ public class ResultsController implements VerisListener {
 		};
 		verisThread.start();
 	}
+	
+	private void rerunFailingCases() {
+		if (isJudging())
+			return;
+		List<Integer> failingCases = new ArrayList<>();
+		for (int caseNumber = 0; caseNumber < testCaseResults.length; caseNumber++) {
+			if (testCaseResults[caseNumber] != null
+					&& testCaseResults[caseNumber].verdict != Verdict.CORRECT) {
+				failingCases.add(caseNumber);
+				testCaseResults[caseNumber] = null;
+				refreshTestCase(caseNumber);
+			}
+		}
+
+		refreshTimeLabels();
+		
+		labelMainTitle.setText("Judging " + veris.getSolutionFile().getName());
+		verisThread = new Thread() {
+			public void run() {
+				veris.reTestCode(failingCases);
+			}
+		};
+		verisThread.start();
+	}
 
 	@FXML
     protected void initialize() {
 		buildTestCaseContextMenu();
+		buildVerdictContextMenu();
+		
+		// Set the context menu to show on rightclick.
+		labelVerdict.setOnMouseClicked(new EventHandler<MouseEvent>() {
+			public void handle(MouseEvent e) {
+				if (e.getButton() == MouseButton.SECONDARY) {
+					verdictContextMenu.show(labelVerdict, Side.TOP, 0, 0);
+				}
+			}
+		});
 	}
 	
 	private void refreshTestCaseContextMenu() {
@@ -308,6 +358,48 @@ public class ResultsController implements VerisListener {
 			});
 			
 			testCaseContextMenu.getItems().add(itemRerun);
+		}
+	}
+	
+	private void refreshVerdictContextMenu() {
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				buildVerdictContextMenu();
+			}
+		});
+	}
+
+	private void buildVerdictContextMenu() {
+		verdictContextMenu.setOnShowing(new EventHandler<WindowEvent>() {
+		    public void handle(WindowEvent e) {
+		        // Do nothing.
+		    }
+		});
+		verdictContextMenu.setOnShown(new EventHandler<WindowEvent>() {
+		    public void handle(WindowEvent e) {
+		        // Do nothing.
+		    }
+		});
+		
+		verdictContextMenu.getItems().clear();
+		
+		if (!isJudging()) {
+			MenuItem itemRerunFailing = new MenuItem("Rerun failing cases");
+			itemRerunFailing.setOnAction(new EventHandler<ActionEvent>() {
+			    public void handle(ActionEvent e) {
+			    	rerunFailingCases();
+			    }
+			});
+			
+			MenuItem itemRejudge = new MenuItem("Rejudge");
+			itemRejudge.setOnAction(new EventHandler<ActionEvent>() {
+			    public void handle(ActionEvent e) {
+			    	rejudge();
+			    }
+			});
+			
+			verdictContextMenu.getItems().addAll(itemRerunFailing, itemRejudge);
 		}
 	}
 
@@ -536,6 +628,7 @@ public class ResultsController implements VerisListener {
 			}
 		});
 		refreshTestCaseContextMenu();
+		refreshVerdictContextMenu();
 	}
 	
 	@Override
@@ -549,6 +642,7 @@ public class ResultsController implements VerisListener {
 			}
 		});
 		refreshTestCaseContextMenu();
+		refreshVerdictContextMenu();
 	}
 
 	@Override
@@ -622,13 +716,20 @@ public class ResultsController implements VerisListener {
 		setIsJudging(false);
 		setIsRejudging(false);
 		refreshTestCaseContextMenu();
+		refreshVerdictContextMenu();
 	}
 	
 	@Override
-	public void handleRejudgingFinished(Verdict finalVerdict) {
+	public void handleRejudgingFinished(Verdict finalVerdict, boolean isFullRejudge) {
 		Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
+				TestCaseResult smallestFailure = getSmallestFailure(finalVerdict);
+				if (finalVerdict == Verdict.CORRECT || smallestFailure == null)
+					labelVerdict.setText(finalVerdict.getName());
+				else
+					labelVerdict.setText(finalVerdict.getName() + " - \"" + smallestFailure.inputFile.getName() + "\"");
+				
 				if (finalVerdict != Verdict.COMPILE_ERROR)
 					updateJudgingString(false, true, true);
 			}
@@ -636,6 +737,7 @@ public class ResultsController implements VerisListener {
 		setIsJudging(false);
 		setIsRejudging(false);
 		refreshTestCaseContextMenu();
+		refreshVerdictContextMenu();
 	}
 	
 	private TestCaseResult getSmallestFailure(Verdict finalVerdict) {

@@ -9,5 +9,5 @@ public interface VerisListener {
 	public void handleTestCaseStarting(int caseNumber);
 	public void handleTestCaseFinished(int caseNumber, TestCaseResult result);
 	public void handleJudgingFinished(Verdict finalVerdict);
-	public void handleRejudgingFinished(Verdict finalVerdict);
+	public void handleRejudgingFinished(Verdict finalVerdict, boolean isFullRejudge);
 }

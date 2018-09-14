@@ -323,7 +323,7 @@ public class Veris {
             // If we were interrupted, return with an Internal Error.
             if (Thread.currentThread().isInterrupted()) {
             	if (listener.get() != null)
-                	listener.get().handleRejudgingFinished(Verdict.INTERNAL_ERROR);
+                	listener.get().handleJudgingFinished(Verdict.INTERNAL_ERROR);
             	return Verdict.INTERNAL_ERROR;
             }
 
@@ -343,9 +343,11 @@ public class Veris {
     /**
      * Compiles then tests the code against a selected number of test cases.
      * This should be run in a separate thread.
+     * @param caseNumbers The case numbers to rejudge or null to rejudge everything.
      * @return The Verdict.
      */
     public Verdict reTestCode(Collection<Integer> caseNumbers) {
+    	boolean isRejudgingAll = caseNumbers == null;
     	try {
 			refresh();
 		} catch (IOException e) {
@@ -368,7 +370,7 @@ public class Veris {
         	// Notify listener of the internal error.
             if (listener.get() != null) {
             	listener.get().handleCompileFinished(new CompileResult.Builder().setVerdict(Verdict.INTERNAL_ERROR).build());
-            	listener.get().handleRejudgingFinished(Verdict.INTERNAL_ERROR);
+            	listener.get().handleRejudgingFinished(Verdict.INTERNAL_ERROR, isRejudgingAll);
             }
         	return Verdict.INTERNAL_ERROR;
         }
@@ -382,7 +384,7 @@ public class Veris {
         	// Notify listener of the internal error.
             if (listener.get() != null) {
             	listener.get().handleCompileFinished(compileResult);
-            	listener.get().handleRejudgingFinished(Verdict.INTERNAL_ERROR);
+            	listener.get().handleRejudgingFinished(Verdict.INTERNAL_ERROR, isRejudgingAll);
             }
         	return Verdict.INTERNAL_ERROR;
         }
@@ -395,7 +397,7 @@ public class Veris {
         if (compileVerdict != Verdict.COMPILE_SUCCESS) {
         	// Notify listener of the internal error.
             if (listener.get() != null)
-            	listener.get().handleRejudgingFinished(compileVerdict);
+            	listener.get().handleRejudgingFinished(compileVerdict, isRejudgingAll);
         	return compileVerdict;
         }
 
@@ -411,7 +413,7 @@ public class Veris {
         }
 
         for (int ci = 0; ci < cases.size(); ci++) {
-        	if (!caseNumbers.contains(ci)) {
+        	if (!isRejudgingAll && !caseNumbers.contains(ci)) {
         		continue;
         	}
 
@@ -427,7 +429,7 @@ public class Veris {
             // If we were interrupted, return with an Internal Error.
             if (Thread.currentThread().isInterrupted()) {
             	if (listener.get() != null)
-                	listener.get().handleRejudgingFinished(Verdict.INTERNAL_ERROR);
+                	listener.get().handleRejudgingFinished(Verdict.INTERNAL_ERROR, isRejudgingAll);
             	return Verdict.INTERNAL_ERROR;
             }
             
@@ -438,7 +440,7 @@ public class Veris {
 
         // Notify listener that judging has finished.
         if (listener.get() != null)
-        	listener.get().handleRejudgingFinished(result);
+        	listener.get().handleRejudgingFinished(result, isRejudgingAll);
         
         // Return the result.
         return result;
