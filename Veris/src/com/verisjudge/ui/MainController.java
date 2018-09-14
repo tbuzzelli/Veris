@@ -312,7 +312,7 @@ public class MainController {
     	if (verisBuilder.getSolutionFile() != null)
     		fileChooser.setInitialDirectory(verisBuilder.getSolutionFile().getParentFile());
     	fileChooser.setTitle("Select Solution File");
-    	fileChooser.getExtensionFilters().add(new ExtensionFilter("Solution files (*.java, *.c, *.cc, *.cpp, *.pas, *.py, *.exe)", "*.java", "*.c", "*.cc", "*.cpp", "*.pas", "*.py", "*.exe"));
+    	fileChooser.getExtensionFilters().add(Config.getConfig().getExtensionFilterFromLanguageSpecs());
     	File file = fileChooser.showOpenDialog(stage);
     	if (file != null && Veris.isValidSolutionFile(file)) {
     		setSolutionFile(file);

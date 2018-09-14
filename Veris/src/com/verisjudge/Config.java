@@ -10,6 +10,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -17,6 +19,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import com.verisjudge.utils.FileUtils;
+
+import javafx.stage.FileChooser.ExtensionFilter;
 
 public class Config {
 
@@ -332,6 +336,25 @@ public class Config {
 			}
 		}
 		return null;
+	}
+	
+	public ExtensionFilter getExtensionFilterFromLanguageSpecs() {
+		Set<String> extensions = new HashSet<>();
+		for (LanguageSpec languageSpec : getLanguageSpecs()) {
+			for (String extension : languageSpec.getFileExtensions()) {
+				extensions.add(extension);
+			}
+		}
+		String[] extensionsArray = extensions.stream().map(x -> "*." + x).sorted().toArray(String[]::new);
+		String filterDescription = "Solution files (";
+		for (int i = 0; i < extensionsArray.length; i++) {
+			if (i > 0) {
+				filterDescription += ", ";
+			}
+			filterDescription += extensionsArray[i];
+		}
+		filterDescription += ")";
+		return new ExtensionFilter(filterDescription, extensionsArray);
 	}
 	
 	public static String[] getStringArray(JsonObject j, String fieldName) {
