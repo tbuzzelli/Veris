@@ -16,13 +16,13 @@ module veris {
 	opens com.verisjudge.utils;
 	opens com.verisjudge;
 	
-	requires gson;
-	requires diffutils;
-	requires org.apache.commons.lang3;
-	requires javafx.base;
-	requires javafx.controls;
-	requires javafx.fxml;
-	requires javafx.graphics;
-	requires javafx.web;
-	requires javafx.media;
+	requires transitive gson;
+	requires transitive diffutils;
+	requires transitive org.apache.commons.lang3;
+	requires transitive javafx.base;
+	requires transitive javafx.controls;
+	requires transitive javafx.fxml;
+	requires transitive javafx.graphics;
+	requires transitive javafx.web;
+	requires transitive javafx.media;
 }
