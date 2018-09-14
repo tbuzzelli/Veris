@@ -15,7 +15,7 @@ module veris {
 	opens com.verisjudge.checker;
 	opens com.verisjudge.utils;
 	opens com.verisjudge;
-	
+
 	requires transitive gson;
 	requires transitive diffutils;
 	requires transitive org.apache.commons.lang3;

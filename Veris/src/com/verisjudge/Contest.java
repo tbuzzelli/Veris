@@ -16,7 +16,7 @@ import com.google.gson.JsonParser;
 
 public class Contest {
 
-    enum Error {
+    public enum Error {
         MISSING_NAME,
         MISSING_CONTEST_PATH,
         MISSING_SUBMISSIONS_PATH,

@@ -37,7 +37,6 @@ public class Veris {
     private HashMap<String, File> answerFiles, inputFiles;
 
     private Config config = Config.getConfig();
-    private Problem problem;
     private Checker checker;
     private ArrayList<TestCase> cases;
     private File solutionFile;
@@ -48,7 +47,6 @@ public class Veris {
     private String className;
     private String language;
     private long longestTime;
-    private long totalTime;
     private long timeLimit;
     private File dataFolder;
     private boolean sortCasesBySize = DEFAULT_SORT_CASES_BY_SIZE;
@@ -89,7 +87,6 @@ public class Veris {
      * @param problem The Problem to load these settings from.
      */
     public void fromProblem(Problem problem) {
-        this.problem = problem;
         setTimeLimit(problem.getTimeLimit());
         setChecker(problem.getChecker());
         try {
@@ -626,7 +623,6 @@ public class Veris {
         
         // Keep track of the longest time and the total time.
         longestTime = Math.max(longestTime, time);
-        totalTime += time;
 
         // Get the result.
         Verdict verdict;
@@ -837,7 +833,7 @@ public class Veris {
     	return name.substring(idx + 1);
     }
 
-    class TestCase implements Comparable<TestCase> {
+    public class TestCase implements Comparable<TestCase> {
         File inputFile, answerFile;
         String name;
 

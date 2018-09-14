@@ -8,7 +8,7 @@ import com.verisjudge.utils.CheckerUtils;
 
 public class Problem {
 
-    enum Error {
+    public enum Error {
         MISSING_NAME,
         MISSING_FILENAME,
         INVALID_FILENAME,
