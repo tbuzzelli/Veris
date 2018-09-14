@@ -5,6 +5,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.List;
 
 import com.verisjudge.CompileResult;
 import com.verisjudge.Main;
@@ -60,15 +61,14 @@ public class ResultsController implements VerisListener {
 	
 	private final ContextMenu testCaseContextMenu = new ContextMenu();
 	
-	private TestCaseResult activeContextMenuTestCaseResult;
+	private Integer activeContextMenuTestCaseNumber;
 	private Parent[] testCaseParents;
 	private TestCaseResult[] testCaseResults;
-	private int numTestCases;
-	
+	private boolean isJudging = false;
+	private boolean isRejudging = false;
+
 	private Stage stage;
 	private Veris veris;
-	private long totalTime;
-	private long worstTime;
 	
 	private Thread verisThread;
 	
@@ -149,9 +149,7 @@ public class ResultsController implements VerisListener {
 	}
 	
 	public void judge() {
-		totalTime = 0;
-		worstTime = 0;
-		updateTimeLabels();
+		refreshTimeLabels();
 		veris.setListener(this);
 		labelMainTitle.setText("Judging " + veris.getSolutionFile().getName());
 		verisThread = new Thread() {
@@ -161,13 +159,38 @@ public class ResultsController implements VerisListener {
 		};
 		verisThread.start();
 	}
+	
+	private void rerunCase(int caseNumber) {
+		if (isJudging())
+			return;
+		testCaseResults[caseNumber] = null;
+		refreshTestCase(caseNumber);
+		refreshTimeLabels();
+		
+		labelMainTitle.setText("Judging " + veris.getSolutionFile().getName());
+		verisThread = new Thread() {
+			public void run() {
+				veris.reTestCode(List.of(caseNumber));
+			}
+		};
+		verisThread.start();
+	}
 
 	@FXML
     protected void initialize() {
-		initTestCaseContextMenu();
+		buildTestCaseContextMenu();
 	}
 	
-	private void initTestCaseContextMenu() {
+	private void refreshTestCaseContextMenu() {
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				buildTestCaseContextMenu();
+			}
+		});
+	}
+
+	private void buildTestCaseContextMenu() {
 		testCaseContextMenu.setOnShowing(new EventHandler<WindowEvent>() {
 		    public void handle(WindowEvent e) {
 		        // Do nothing.
@@ -178,13 +201,15 @@ public class ResultsController implements VerisListener {
 		        // Do nothing.
 		    }
 		});
+		
+		testCaseContextMenu.getItems().clear();
 
 		MenuItem itemOpenInputFile = new MenuItem("Open input file");
 		itemOpenInputFile.setOnAction(new EventHandler<ActionEvent>() {
 		    public void handle(ActionEvent e) {
-		    	if (activeContextMenuTestCaseResult != null) {
-		    		TestCaseResult result = activeContextMenuTestCaseResult;
-		    		if (result.getInputFile() != null) {
+		    	if (activeContextMenuTestCaseNumber != null) {
+		    		TestCaseResult result = testCaseResults[activeContextMenuTestCaseNumber];
+		    		if (result != null && result.getInputFile() != null) {
 		    			TextViewerController.createAndOpenTextViewer(
 		    					"Verisimilitude - " + result.name,
 		    					result.getInputFile().getName(),
@@ -199,9 +224,9 @@ public class ResultsController implements VerisListener {
 		MenuItem itemOpenAnswerFile = new MenuItem("Open answer file");
 		itemOpenAnswerFile.setOnAction(new EventHandler<ActionEvent>() {
 		    public void handle(ActionEvent e) {
-		    	if (activeContextMenuTestCaseResult != null) {
-		    		TestCaseResult result = activeContextMenuTestCaseResult;
-		    		if (result.getAnswerFile() != null) {
+		    	if (activeContextMenuTestCaseNumber != null) {
+		    		TestCaseResult result = testCaseResults[activeContextMenuTestCaseNumber];
+		    		if (result != null && result.getAnswerFile() != null) {
 		    			TextViewerController.createAndOpenTextViewer(
 		    					"Verisimilitude - " + result.name,
 		    					result.getAnswerFile().getName(),
@@ -216,9 +241,9 @@ public class ResultsController implements VerisListener {
 		MenuItem itemOpenProgramOutputFile = new MenuItem("Open program output");
 		itemOpenProgramOutputFile.setOnAction(new EventHandler<ActionEvent>() {
 		    public void handle(ActionEvent e) {
-		    	if (activeContextMenuTestCaseResult != null) {
-		    		TestCaseResult result = activeContextMenuTestCaseResult;
-		    		if (result.getProgramOutputFile() != null) {
+		    	if (activeContextMenuTestCaseNumber != null) {
+		    		TestCaseResult result = testCaseResults[activeContextMenuTestCaseNumber];
+		    		if (result != null && result.getProgramOutputFile() != null) {
 		    			TextViewerController.createAndOpenTextViewer(
 		    					"Verisimilitude - " + result.name,
 		    					result.name + " - Program Output",
@@ -230,12 +255,30 @@ public class ResultsController implements VerisListener {
 		    }
 		});
 		
+		MenuItem itemOpenDiff = new MenuItem("Open output diff");
+		itemOpenDiff.setOnAction(new EventHandler<ActionEvent>() {
+		    public void handle(ActionEvent e) {
+		    	if (activeContextMenuTestCaseNumber != null) {
+		    		TestCaseResult result = testCaseResults[activeContextMenuTestCaseNumber];
+		    		if (result != null && result.getAnswerFile() != null && result.getProgramOutputFile() != null) {
+		    			DiffViewerController.createAndOpenDiffViewer(
+		    					"Verisimilitude - " + result.name,
+		    					"Expected Output vs. Program Output",
+		    					result.getAnswerFile(),
+		    					result.getProgramOutputFile());
+		    		} else {
+		    			// TODO: show error message "Failed to open input file."
+		    		}
+		    	}
+		    }
+		});
+		
 		MenuItem itemViewErrorStream = new MenuItem("View error stream");
 		itemViewErrorStream.setOnAction(new EventHandler<ActionEvent>() {
 		    public void handle(ActionEvent e) {
-		    	if (activeContextMenuTestCaseResult != null) {
-		    		TestCaseResult result = activeContextMenuTestCaseResult;
-		    		if (result.getErrorStreamFile() != null) {
+		    	if (activeContextMenuTestCaseNumber != null) {
+		    		TestCaseResult result = testCaseResults[activeContextMenuTestCaseNumber];
+		    		if (result != null && result.getErrorStreamFile() != null) {
 		    			TextViewerController.createAndOpenTextViewer(
 		    					"Verisimilitude - " + result.name,
 		    					result.name + " - Error Stream",
@@ -246,15 +289,29 @@ public class ResultsController implements VerisListener {
 		    	}
 		    }
 		});
+
 		testCaseContextMenu.getItems().addAll(
 				itemOpenInputFile,
 				itemOpenAnswerFile,
 				itemOpenProgramOutputFile,
+				itemOpenDiff,
 				itemViewErrorStream);
+		
+		if (!isJudging()) {
+			MenuItem itemRerun = new MenuItem("Rerun this case");
+			itemRerun.setOnAction(new EventHandler<ActionEvent>() {
+			    public void handle(ActionEvent e) {
+			    	if (activeContextMenuTestCaseNumber != null) {
+			    		rerunCase(activeContextMenuTestCaseNumber);
+			    	}
+			    }
+			});
+			
+			testCaseContextMenu.getItems().add(itemRerun);
+		}
 	}
 
 	private void initializeTestCases(int numTestCases) {
-		this.numTestCases = numTestCases;
 		testCaseResults = new TestCaseResult[numTestCases];
 		testCaseParents = new Pane[numTestCases];
 		ArrayList<Parent> allTestCases = new ArrayList<>(numTestCases);
@@ -325,7 +382,10 @@ public class ResultsController implements VerisListener {
 				(ImageView) testCaseParent.lookup("#imageViewTestCase");
 		imageView.setImage(getTestCaseImageForVerdict(result == null ? null : result.verdict));
 		
-		if(result != null) {
+		if(result == null) {
+			Tooltip.uninstall(testCaseParent, null);
+			testCaseParent.setOnMouseClicked(null);
+		} else {
 			Tooltip tooltip = new Tooltip(result.getTooltipString());
 			
 			// This requires Java 9 to do but Eclipse can't build the Java 9 jar yet.
@@ -355,7 +415,7 @@ public class ResultsController implements VerisListener {
 			testCaseParent.setOnMouseClicked(new EventHandler<MouseEvent>() {
 				public void handle(MouseEvent e) {
 					if (e.getButton() == MouseButton.SECONDARY) {
-						activeContextMenuTestCaseResult = result;
+						activeContextMenuTestCaseNumber = caseNumber;
 						testCaseContextMenu.show(imageView, Side.BOTTOM, 0, 0);
 					}
 				}
@@ -367,9 +427,47 @@ public class ResultsController implements VerisListener {
 		progressIndicator.setVisible(running);
 	}
 	
-	private void updateTimeLabels() {
-		labelWorstTime.setText(String.format("%.2f seconds", worstTime / 1000.0));
-		labelTotalTime.setText(String.format("%.2f seconds", totalTime / 1000.0));
+	private long getWorstTime() {
+		long worstTime = 0;
+		if (testCaseResults != null) {
+			for (TestCaseResult result : testCaseResults) {
+				if (result != null)
+					worstTime = Math.max(worstTime, result.runtime);
+			}
+		}
+		return worstTime;
+	}
+	
+	private long getTotalTime() {
+		long totalTime = 0;
+		if (testCaseResults != null) {
+			for (TestCaseResult result : testCaseResults) {
+				if (result != null)
+					totalTime += result.runtime;
+			}
+		}
+		return totalTime;
+	}
+
+	private void refreshTimeLabels() {
+		labelWorstTime.setText(String.format("%.2f seconds", getWorstTime() / 1000.0));
+		labelTotalTime.setText(String.format("%.2f seconds", getTotalTime() / 1000.0));
+	}
+	
+	private void setIsJudging(boolean isJudging) {
+		this.isJudging = isJudging;
+	}
+	
+	public boolean isJudging() {
+		return isJudging;
+	}
+	
+	private void setIsRejudging(boolean isRejudging) {
+		this.isRejudging = isRejudging;
+	}
+	
+	public boolean isRejudging() {
+		return isRejudging;
 	}
 
 	private Image getTestCaseImageForVerdict(Verdict verdict) {
@@ -393,16 +491,64 @@ public class ResultsController implements VerisListener {
 	
 	private void processTestCaseResult(int caseNumber, TestCaseResult result) {
 		testCaseResults[caseNumber] = result;
-		updateTestCase(caseNumber, result, false);
-		worstTime = Math.max(worstTime, result.runtime);
-		totalTime += result.runtime;
-		updateTimeLabels();
+		refreshTestCase(caseNumber);
+		refreshTimeLabels();
+	}
+	
+	private void refreshTestCase(int caseNumber) {
+		updateTestCase(caseNumber, testCaseResults[caseNumber], false);
+	}
+	
+	private void updateJudgingString(boolean isJudging, boolean isFinished, boolean wasRejudge) {
+		if (isJudging) {
+			if (wasRejudge) {
+				labelRunningTestCases.setText(
+						String.format("Rerunning %d test case%s",
+								testCaseParents.length,
+								testCaseParents.length == 1 ? "" : "s"));
+			} else {
+				labelRunningTestCases.setText(
+						String.format("Running %d test case%s",
+								testCaseParents.length,
+								testCaseParents.length == 1 ? "" : "s"));
+			}
+		} else if (isFinished) {
+			if (wasRejudge) {
+				labelRunningTestCases.setText("Finished rejudging");
+			} else {
+				labelRunningTestCases.setText("Finished judging");
+			}
+		} else {
+			labelRunningTestCases.setText("");
+		}
 	}
 
 	@Override
 	public void handleJudgingStarting(String solutionName, String language, int numTestCases) {
-		stage.setTitle("Verisimilitude - " + solutionName);
-		initializeTestCases(numTestCases);
+		setIsJudging(true);
+		setIsRejudging(false);
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				stage.setTitle("Verisimilitude - " + solutionName);
+				initializeTestCases(numTestCases);
+				updateJudgingString(false, false, false);
+			}
+		});
+		refreshTestCaseContextMenu();
+	}
+	
+	@Override
+	public void handleRejudgingStarting(String solutionName, String language, int numTestCases) {
+		setIsJudging(true);
+		setIsRejudging(true);
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				updateJudgingString(false, false, true);
+			}
+		});
+		refreshTestCaseContextMenu();
 	}
 
 	@Override
@@ -423,11 +569,9 @@ public class ResultsController implements VerisListener {
 			public void run() {
 				labelCompilingCode.setText("Compiling code. . . " + compileVerdict.getName().toUpperCase());
 				if (compileVerdict == Verdict.COMPILE_SUCCESS) {
-					labelRunningTestCases.setText(
-							String.format("Running %d test case%s",
-									testCaseParents.length,
-									testCaseParents.length == 1 ? "" : "s"));
+					updateJudgingString(true, false, isRejudging());
 				} else if (compileResult.getErrorStreamFile() != null) {
+					updateJudgingString(false, false, isRejudging());
 					labelCompilingCode.setOnMouseClicked(new EventHandler<MouseEvent>() {
 						public void handle(MouseEvent e) {
 							if (e.getButton() == MouseButton.PRIMARY) {
@@ -470,8 +614,28 @@ public class ResultsController implements VerisListener {
 					labelVerdict.setText(finalVerdict.getName());
 				else
 					labelVerdict.setText(finalVerdict.getName() + " - \"" + smallestFailure.inputFile.getName() + "\"");
+				
+				if (finalVerdict != Verdict.COMPILE_ERROR)
+					updateJudgingString(false, true, false);
 			}
 		});
+		setIsJudging(false);
+		setIsRejudging(false);
+		refreshTestCaseContextMenu();
+	}
+	
+	@Override
+	public void handleRejudgingFinished(Verdict finalVerdict) {
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				if (finalVerdict != Verdict.COMPILE_ERROR)
+					updateJudgingString(false, true, true);
+			}
+		});
+		setIsJudging(false);
+		setIsRejudging(false);
+		refreshTestCaseContextMenu();
 	}
 	
 	private TestCaseResult getSmallestFailure(Verdict finalVerdict) {
@@ -487,9 +651,5 @@ public class ResultsController implements VerisListener {
 			}
 		}
 		return smallestFailure;
-	}
-	
-	private void openTextViewer() {
-		TextViewerController.createAndOpenTextViewer("Compile Error", "Compile Error", "BLAH");
 	}
 }

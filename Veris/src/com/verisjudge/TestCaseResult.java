@@ -23,12 +23,14 @@ public class TestCaseResult {
 	public final String expectedOutput;
 	public final String output;
 	public final long runtime;
+	public final boolean wasStoppedEarly;
 	
-	public TestCaseResult(String name, File inputFile, File answerFile, long runtime, Verdict verdict, String checkerMessage, String expectedOutput, String output, File programOutputFile, File errorStreamFile) {
+	public TestCaseResult(String name, File inputFile, File answerFile, long runtime, boolean wasStoppedEarly, Verdict verdict, String checkerMessage, String expectedOutput, String output, File programOutputFile, File errorStreamFile) {
 		this.name = name;
 		this.inputFile = inputFile;
 		this.answerFile = answerFile;
 		this.runtime = runtime;
+		this.wasStoppedEarly = wasStoppedEarly;
 		this.verdict = verdict;
 		this.checkerMessage = checkerMessage;
 		this.expectedOutput = expectedOutput;
@@ -37,8 +39,8 @@ public class TestCaseResult {
 		this.errorStreamFile = errorStreamFile;
 	}
 	
-	public TestCaseResult(String name, File inputFile, File answerFile, long runtime, Verdict verdict) {
-		this(name, inputFile, answerFile, runtime, verdict, null, null, null, null, null);
+	public TestCaseResult(String name, File inputFile, File answerFile, long runtime, boolean wasStoppedEarly, Verdict verdict) {
+		this(name, inputFile, answerFile, runtime, wasStoppedEarly, verdict, null, null, null, null, null);
 	}
 	
 	public String getCheckerMessage() {
@@ -68,21 +70,13 @@ public class TestCaseResult {
 	public String getTooltipString() {
 		StringBuilder tooltipStringBuilder = new StringBuilder();
 		String runtimeString = String.format("%.3f s", runtime / 1000.0);
-		if (verdict == Verdict.TIME_LIMIT_EXCEEDED) {
+		if (wasStoppedEarly) {
 			runtimeString = ">" + runtimeString;
 		}
 		tooltipStringBuilder.append(String.format("Test case %s - Runtime: %s", name, runtimeString));
 		if (getCheckerMessage() != null && !getCheckerMessage().isEmpty()) {
 			tooltipStringBuilder.append("\n\n" + getCheckerMessage());
 		}
-		/*
-		if (verdict == Verdict.WRONG_ANSWER && expectedOutput != null && output != null) {
-			tooltipStringBuilder.append("\n\nExpected output:\n");
-			tooltipStringBuilder.append(getExpectedOutputBlockString());
-			tooltipStringBuilder.append("\nYour output:\n");
-			tooltipStringBuilder.append(getOutputBlockString());
-		}
-		*/
 		return tooltipStringBuilder.toString();
 	}
 	
@@ -146,6 +140,7 @@ public class TestCaseResult {
 		private String output;
 		private String expectedOutput;
 		private long runtime;
+		private boolean wasStoppedEarly;
 		
 		public Builder setName(String name) {
 			this.name = name;
@@ -184,6 +179,11 @@ public class TestCaseResult {
 		
 		public Builder setRuntime(long runtime) {
 			this.runtime = runtime;
+			return this;
+		}
+		
+		public Builder setWasStoppedEarly(boolean wasStoppedEarly) {
+			this.wasStoppedEarly = wasStoppedEarly;
 			return this;
 		}
 		
@@ -229,6 +229,10 @@ public class TestCaseResult {
 			return runtime;
 		}
 		
+		public boolean getWasStoppedEarly() {
+			return wasStoppedEarly;
+		}
+
 		public String getExpectedOutput() {
 			return expectedOutput;
 		}
@@ -238,7 +242,7 @@ public class TestCaseResult {
 		}
 		
 		public TestCaseResult build() {
-			return new TestCaseResult(name, inputFile, answerFile, runtime, verdict, checkerMessage, expectedOutput, output, programOutputFile, errorStreamFile);
+			return new TestCaseResult(name, inputFile, answerFile, runtime, wasStoppedEarly, verdict, checkerMessage, expectedOutput, output, programOutputFile, errorStreamFile);
 		}
 	}
 }

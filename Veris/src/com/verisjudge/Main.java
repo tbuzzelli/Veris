@@ -18,6 +18,7 @@ import javafx.stage.Stage;
 public class Main extends Application {
 
 	public final static Image MAIN_ICON = new Image(Main.class.getResourceAsStream("/images/icon.png"));
+	public final static String STYLES = Main.class.getResource("/css/styles.css").toExternalForm();
 	public final static String DARK_THEME = Main.class.getResource("/css/styles-dark.css").toExternalForm();
 	
 	public static void main(String[] args) {
@@ -153,6 +154,7 @@ public class Main extends Application {
 	public static void updateTheme(Stage stage) {
 		if (stage == null || stage.getScene() == null)
 			return;
+		stage.getScene().getStylesheets().add(STYLES);
 		if (Settings.getSettings().getBooleanOrDefault(Settings.USE_DARK_THEME, false))
 			stage.getScene().getStylesheets().add(DARK_THEME);
 	}

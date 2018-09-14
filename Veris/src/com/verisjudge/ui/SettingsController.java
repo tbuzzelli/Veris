@@ -19,6 +19,7 @@ public class SettingsController {
 	@FXML private CheckBox checkBoxUseDarkTheme;
 	@FXML private CheckBox checkBoxRememberJudgingSettings;
 	@FXML private CheckBox checkBoxSortCasesBySize;
+	@FXML private CheckBox checkBoxStopAtFirstNonCorrectVerdict;
 
 	private Stage stage;
 	
@@ -31,7 +32,7 @@ public class SettingsController {
 			
 	        Scene scene = new Scene(root);
 
-	        stage.setTitle("Verisimilitude - Settings");
+	        stage.setTitle("Settings");
 	        stage.setScene(scene);
 	        stage.setResizable(false);
 	        Main.addIconToStage(stage);
@@ -58,7 +59,6 @@ public class SettingsController {
 
 	@FXML protected void handleSaveButtonAction(ActionEvent event) {
 		saveSettings();
-		
 		event.consume();
 	}
 	
@@ -77,6 +77,12 @@ public class SettingsController {
 			checkBoxSortCasesBySize.setSelected(
 					Settings.getSettings().getBooleanOrDefault(
 							Settings.SORT_CASES_BY_SIZE, Veris.DEFAULT_SORT_CASES_BY_SIZE));
+		
+		if (checkBoxStopAtFirstNonCorrectVerdict != null)
+			checkBoxStopAtFirstNonCorrectVerdict.setSelected(
+					Settings.getSettings().getBooleanOrDefault(
+							Settings.STOP_AT_FIRST_NON_CORRECT_VERDICT,
+							Veris.DEFAULT_STOP_AT_FIRST_NON_CORRECT_VERDICT));
 	}
 	
 	private boolean saveSettings() {
@@ -91,6 +97,10 @@ public class SettingsController {
 		if (checkBoxSortCasesBySize != null)
 			Settings.getSettings().set(Settings.SORT_CASES_BY_SIZE,
 					checkBoxSortCasesBySize.isSelected());
+		
+		if (checkBoxStopAtFirstNonCorrectVerdict != null)
+			Settings.getSettings().set(Settings.STOP_AT_FIRST_NON_CORRECT_VERDICT,
+					checkBoxStopAtFirstNonCorrectVerdict.isSelected());
 		
 		boolean status = Settings.saveSettings();
 		return status;

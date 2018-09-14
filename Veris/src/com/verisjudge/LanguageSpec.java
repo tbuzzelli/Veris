@@ -179,10 +179,10 @@ public class LanguageSpec {
 		return new ProcessBuilder(args);
 	}
 	
-	public ProcessBuilder getExecutionProcessBuilder(String filename, String classname) {
+	public ProcessBuilder getExecutionProcessBuilder(String directory, String filename, String classname) {
 		String[] args = new String[executionArgs.length];
 		for (int i = 0; i < args.length; i++) {
-			args[i] = executionArgs[i].replace("{file}", filename).replace("{filename}", classname);
+			args[i] = executionArgs[i].replace("{dir}", directory).replace("{file}", filename).replace("{filename}", classname);
 		}
 		return new ProcessBuilder(args);
 	}

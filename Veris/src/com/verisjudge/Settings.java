@@ -16,7 +16,7 @@ import com.verisjudge.utils.FileUtils;
 public class Settings {
 
 	private static Settings SETTINGS;
-	private final static String SETTINGS_FILE_PATH = "../settings.json";
+	private final static String SETTINGS_FILENAME = "settings.json";
 	
 	public final static String REMEMBER_JUDGING_SETTINGS = "rememberJudgingSettings";
 	public final static String PREVIOUS_SOLUTION_PATH = "previousSolutionPath";
@@ -32,6 +32,8 @@ public class Settings {
 	public final static String PREVIOUS_USE_TIME = "previousUseTime";
 	public final static String USE_DARK_THEME = "useDarkTheme";
 	public final static String SORT_CASES_BY_SIZE = "sortCasesBySize";
+	public final static String DEFAULT_TIME_LIMIT = "defaultTimeLimit";
+	public final static String STOP_AT_FIRST_NON_CORRECT_VERDICT = "stopAtFirstNonCorrectVerdict";
 	
 	private final Map<String, Setting<?>> settings;
 	
@@ -53,7 +55,7 @@ public class Settings {
 	public static Settings getSettings() {
 		if (SETTINGS != null)
 			return SETTINGS;
-		SETTINGS = fromJsonString(FileUtils.readEntireFile(new File(SETTINGS_FILE_PATH)));
+		SETTINGS = fromJsonString(FileUtils.readEntireFile(FileUtils.getConfigFile(SETTINGS_FILENAME)));
 		if (SETTINGS == null) {
 			SETTINGS = new Settings();
 			saveSettings();
@@ -63,7 +65,7 @@ public class Settings {
 	
 	public static boolean saveSettings() {
 		if (SETTINGS != null) {
-			return FileUtils.writeStringToFile(new File(SETTINGS_FILE_PATH), SETTINGS.toJsonString());
+			return FileUtils.writeStringToFile(FileUtils.getConfigFile(SETTINGS_FILENAME), SETTINGS.toJsonString());
 		}
 		return false;
 	}

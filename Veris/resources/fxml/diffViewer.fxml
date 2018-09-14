@@ -7,8 +7,9 @@
 <?import java.lang.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.web.*?>
 
-<BorderPane minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.verisjudge.ui.TextViewerController">
+<BorderPane minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.verisjudge.ui.DiffViewerController">
    <padding>
       <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
    </padding>
@@ -30,9 +31,9 @@
       </GridPane>
    </top>
    <center>
-      <ScrollPane fitToWidth="true" fitToHeight="true" focusTraversable="false" hbarPolicy="NEVER" style="-fx-focus-color: transparent; -fx-faint-focus-color: transparent; -fx-font-family: monospace;" vbarPolicy="NEVER" BorderPane.alignment="CENTER">
+      <ScrollPane fitToWidth="true" fitToHeight="true" focusTraversable="false" hbarPolicy="NEVER" style="-fx-focus-color: transparent; -fx-faint-focus-color: transparent;" vbarPolicy="NEVER" BorderPane.alignment="CENTER">
          <content>
-         	<TextArea fx:id="mainTextArea" editable="false" focusTraversable="false" wrapText="true" maxWidth="1.7976931348623157E308" maxHeight="1.7976931348623157E308" style="-fx-focus-color: transparent;"/>	
+         	<WebView fx:id="mainWebView" focusTraversable="false" minWidth="10.0" minHeight="10.0" prefWidth="10.0" prefHeight="10.0" maxWidth="1.7976931348623157E308" maxHeight="1.7976931348623157E308"/>
          </content>
          <BorderPane.margin>
             <Insets top="10.0" />

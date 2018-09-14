@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -31,6 +32,7 @@ public class Veris {
     public static final long MAXIMUM_TIME_LIMIT = 60 * 60 * 1000; // 1 hour
     
     public final static boolean DEFAULT_SORT_CASES_BY_SIZE = false;
+    public final static boolean DEFAULT_STOP_AT_FIRST_NON_CORRECT_VERDICT = false;
 	
     private HashMap<String, File> answerFiles, inputFiles;
 
@@ -50,6 +52,7 @@ public class Veris {
     private long timeLimit;
     private File dataFolder;
     private boolean sortCasesBySize = DEFAULT_SORT_CASES_BY_SIZE;
+    private boolean stopAtFirstNonCorrectVerdict = DEFAULT_STOP_AT_FIRST_NON_CORRECT_VERDICT;
     private boolean isVerbose;
     private PrintStream logger = System.out;
     private WeakReference<VerisListener> listener;
@@ -105,6 +108,15 @@ public class Veris {
     public void setSortCasesBySize(boolean sortCasesBySize) {
         this.sortCasesBySize = sortCasesBySize;
     }
+    
+    /**
+     * Sets whether or not the judging will stop once a non-correct verdict is reached.
+     * @param stopAtFirstNonCorrectVerdict Whether or not the judging will stop once a
+     * non-correct verdict is reached.
+     */
+    public void setStopAtFirstNonCorrectVerdict(boolean stopAtFirstNonCorrectVerdict) {
+        this.stopAtFirstNonCorrectVerdict = stopAtFirstNonCorrectVerdict;
+    }
 
     /**
      * Sets the time limit for this problem in milliseconds.
@@ -158,8 +170,28 @@ public class Veris {
      * source file.
      */
     public void setSolutionFile(File solutionFile) throws IOException {
-    	
         this.solutionFile = solutionFile;
+        fetchSolutionFile();
+    }
+    
+    /**
+     * Returns the source file which will be judged
+     * @return The source file which will be judged
+     */
+    public File getSolutionFile() {
+    	return this.solutionFile;
+    }
+    
+    /**
+     * Copies the solution file to a private version so changes while judging
+     * will not cause any problems.
+     * @throws IOException If an IO error was encountered while reading the
+     * source file.
+     */
+    public void fetchSolutionFile() throws IOException {
+    	if (solutionFile == null)
+    		return;
+
         Path p = solutionFile.toPath();
         Path newSourceFile = directory.toPath().resolve(solutionFile.getName());
         if (!newSourceFile.toFile().exists())
@@ -172,11 +204,12 @@ public class Veris {
     }
     
     /**
-     * Returns the source file which will be judged
-     * @return The source file which will be judged
+     * Prepares to run cases again after already judging. Also re-fetches the
+     * solution file.
+     * @throws IOException If an error occurs while copying the solution file.
      */
-    public File getSolutionFile() {
-    	return this.solutionFile;
+    public void refresh() throws IOException {
+    	fetchSolutionFile();
     }
 
     /**
@@ -217,7 +250,7 @@ public class Veris {
     public File getDataFolder(){
         return dataFolder;
     }
-
+    
     /**
      * Compiles then tests the code against all test cases.
      * This should be run in a separate thread.
@@ -281,14 +314,8 @@ public class Veris {
         }
 
         for (int ci = 0; ci < cases.size(); ci++) {
-        	TestCase c = cases.get(ci);
-        	
-        	// Notify listener that this case is now being run.
-        	if (listener.get() != null)
-        		listener.get().handleTestCaseStarting(ci);
-
             // Run the case and get the result.
-            TestCaseResult testCaseResult = runCase(c, languageSpec);
+            TestCaseResult testCaseResult = runCase(ci, languageSpec);
             Verdict caseResult = testCaseResult.verdict;
             
             // If the current result is still correct or if we had an
@@ -296,19 +323,126 @@ public class Veris {
             if (result == Verdict.CORRECT || caseResult == Verdict.INTERNAL_ERROR)
                 result = caseResult;
 
-            // Notify listener that this case has been judged.
-            if (listener.get() != null)
-            	listener.get().handleTestCaseFinished(ci, testCaseResult);
-            
             // If we were interrupted, return with an Internal Error.
-            if (Thread.currentThread().isInterrupted())
+            if (Thread.currentThread().isInterrupted()) {
+            	if (listener.get() != null)
+                	listener.get().handleRejudgingFinished(Verdict.INTERNAL_ERROR);
             	return Verdict.INTERNAL_ERROR;
+            }
+
+            // Check if we should stop after an incorrect verdict.
+            if (result != Verdict.CORRECT && stopAtFirstNonCorrectVerdict)
+            	break;
         }
 
         // Notify listener that judging has finished.
         if (listener.get() != null)
         	listener.get().handleJudgingFinished(result);
 
+        // Return the result.
+        return result;
+    }
+
+    /**
+     * Compiles then tests the code against a selected number of test cases.
+     * This should be run in a separate thread.
+     * @return The Verdict.
+     */
+    public Verdict reTestCode(Collection<Integer> caseNumbers) {
+    	try {
+			refresh();
+		} catch (IOException e) {
+			e.printStackTrace();
+			return Verdict.INTERNAL_ERROR;
+		}
+    	
+    	// Notify listener that rejudging has started.
+    	if (listener.get() != null)
+    		listener.get().handleRejudgingStarting(solutionFile.getName(), language, cases.size());
+
+
+    	// Notify listener that compiling has started.
+        if (listener.get() != null)
+        	listener.get().handleCompileStarting();
+        
+        LanguageSpec languageSpec = this.languageSpec != null ? this.languageSpec : config.getLanguageSpecForExtension(language);
+        // If we can't find a matching language spec or this language isn't allowed, return INTERNAL_ERROR.
+        if (languageSpec == null || !languageSpec.isAllowed()) {
+        	// Notify listener of the internal error.
+            if (listener.get() != null) {
+            	listener.get().handleCompileFinished(new CompileResult.Builder().setVerdict(Verdict.INTERNAL_ERROR).build());
+            	listener.get().handleRejudgingFinished(Verdict.INTERNAL_ERROR);
+            }
+        	return Verdict.INTERNAL_ERROR;
+        }
+        
+        // Attempt to compile the code.
+        CompileResult compileResult = compileCode(languageSpec);
+        Verdict compileVerdict = compileResult.getVerdict();
+        
+        // If we were interrupted, return with an internal error.
+        if (Thread.currentThread().isInterrupted()) {
+        	// Notify listener of the internal error.
+            if (listener.get() != null) {
+            	listener.get().handleCompileFinished(compileResult);
+            	listener.get().handleRejudgingFinished(Verdict.INTERNAL_ERROR);
+            }
+        	return Verdict.INTERNAL_ERROR;
+        }
+        
+        // Notify listener that compiling had finished.
+        if (listener.get() != null)
+        	listener.get().handleCompileFinished(compileResult);
+        
+        // If the compiling failed, return.
+        if (compileVerdict != Verdict.COMPILE_SUCCESS) {
+        	// Notify listener of the internal error.
+            if (listener.get() != null)
+            	listener.get().handleRejudgingFinished(compileVerdict);
+        	return compileVerdict;
+        }
+
+        Verdict result = Verdict.CORRECT;
+        
+        // Sort our test cases as appropriate.
+        if (sortCasesBySize) {
+        	Comparator<TestCase> testCaseComparator = Comparator.comparingLong(a -> a.inputFile.length());
+        	testCaseComparator = testCaseComparator.thenComparing(Comparator.naturalOrder());
+            Collections.sort(cases, testCaseComparator);
+        } else {
+        	Collections.sort(cases);
+        }
+
+        for (int ci = 0; ci < cases.size(); ci++) {
+        	if (!caseNumbers.contains(ci)) {
+        		continue;
+        	}
+
+            // Run the case and get the result.
+            TestCaseResult testCaseResult = runCase(ci, languageSpec);
+            Verdict caseResult = testCaseResult.verdict;
+            
+            // If the current result is still correct or if we had an
+            // internal error, set it to this one.
+            if (result == Verdict.CORRECT || caseResult == Verdict.INTERNAL_ERROR)
+                result = caseResult;
+
+            // If we were interrupted, return with an Internal Error.
+            if (Thread.currentThread().isInterrupted()) {
+            	if (listener.get() != null)
+                	listener.get().handleRejudgingFinished(Verdict.INTERNAL_ERROR);
+            	return Verdict.INTERNAL_ERROR;
+            }
+            
+            // Check if we should stop after an incorrect verdict.
+            if (result != Verdict.CORRECT && stopAtFirstNonCorrectVerdict)
+            	break;
+        }
+
+        // Notify listener that judging has finished.
+        if (listener.get() != null)
+        	listener.get().handleRejudgingFinished(result);
+        
         // Return the result.
         return result;
     }
@@ -378,6 +512,30 @@ public class Veris {
 
     /**
      * Run a single test case against the solution.
+     * @param caseNumber The test case number to run.
+     * @param languageSpec The languageSpec to use while running the code. (Cannot be null).
+     * @return A TestCaseResult representing the result from running the solution against
+     * this test case. Returns INTERNAL_ERROR if an error occurred.
+     */
+    public TestCaseResult runCase(int caseNumber,  LanguageSpec languageSpec) {
+    	TestCase c = cases.get(caseNumber);
+    	
+    	// Notify listener that this case is now being run.
+    	if (listener.get() != null)
+    		listener.get().handleTestCaseStarting(caseNumber);
+
+        // Run the case and get the result.
+        TestCaseResult testCaseResult = runCase(c, languageSpec);
+
+        // Notify listener that this case has been judged.
+        if (listener.get() != null)
+        	listener.get().handleTestCaseFinished(caseNumber, testCaseResult);
+
+    	return testCaseResult;
+    }
+
+    /**
+     * Run a single test case against the solution.
      * @param c The test case to run.
      * @param languageSpec The languageSpec to use while running the code. (Cannot be null).
      * @return A TestCaseResult representing the result from running the solution against
@@ -402,7 +560,7 @@ public class Veris {
         }
 
         // Build the execution process for this language.
-        ProcessBuilder builder = languageSpec.getExecutionProcessBuilder(solutionFile.getName(), className);
+        ProcessBuilder builder = languageSpec.getExecutionProcessBuilder(directory.getAbsolutePath(), solutionFile.getName(), className);
         
         File errorStreamFile = null;
 		try {
@@ -425,6 +583,7 @@ public class Veris {
         try {
             process = builder.start();
         } catch (IOException e) {
+        	e.printStackTrace();
         	resultBuilder.setVerdict(Verdict.INTERNAL_ERROR);
         	return resultBuilder.build();
         }
@@ -452,7 +611,7 @@ public class Veris {
         
         // Wait for it to complete with a timeout of 105% of the timeLimit
         try {
-            completed = process.waitFor(timeLimit * 105 / 100, TimeUnit.MILLISECONDS);
+            completed = process.waitFor(timeLimit * 105 / 100 + 1000, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
         	process.destroyForcibly();
             resultBuilder.setVerdict(Verdict.INTERNAL_ERROR);
@@ -462,11 +621,12 @@ public class Veris {
 
         // Calculate the time it took in milliseconds.
         long time = (System.nanoTime() - t1 + 999999) / 1000000;
-        t1 = Math.min(timeLimit, time);
+        boolean wasStoppedEarly = time >= timeLimit + 1000;
+        time = Math.min(timeLimit + 1000, time);
         
         // Keep track of the longest time and the total time.
-        longestTime = Math.max(longestTime, t1);
-        totalTime += t1;
+        longestTime = Math.max(longestTime, time);
+        totalTime += time;
 
         // Get the result.
         Verdict verdict;
@@ -549,7 +709,8 @@ public class Veris {
         
         resultBuilder.setVerdict(verdict);
         resultBuilder.setCheckerMessage(checkerMessage);
-        resultBuilder.setRuntime(t1);
+        resultBuilder.setRuntime(time);
+        resultBuilder.setWasStoppedEarly(wasStoppedEarly);
         if (errorStreamFile != null)
         	resultBuilder.setErrorStreamFile(errorStreamFile);
         
@@ -645,6 +806,8 @@ public class Veris {
     		case "c":
     		case "cc":
     		case "cpp":
+    		case "exe":
+    		case "pas":
     		case "py":
     			return true;
     		default:
@@ -703,6 +866,7 @@ public class Veris {
     	private Long timeLimit;
     	private LanguageSpec languageSpec;
     	private Boolean sortCasesBySize;
+    	private Boolean stopAtFirstNonCorrectVerdict;
     	private Boolean isVerbose;
     	private Checker checker;
     	private VerisListener listener;
@@ -719,6 +883,8 @@ public class Veris {
     			veris.setLanguageSpec(languageSpec);
     		if (sortCasesBySize != null)
     			veris.setSortCasesBySize(sortCasesBySize);
+    		if (stopAtFirstNonCorrectVerdict != null)
+    			veris.setStopAtFirstNonCorrectVerdict(stopAtFirstNonCorrectVerdict);
     		if (isVerbose != null)
     			veris.setIsVerbose(isVerbose);
     		if (listener != null)
@@ -780,6 +946,15 @@ public class Veris {
     	
     	public Boolean getSortCasesBySize() {
     		return sortCasesBySize;
+    	}
+    	
+    	public Builder setStopAtFirstNonCorrectVerdict(Boolean stopAtFirstNonCorrectVerdict) {
+    		this.stopAtFirstNonCorrectVerdict = stopAtFirstNonCorrectVerdict;
+    		return this;
+    	}
+    	
+    	public Boolean getStopAtFirstNonCorrectVerdict() {
+    		return stopAtFirstNonCorrectVerdict;
     	}
     	
     	public Builder setIsVerbose(Boolean isVerbose) {

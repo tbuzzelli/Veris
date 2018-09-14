@@ -20,8 +20,8 @@
       "isAllowed": true,
       "fileExtensions": ["c"],
       "needsCompile": true,
-      "compileArgs": ["gcc", "-static", "-fno-optimize-sibling-calls", "-fno-strict-aliasing", "-DONLINE_JUDGE", "-fno-asm", "-lm", "-s", "-Wl,--stack=268435456", -O2", "-std=c11", "-o", "{filename}.exe", "{file}"],
-      "runtimeArgs": ["./{filename}.exe"]
+      "compileArgs": ["gcc", "-lm", "-O2", "-std=c11", "-o", "{filename}.exe", "{file}"],
+      "runtimeArgs": ["{dir}/{filename}.exe"]
     },
     {
       "languageName": "GNU G++11 5.1.0",
@@ -29,26 +29,26 @@
       "isAllowed": true,
       "fileExtensions": ["cpp", "cc"],
       "needsCompile": true,
-      "compileArgs": ["g++", "-static", "-DONLINE_JUDGE", "-lm", "-s", "-x", "c++", "-Wl,--stack=268435456", "-O2", "-std=c++11", "-D__USE_MINGW_ANSI_STDIO=0", "-o", "{filename}.exe", "{file}"],
-      "runtimeArgs": ["./{filename}.exe"]
+      "compileArgs": ["g++", "-lm", "-O2", "-std=c++11", "-o", "{filename}.exe", "{file}"],
+      "runtimeArgs": ["{dir}/{filename}.exe"]
     },
     {
       "languageName": "GNU G++14 6.4.0",
-      "detectLanguagePriority": 1,
+      "detectLanguagePriority": 2,
       "isAllowed": true,
       "fileExtensions": ["cpp", "cc"],
       "needsCompile": true,
-      "compileArgs": ["g++", "-static", "-DONLINE_JUDGE", "-lm", "-s", "-x", "c++", "-Wl,--stack=268435456", "-O2", "-std=c++14", "-D__USE_MINGW_ANSI_STDIO=0", "-o", "{filename}.exe", "{file}"],
-      "runtimeArgs": ["./{filename}.exe"]
+      "compileArgs": ["g++", "-lm", "-O2", "-std=c++14", "-o", "{filename}.exe", "{file}"],
+      "runtimeArgs": ["{dir}/{filename}.exe"]
     },
     {
       "languageName": "GNU G++17 7.2.0",
-      "detectLanguagePriority": 1,
+      "detectLanguagePriority": 3,
       "isAllowed": true,
       "fileExtensions": ["cpp", "cc"],
       "needsCompile": true,
-      "compileArgs": ["g++", "-static", "-DONLINE_JUDGE", "-lm", "-s", "-x", "c++", "-Wl,--stack=268435456", "-O2", "-std=c++17", "-D__USE_MINGW_ANSI_STDIO=0", "-o", "{filename}.exe", "{file}"],
-      "runtimeArgs": ["./{filename}.exe"]
+      "compileArgs": ["g++", "-lm", "-O2", "-std=c++17", "-o", "{filename}.exe", "{file}"],
+      "runtimeArgs": ["{dir}/{filename}.exe"]
     },
     {
       "languageName": "Python 3.6",
@@ -65,6 +65,15 @@
       "fileExtensions": ["py"],
       "needsCompile": false,
       "runtimeArgs": ["python2", "{file}"]
+    },
+    {
+      "languageName": "Pascal",
+      "detectLanguagePriority": 1,
+      "isAllowed": true,
+      "fileExtensions": ["pas"],
+      "needsCompile": true,
+      "compileArgs": ["fpc", "-O3", "-o{filename}.exe", "{file}"],
+      "runtimeArgs": ["{dir}/{filename}.exe"]
     },
     {
       "languageName": "Pre-Compiled Executable",

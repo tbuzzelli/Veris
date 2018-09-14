@@ -35,7 +35,7 @@ public class Config {
 	public final static String JSON_FIELD_LANGUAGE_SPEC_COMPILE_ARGS = "compileArgs";
 	public final static String JSON_FIELD_LANGUAGE_SPEC_EXECUTION_ARGS = "runtimeArgs";
 	
-	public final static String USER_CONFIG_FILE_PATH = "../config.json";
+	public final static String USER_CONFIG_FILENAME = "config.json";
 	public final static String DEFAULT_CONFIG_RESOURCE_PATH = "/default_config.json";
 	
 	private static Config CONFIG;
@@ -234,7 +234,7 @@ public class Config {
 			// TODO: Show pop-up error message.
 		}
 		createUserConfigFileIfNeeded();
-		Config userConfig = fromConfigFile(USER_CONFIG_FILE_PATH);
+		Config userConfig = fromConfigFile(FileUtils.getConfigFile(USER_CONFIG_FILENAME));
 		if (userConfig != null) {
 			CONFIG = merge(CONFIG, userConfig);
 		}
@@ -242,7 +242,7 @@ public class Config {
 	}
 	
 	public static boolean createUserConfigFileIfNeeded() {
-		File userConfigFile = new File(USER_CONFIG_FILE_PATH);
+		File userConfigFile = FileUtils.getConfigFile(USER_CONFIG_FILENAME);
 		// If the user config file already exists, we don't need to create it.
 		if (userConfigFile.exists()) {
 			return true;

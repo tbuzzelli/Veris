@@ -3,12 +3,35 @@ package com.verisjudge.utils;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.lang3.SystemUtils;
 
 public class FileUtils {
+
+	public static File getConfigDirectory() {
+		if (SystemUtils.IS_OS_LINUX) {
+			String homeDir = System.getProperty("user.home");
+			File dir = new File(homeDir + "/.config/Verisimilitude/");
+			dir.mkdirs();
+			return dir;
+		}
+		if (SystemUtils.IS_OS_WINDOWS) {
+			File dir = new File("../");
+			return dir;
+		}
+		return new File("./");
+	}
+	
+	public static File getConfigFile(String filename) {
+		return new File(getConfigDirectory(), filename);
+	}
 
 	public static String readEntireFile(File file) {
 		if (file == null)
@@ -47,6 +70,21 @@ public class FileUtils {
 			e.printStackTrace();
 			return "";
 		}
+	}
+	
+	public static List<String> fileToLines(File file) {
+		List<String> lines = new ArrayList<>();
+		String line = "";
+		try {
+			BufferedReader in = new BufferedReader(new FileReader(file));
+			while ((line = in.readLine()) != null) {
+				lines.add(line);
+			}
+			in.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return lines;
 	}
 	
 	public static String readLimitedInputStream(InputStream inputStream, long maxLength) {

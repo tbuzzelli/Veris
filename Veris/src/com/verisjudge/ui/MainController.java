@@ -20,7 +20,6 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.geometry.Side;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
@@ -89,7 +88,7 @@ public class MainController {
 		
 		Long previousUseTime = Settings.getSettings().getLong(Settings.PREVIOUS_USE_TIME);
 		// If we have no record of previous use or the previous use was over 15 minutes ago, don't load.
-		if (previousUseTime == null || System.currentTimeMillis() - previousUseTime >= 15 * 60 * 1000)
+		if (previousUseTime == null || System.currentTimeMillis() - previousUseTime >= 7L * 24 * 60 * 60 * 1000)
 			return true;
 		
 		String previousSolutionPath = Settings.getSettings().getString(Settings.PREVIOUS_SOLUTION_PATH);
@@ -215,7 +214,8 @@ public class MainController {
 	
 	@FXML
     protected void initialize() {
-		setTimeLimit(Veris.DEFAULT_TIME_LIMIT / 1000.0);
+		setTimeLimit(Settings.getSettings().getDoubleOrDefault(
+				Settings.DEFAULT_TIME_LIMIT, Veris.DEFAULT_TIME_LIMIT / 1000.0));
 		
 		initContextMenu();
 		
@@ -312,7 +312,7 @@ public class MainController {
     	if (verisBuilder.getSolutionFile() != null)
     		fileChooser.setInitialDirectory(verisBuilder.getSolutionFile().getParentFile());
     	fileChooser.setTitle("Select Solution File");
-    	fileChooser.getExtensionFilters().add(new ExtensionFilter("Solution files (*.java, *.c, *.cc, *.cpp, *.py, *.exe)", "*.java", "*.c", "*.cc", "*.cpp", "*.py", "*.exe"));
+    	fileChooser.getExtensionFilters().add(new ExtensionFilter("Solution files (*.java, *.c, *.cc, *.cpp, *.pas, *.py, *.exe)", "*.java", "*.c", "*.cc", "*.cpp", "*.pas", "*.py", "*.exe"));
     	File file = fileChooser.showOpenDialog(stage);
     	if (file != null && Veris.isValidSolutionFile(file)) {
     		setSolutionFile(file);
@@ -346,6 +346,10 @@ public class MainController {
 				Settings.getSettings().getBooleanOrDefault(
 						Settings.SORT_CASES_BY_SIZE,
 						Veris.DEFAULT_SORT_CASES_BY_SIZE));
+		verisBuilder.setStopAtFirstNonCorrectVerdict(
+				Settings.getSettings().getBooleanOrDefault(
+						Settings.STOP_AT_FIRST_NON_CORRECT_VERDICT,
+						Veris.DEFAULT_STOP_AT_FIRST_NON_CORRECT_VERDICT));
 		
 		boolean status = ResultsController.createAndJudge(verisBuilder);
 		if (status) {
