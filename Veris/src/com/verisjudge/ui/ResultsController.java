@@ -63,6 +63,7 @@ public class ResultsController implements VerisListener {
 	private final ContextMenu verdictContextMenu = new ContextMenu();
 	
 	private Integer activeContextMenuTestCaseNumber;
+	private int numRejudgingCases;
 	private Parent[] testCaseParents;
 	private TestCaseResult[] testCaseResults;
 	private boolean isJudging = false;
@@ -167,6 +168,7 @@ public class ResultsController implements VerisListener {
 			refreshTestCase(caseNumber);
 		}
 		refreshTimeLabels();
+		numRejudgingCases = testCaseResults.length;
 		labelMainTitle.setText("Judging " + veris.getSolutionFile().getName());
 		verisThread = new Thread() {
 			public void run() {
@@ -182,7 +184,7 @@ public class ResultsController implements VerisListener {
 		testCaseResults[caseNumber] = null;
 		refreshTestCase(caseNumber);
 		refreshTimeLabels();
-		
+		numRejudgingCases = 1;
 		labelMainTitle.setText("Judging " + veris.getSolutionFile().getName());
 		verisThread = new Thread() {
 			public void run() {
@@ -206,6 +208,7 @@ public class ResultsController implements VerisListener {
 		}
 
 		refreshTimeLabels();
+		numRejudgingCases = failingCases.size();
 		
 		labelMainTitle.setText("Judging " + veris.getSolutionFile().getName());
 		verisThread = new Thread() {
@@ -224,7 +227,7 @@ public class ResultsController implements VerisListener {
 		// Set the context menu to show on rightclick.
 		labelVerdict.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			public void handle(MouseEvent e) {
-				if (e.getButton() == MouseButton.SECONDARY) {
+				if (e.getButton() == MouseButton.PRIMARY || e.getButton() == MouseButton.SECONDARY) {
 					verdictContextMenu.show(labelVerdict, Side.TOP, 0, 0);
 				}
 			}
@@ -506,7 +509,7 @@ public class ResultsController implements VerisListener {
 			// Set the context menu to show on rightclick.
 			testCaseParent.setOnMouseClicked(new EventHandler<MouseEvent>() {
 				public void handle(MouseEvent e) {
-					if (e.getButton() == MouseButton.SECONDARY) {
+					if (e.getButton() == MouseButton.PRIMARY || e.getButton() == MouseButton.SECONDARY) {
 						activeContextMenuTestCaseNumber = caseNumber;
 						testCaseContextMenu.show(imageView, Side.BOTTOM, 0, 0);
 					}
@@ -592,17 +595,18 @@ public class ResultsController implements VerisListener {
 	}
 	
 	private void updateJudgingString(boolean isJudging, boolean isFinished, boolean wasRejudge) {
+		int numCases = wasRejudge ? numRejudgingCases : testCaseParents.length;
 		if (isJudging) {
 			if (wasRejudge) {
 				labelRunningTestCases.setText(
 						String.format("Rerunning %d test case%s",
-								testCaseParents.length,
-								testCaseParents.length == 1 ? "" : "s"));
+								numCases,
+								numCases == 1 ? "" : "s"));
 			} else {
 				labelRunningTestCases.setText(
 						String.format("Running %d test case%s",
-								testCaseParents.length,
-								testCaseParents.length == 1 ? "" : "s"));
+								numCases,
+								numCases == 1 ? "" : "s"));
 			}
 		} else if (isFinished) {
 			if (wasRejudge) {
