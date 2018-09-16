@@ -20,6 +20,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.control.Accordion;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
@@ -27,6 +28,7 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.OverrunStyle;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TitledPane;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -47,6 +49,10 @@ public class MainController {
 	@FXML private Button buttonJudge;
 	@FXML private ChoiceBox<String> choiceBoxLanguage;
 	@FXML private ChoiceBox<String> choiceBoxChecker;
+	
+	@FXML private Accordion accordionAdvancedSettings;
+	@FXML private TitledPane titledPaneAdvancedSettings;
+	@FXML private TextField textFieldDataRegex;
 	
 	@FXML private GridPane gridPaneTokenCheckerSettings;
 	@FXML private GridPane gridPaneDiffCheckerSettings;
@@ -105,6 +111,7 @@ public class MainController {
 				Settings.getSettings().getString(Settings.PREVIOUS_EPSILON_CHECKER_ABSOLUTE_EPSILON);
 		String previousEpsilonCheckerRelativeEpsilon =
 				Settings.getSettings().getString(Settings.PREVIOUS_EPSILON_CHECKER_RELATIVE_EPSILON);
+		String previousDataRegex = Settings.getSettings().getString(Settings.PREVIOUS_DATA_REGEX);
 		
 		// If we don't have a previous solution path or data path, return.
 		if (previousSolutionPath == null || previousDataPath == null)
@@ -147,6 +154,9 @@ public class MainController {
 		if (textFieldEpsilonCheckerRelativeEpsilon != null && previousEpsilonCheckerRelativeEpsilon != null) {
 			textFieldEpsilonCheckerRelativeEpsilon.setText(previousEpsilonCheckerRelativeEpsilon);
 		}
+		if (textFieldDataRegex != null && previousDataRegex != null) {
+			textFieldDataRegex.setText(previousDataRegex);
+		}
 		
 		return true;
 	}
@@ -167,6 +177,7 @@ public class MainController {
 		Settings.getSettings().clear(Settings.PREVIOUS_DIFF_CHECKER_IGNORE_TRAILING_BLANKLINES);
 		Settings.getSettings().clear(Settings.PREVIOUS_EPSILON_CHECKER_ABSOLUTE_EPSILON);
 		Settings.getSettings().clear(Settings.PREVIOUS_EPSILON_CHECKER_RELATIVE_EPSILON);
+		Settings.getSettings().clear(Settings.PREVIOUS_DATA_REGEX);
 		return Settings.saveSettings();
 	}
 	
@@ -205,6 +216,8 @@ public class MainController {
 		Settings.getSettings().set(Settings.PREVIOUS_EPSILON_CHECKER_RELATIVE_EPSILON,
 				textFieldEpsilonCheckerRelativeEpsilon == null ? null
 						: textFieldEpsilonCheckerRelativeEpsilon.getText());
+		Settings.getSettings().set(Settings.PREVIOUS_DATA_REGEX,
+				textFieldDataRegex == null ? null : textFieldDataRegex.getText());
 		
 		updatePreviousUseTime();
 		
@@ -217,6 +230,15 @@ public class MainController {
 				Settings.DEFAULT_TIME_LIMIT, Veris.DEFAULT_TIME_LIMIT / 1000.0));
 		
 		initContextMenu();
+
+		titledPaneAdvancedSettings.setAnimated(false);
+		accordionAdvancedSettings.heightProperty().addListener((obs, oldHeight, newHeight) -> {
+			stage.sizeToScene();
+		} );
+		
+		titledPaneAdvancedSettings.expandedProperty().addListener((ov, b, b1) -> {
+            titledPaneAdvancedSettings.requestLayout();
+        });
 		
 		ObservableList<String> languageList = FXCollections.observableArrayList();
 		languageList.add(DETECT_LANGUAGE_STR);
@@ -349,6 +371,7 @@ public class MainController {
 				Settings.getSettings().getBooleanOrDefault(
 						Settings.STOP_AT_FIRST_NON_CORRECT_VERDICT,
 						Veris.DEFAULT_STOP_AT_FIRST_NON_CORRECT_VERDICT));
+		verisBuilder.setDataRegex(getDataRegex());
 		
 		boolean status = ResultsController.createAndJudge(verisBuilder);
 		if (status) {
@@ -364,6 +387,11 @@ public class MainController {
 		} catch (Exception e) {
 			return Veris.DEFAULT_TIME_LIMIT / 1000.0;
 		}
+	}
+	
+	private String getDataRegex() {
+		String dataRegex = textFieldDataRegex.getText();
+		return dataRegex.isEmpty() ? null : dataRegex;
 	}
 	
 	private void onCheckerSelected(String str) {
@@ -480,6 +508,7 @@ public class MainController {
 		} else {
 			buttonDataPath.setText("?");
 		}
+		textFieldDataRegex.clear();
 		updateJudgeButton();
 	}
 	

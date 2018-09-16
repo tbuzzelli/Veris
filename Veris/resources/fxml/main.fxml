@@ -1,21 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.effect.*?>
-<?import javafx.geometry.*?>
-<?import javafx.scene.text.*?>
-<?import java.lang.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Accordion?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.text.Font?>
 
-<BorderPane fx:id="borderPaneMain" onDragDropped="#handleDragDropped" onDragOver="#handleDragOver" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.verisjudge.ui.MainController">
+<BorderPane fx:id="borderPaneMain" onDragDropped="#handleDragDropped" onDragOver="#handleDragOver" xmlns="http://javafx.com/javafx/10.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.verisjudge.ui.MainController">
          <center>
       <GridPane>
          <columnConstraints>
-            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
+            <ColumnConstraints hgrow="SOMETIMES" />
          </columnConstraints>
          <rowConstraints>
-            <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
-            <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+            <RowConstraints vgrow="SOMETIMES" />
+            <RowConstraints vgrow="SOMETIMES" />
+            <RowConstraints fillHeight="false" valignment="TOP" />
          </rowConstraints>
          <children>
                   <GridPane hgap="5.0" BorderPane.alignment="CENTER">
@@ -24,11 +33,11 @@
                         <ColumnConstraints halignment="LEFT" hgrow="NEVER" maxWidth="192.0" minWidth="10.0" prefWidth="162.0" />
                      </columnConstraints>
                      <rowConstraints>
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
-                        <RowConstraints minHeight="10.0" vgrow="NEVER" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
-                        <RowConstraints minHeight="10.0" vgrow="NEVER" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
+                        <RowConstraints vgrow="NEVER" />
+                        <RowConstraints vgrow="NEVER" />
+                        <RowConstraints vgrow="NEVER" />
+                        <RowConstraints vgrow="NEVER" />
+                        <RowConstraints vgrow="NEVER" />
                      </rowConstraints>
                      <children>
                         <Label text="Solution:">
@@ -73,7 +82,7 @@
                       <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                     </columnConstraints>
                     <rowConstraints>
-                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                      <RowConstraints vgrow="SOMETIMES" />
                     </rowConstraints>
                      <children>
                         <CheckBox fx:id="checkBoxTokenCheckerCaseSensitive" mnemonicParsing="false" text="Case Sensitive" />
@@ -119,6 +128,34 @@
                   <Insets top="5.0" />
                </GridPane.margin>
             </StackPane>
+            <Accordion fx:id="accordionAdvancedSettings" GridPane.rowIndex="2" GridPane.valignment="TOP" GridPane.vgrow="SOMETIMES">
+              <panes>
+                  <TitledPane fx:id="titledPaneAdvancedSettings" alignment="TOP_LEFT" animated="false" contentDisplay="CENTER" expanded="false" text="Advanced Settings">
+                     <content>
+                        <GridPane hgap="5.0">
+                           <columnConstraints>
+                              <ColumnConstraints hgrow="ALWAYS" maxWidth="214.0" minWidth="10.0" />
+                              <ColumnConstraints halignment="LEFT" maxWidth="192.0" minWidth="10.0" prefWidth="162.0" />
+                           </columnConstraints>
+                           <rowConstraints>
+                              <RowConstraints fillHeight="false" vgrow="NEVER" />
+                           </rowConstraints>
+                           <children>
+                              <Label text="Data regex:">
+                                 <font>
+                                    <Font size="16.0" />
+                                 </font>
+                              </Label>
+                              <TextField fx:id="textFieldDataRegex" alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" />
+                           </children>
+                        </GridPane>
+                     </content>
+                  </TitledPane>
+              </panes>
+               <GridPane.margin>
+                  <Insets top="5.0" />
+               </GridPane.margin>
+            </Accordion>
          </children>
       </GridPane>
          </center>
@@ -128,7 +165,7 @@
             <Font size="18.0" />
          </font>
          <BorderPane.margin>
-            <Insets top="15.0" />
+            <Insets top="5.0" />
          </BorderPane.margin>
       </Button>
    </bottom>

@@ -39,6 +39,7 @@ public class Veris {
     private Config config = Config.getConfig();
     private Checker checker;
     private ArrayList<TestCase> cases;
+    private String dataRegex;
     private File solutionFile;
     private File directory;
     private File errorStreamsDirectory;
@@ -217,6 +218,15 @@ public class Veris {
         this.checker = checker;
     }
 
+    /**
+     * Sets the regular expression to use when finding data files.
+     * @param dataRegex The regular expression to use when finding data files.
+     * Only data files matching this expression (before the extension)
+     */
+    public void setDataRegex(String dataRegex) {
+        this.dataRegex = dataRegex;
+    }
+    
     /**
      * Sets the data folder. All input/output files will be used from this
      * folder and from any and all sub folders.
@@ -762,6 +772,10 @@ public class Veris {
                 filetype = name.substring(name.lastIndexOf('.') + 1);
                 name = name.substring(0, name.lastIndexOf('.'));
             }
+            // Skip data files that do not match the dataRegex.
+            if (dataRegex != null && !name.matches(dataRegex)) {
+            	continue;
+            }
             // If this is an answer file or an input file,
             // add it to the appropriate list.
             for (String t : ansFileTypes) {
@@ -861,6 +875,7 @@ public class Veris {
     public static class Builder {
     	private File solutionFile;
     	private File dataFolder;
+    	private String dataRegex;
     	private Long timeLimit;
     	private LanguageSpec languageSpec;
     	private Boolean sortCasesBySize;
@@ -873,6 +888,8 @@ public class Veris {
     		Veris veris = new Veris();
     		if (solutionFile != null)
     			veris.setSolutionFile(solutionFile);
+    		if (dataRegex != null)
+    			veris.setDataRegex(dataRegex);
     		if (dataFolder != null)
     			veris.setDataFolder(dataFolder);
     		if (timeLimit != null)
@@ -917,6 +934,15 @@ public class Veris {
     	
     	public File getDataFolder() {
     		return dataFolder;
+    	}
+    	
+    	public Builder setDataRegex(String dataRegex) {
+    		this.dataRegex = dataRegex;
+    		return this;
+    	}
+    	
+    	public String getDataRegex() {
+    		return dataRegex;
     	}
     	
     	public Builder setTimeLimit(Long timeLimit) {

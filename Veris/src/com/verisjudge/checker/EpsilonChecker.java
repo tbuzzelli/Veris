@@ -95,7 +95,7 @@ public class EpsilonChecker extends Checker {
             } else {
                 rel = Math.abs((a - b) / a);
             }
-            return Math.abs(a-b) <= absEps || rel <= relEps;
+            return Math.abs(a-b) <= absEps + 1e-10 || rel <= relEps + 1e-10;
         } catch (Exception e) {
         	// Ignore any errors and just compare the strings.
         	

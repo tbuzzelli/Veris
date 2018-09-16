@@ -28,6 +28,7 @@ public class Settings {
 	public final static String PREVIOUS_DIFF_CHECKER_IGNORE_TRAILING_BLANKLINES = "previousDiffCheckerIgnoreTrailingBlanklines";
 	public final static String PREVIOUS_EPSILON_CHECKER_ABSOLUTE_EPSILON = "previousEpsilonCheckerAbsoluteEpsilon";
 	public final static String PREVIOUS_EPSILON_CHECKER_RELATIVE_EPSILON = "previousEpsilonCheckerRelativeEpsilon";
+	public final static String PREVIOUS_DATA_REGEX = "previousDataRegex";
 	public final static String PREVIOUS_USE_TIME = "previousUseTime";
 	public final static String USE_DARK_THEME = "useDarkTheme";
 	public final static String SORT_CASES_BY_SIZE = "sortCasesBySize";
