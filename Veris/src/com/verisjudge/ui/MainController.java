@@ -1,7 +1,10 @@
 package com.verisjudge.ui;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import com.verisjudge.Config;
 import com.verisjudge.LanguageSpec;
@@ -226,7 +229,7 @@ public class MainController {
 	
 	@FXML
     protected void initialize() {
-		setTimeLimit(Settings.getSettings().getDoubleOrDefault(
+		textFieldTimeLimit.setText("" + Settings.getSettings().getDoubleOrDefault(
 				Settings.DEFAULT_TIME_LIMIT, Veris.DEFAULT_TIME_LIMIT / 1000.0));
 		
 		initContextMenu();
@@ -256,8 +259,43 @@ public class MainController {
 			}
 		});
 		onCheckerSelected(DEFAULT_CHECKER_STR);
+		
+		setUpInputValidation();
 		updateJudgeButton();
 	}
+	
+	private void setUpInputValidation() { 
+        textFieldDataRegex.textProperty().addListener((o, ov, nv) -> validateDataRegex());
+        textFieldTimeLimit.textProperty().addListener((o, ov, nv) -> validateTimeLimitString());
+        validateDataRegex();
+        validateTimeLimitString();
+    }
+
+    private void validateDataRegex() {
+        ObservableList<String> styleClass = textFieldDataRegex.getStyleClass();
+        if (!isDataRegexValid()) {
+            if (!styleClass.contains("error")) {
+                styleClass.add("error");
+            }
+        } else {
+            // remove all occurrences:
+            styleClass.removeAll(Collections.singleton("error"));                    
+        }
+        updateJudgeButton();
+    }
+
+    private void validateTimeLimitString() {
+        ObservableList<String> styleClass = textFieldTimeLimit.getStyleClass();
+        if (!isTimeLimitStringValid()) {
+            if (!styleClass.contains("error")) {
+                styleClass.add("error");
+            }
+        } else {
+            // remove all occurrences:
+            styleClass.removeAll(Collections.singleton("error"));                    
+        }
+        updateJudgeButton();
+    }
 	
 	private void initContextMenu() {
 		mainContextMenu.setOnShowing(new EventHandler<WindowEvent>() {
@@ -381,17 +419,42 @@ public class MainController {
 		}
 	}
 	
-	private double getTimeLimit() {
+	private long getTimeLimit() {
 		try {
-			return Double.parseDouble(textFieldTimeLimit.getText());
-		} catch (Exception e) {
-			return Veris.DEFAULT_TIME_LIMIT / 1000.0;
+			return Math.round(Math.ceil(1000 * Double.parseDouble(getTimeLimitString())));
+		} catch (NumberFormatException e) {
+			return Veris.DEFAULT_TIME_LIMIT;
 		}
 	}
 	
+	private String getTimeLimitString() {
+		return textFieldTimeLimit.getText();
+	}
+	
+	private boolean isTimeLimitStringValid() {
+		try {
+			Double.parseDouble(getTimeLimitString());
+		} catch (NumberFormatException e) {
+			return false;
+		}
+		return true;
+	}
+
 	private String getDataRegex() {
 		String dataRegex = textFieldDataRegex.getText();
 		return dataRegex.isEmpty() ? null : dataRegex;
+	}
+	
+	private boolean isDataRegexValid() {
+		String dataRegex = getDataRegex();
+        if (dataRegex != null) {
+	        try {
+	        	Pattern.compile(dataRegex);
+	        } catch (PatternSyntaxException e) {
+	        	return false;
+	        }
+        }
+        return true;
 	}
 	
 	private void onCheckerSelected(String str) {
@@ -479,12 +542,10 @@ public class MainController {
 		verisBuilder.setLanguageSpec(languageSpec);
 	}
 
-	private void setTimeLimit(double timeLimit) {
-		long millis = Math.round(timeLimit * 1000.0);
-		millis = Math.max(millis, Veris.MINIMUM_TIME_LIMIT);
-		millis = Math.min(millis, Veris.MAXIMUM_TIME_LIMIT);
-		verisBuilder.setTimeLimit(millis);
-		textFieldTimeLimit.setText("" + millis / 1000.0);
+	private void setTimeLimit(long timeLimit) {
+		timeLimit = Math.max(timeLimit, Veris.MINIMUM_TIME_LIMIT);
+		timeLimit = Math.min(timeLimit, Veris.MAXIMUM_TIME_LIMIT);
+		verisBuilder.setTimeLimit(timeLimit);
 	}
 
 	private void setSolutionFile(File solutionFile) {
@@ -513,7 +574,7 @@ public class MainController {
 	}
 	
 	private void updateJudgeButton() {
-		boolean isReady = !isJudging && verisBuilder != null && verisBuilder.isReady();
+		boolean isReady = !isJudging && verisBuilder != null && verisBuilder.isReady() && isTimeLimitStringValid() && isDataRegexValid();
 		buttonJudge.setDisable(!isReady);
 	}
 }
