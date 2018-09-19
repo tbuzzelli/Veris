@@ -1,7 +1,6 @@
 package com.verisjudge;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,12 +15,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.concurrent.TimeUnit;
 
 import com.verisjudge.checker.Checker;
 import com.verisjudge.checker.CheckerVerdict;
 import com.verisjudge.checker.TokenChecker;
 import com.verisjudge.utils.FastScanner;
+import com.verisjudge.utils.ProcessHelper;
 
 public class Veris {
 
@@ -569,8 +568,8 @@ public class Veris {
         }
 
         // Build the execution process for this language.
-        ProcessBuilder builder = languageSpec.getExecutionProcessBuilder(directory.getAbsolutePath(), solutionFile.getName(), className);
-        
+        ProcessHelper processHelper = new ProcessHelper(languageSpec.getExecutionArgs(directory.getAbsolutePath(), solutionFile.getName(), className));
+
         File errorStreamFile = null;
 		try {
 			errorStreamFile = Files.createTempFile(errorStreamsDirectory.toPath(), "errorStream", ".txt").toFile();
@@ -578,59 +577,40 @@ public class Veris {
 			e.printStackTrace();
 			// Ignore error.
 		}
-        
+		
         // Set the working directory and redirect their output to the file.
-        builder.directory(directory);
-        builder.redirectOutput(programOutputFile);
+		processHelper.directory(directory);
+        processHelper.redirectOutput(programOutputFile);
         
         // Redirect the error stream to a file so we can show it later.
         if (errorStreamFile != null)
-        	builder.redirectError(errorStreamFile);
+        	processHelper.redirectError(errorStreamFile);
 
-        // Create the process and attempt to start it.
-        Process process;
-        try {
-            process = builder.start();
-        } catch (IOException e) {
-        	e.printStackTrace();
-        	resultBuilder.setVerdict(Verdict.INTERNAL_ERROR);
-        	return resultBuilder.build();
-        }
-    
-        // Pipe them their input
-        Thread inputThread = new Thread() {
-            public void run() {
-                try {
-                    FileInputStream inputFIS = new FileInputStream(c.inputFile);
-                    OutputStream out = process.getOutputStream();
-                    pipe(inputFIS, out);
-                    inputFIS.close();
-                    out.close();
-                } catch(Exception e) {
-                }
-            }
-        };
+        // Redirect the input file to the program.
+        processHelper.redirectInput(c.inputFile);
 
-        // Record the time before starting their program.
-        long t1 = System.nanoTime();
+        // Set the timeout to 105% the time limit + 1 additional second (for idle time).
+        // TODO: Have the allowed idle time be a setting.
+        processHelper.setTimeout(timeLimit * 105 / 100 + 1000);
         
-        // Start their program.
-        inputThread.start();
-        boolean completed = false;
-        
-        // Wait for it to complete with a timeout of 105% of the timeLimit
+        // Run the program.
+        ProcessHelper.ExecutionResult executionResult;
         try {
-            completed = process.waitFor(timeLimit * 105 / 100 + 1000, TimeUnit.MILLISECONDS);
+        	executionResult = processHelper.run();
         } catch (InterruptedException e) {
-        	process.destroyForcibly();
-            resultBuilder.setVerdict(Verdict.INTERNAL_ERROR);
+        	resultBuilder.setVerdict(Verdict.INTERNAL_ERROR);
+        	Thread.currentThread().interrupt();
+        	return resultBuilder.build();
+        } catch (IOException e) {
+        	resultBuilder.setVerdict(Verdict.INTERNAL_ERROR);
         	Thread.currentThread().interrupt();
         	return resultBuilder.build();
         }
 
         // Calculate the time it took in milliseconds.
-        long time = (System.nanoTime() - t1 + 999999) / 1000000;
-        boolean wasStoppedEarly = time >= timeLimit + 1000;
+        long time = executionResult.runtime();
+        boolean wasStoppedEarly = !executionResult.completed() || time >= timeLimit + 1000;
+
         time = Math.min(timeLimit + 1000, time);
         
         // Keep track of the longest time and the total time.
@@ -639,15 +619,12 @@ public class Veris {
         // Get the result.
         Verdict verdict;
         String checkerMessage = null;
-        if (!completed || time > timeLimit) {
+        if (!executionResult.completed() || time > timeLimit) {
             verdict = Verdict.TIME_LIMIT_EXCEEDED;
-            if (!completed) {
-                process.destroyForcibly();
-            }
         } else {
-            if (process.exitValue() != 0) {
+            if (executionResult.exitValue() != 0) {
                 verdict = Verdict.RUNTIME_ERROR;
-                checkerMessage = "Exit code: " + process.exitValue();
+                checkerMessage = "Exit code: " + executionResult.exitValue();
             } else {
                 // Check the solution's output.
             	FastScanner inputScanner = new FastScanner(c.inputFile);

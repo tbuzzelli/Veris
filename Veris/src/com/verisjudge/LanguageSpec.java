@@ -1,7 +1,10 @@
 package com.verisjudge;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -179,12 +182,10 @@ public class LanguageSpec {
 		return new ProcessBuilder(args);
 	}
 	
-	public ProcessBuilder getExecutionProcessBuilder(String directory, String filename, String classname) {
-		String[] args = new String[executionArgs.length];
-		for (int i = 0; i < args.length; i++) {
-			args[i] = executionArgs[i].replace("{dir}", directory).replace("{file}", filename).replace("{filename}", classname);
-		}
-		return new ProcessBuilder(args);
+	public List<String> getExecutionArgs(String directory, String filename, String classname) {
+		return Arrays.stream(executionArgs).map(
+				arg -> arg.replace("{dir}", directory).replace("{file}", filename).replace("{filename}", classname)
+			).collect(Collectors.toList());
 	}
 
 	@Override
