@@ -29,6 +29,7 @@ public class Config {
 	public final static String JSON_FIELD_DEFAULT_TIME_LIMIT = "defaultTimeLimit";
 	public final static String JSON_FIELD_MINIMUM_TIME_LIMIT = "minimumTimeLimit";
 	public final static String JSON_FIELD_MAXIMUM_TIME_LIMIT = "maximumTimeLimit";
+	public final static String JSON_FIELD_MAXIMUM_IDLE_TIME = "maximumIdleTime";
 	public final static String JSON_FIELD_LANGUAGE_SPECS = "languageSpecs";
 	
 	public final static String JSON_FIELD_LANGUAGE_SPEC_LANGUAGE_NAME = "languageName";
@@ -51,17 +52,20 @@ public class Config {
 	private final Long minimumTimeLimit;
 	private final Long maximumTimeLimit;
 	
+	private final Long maximumIdleTime;
+	
 	private final LanguageSpec[] languageSpecs;
 	private final LanguageSpec[] languageSpecsForDetectLanguage;
 	private final LanguageSpec[] languageSpecsForDisplay;
 
 	public Config(String[] inputFileTypes, String[] outputFileTypes, Long defaultTimeLimit, Long minimumTimeLimit,
-			Long maximumTimeLimit, LanguageSpec[] languageSpecs) {
+			Long maximumTimeLimit, Long maximumIdleTime, LanguageSpec[] languageSpecs) {
 		this.inputFileTypes = inputFileTypes;
 		this.outputFileTypes = outputFileTypes;
 		this.defaultTimeLimit = defaultTimeLimit;
 		this.minimumTimeLimit = minimumTimeLimit;
 		this.maximumTimeLimit = maximumTimeLimit;
+		this.maximumIdleTime = maximumIdleTime;
 		this.languageSpecs = languageSpecs;
 		this.languageSpecsForDetectLanguage = languageSpecs == null ? new LanguageSpec[0] : languageSpecs.clone();
 		Arrays.sort(this.languageSpecsForDetectLanguage, LanguageSpec.DETECT_LANGUAGE_COMPARATOR);
@@ -139,6 +143,16 @@ public class Config {
         	}
         }
         
+        if (j.has(Config.JSON_FIELD_MAXIMUM_IDLE_TIME)) {
+        	JsonElement element = j.get(Config.JSON_FIELD_MAXIMUM_IDLE_TIME);
+        	if (element.isJsonPrimitive()) {
+        		Long maximumIdleTime = Problem.parseTimeLimit(element.getAsString());
+        		if (maximumIdleTime != null) {
+        			builder.setMaximumIdleTime(maximumIdleTime);
+        		}
+        	}
+        }
+        
         if (j.has(Config.JSON_FIELD_LANGUAGE_SPECS)) {
         	JsonElement jElement = j.get(Config.JSON_FIELD_LANGUAGE_SPECS);
     		if (jElement.isJsonArray()) {
@@ -203,6 +217,12 @@ public class Config {
 			builder.setMaximumTimeLimit(newConfig.getMaximumTimeLimit());
 		} else {
 			builder.setMaximumTimeLimit(defaultConfig.getMaximumTimeLimit());
+		}
+		
+		if (newConfig.hasMaximumIdleTime()) {
+			builder.setMaximumIdleTime(newConfig.getMaximumIdleTime());
+		} else {
+			builder.setMaximumIdleTime(defaultConfig.getMaximumIdleTime());
 		}
 		
 		ArrayList<LanguageSpec> languageSpecs = new ArrayList<>();
@@ -312,6 +332,14 @@ public class Config {
 	public boolean hasMaximumTimeLimit() {
 		return maximumTimeLimit != null;
 	}
+	
+	public Long getMaximumIdleTime() {
+		return maximumIdleTime;
+	}
+	
+	public boolean hasMaximumIdleTime() {
+		return maximumIdleTime != null;
+	}
 
 	public LanguageSpec[] getLanguageSpecs() {
 		return languageSpecs;
@@ -400,6 +428,8 @@ public class Config {
 		private Long minimumTimeLimit;
 		private Long maximumTimeLimit;
 		
+		private Long maximumIdleTime;
+		
 		private LanguageSpec[] languageSpecs;
 		
 		public Builder() {
@@ -407,7 +437,7 @@ public class Config {
 		}
 		
 		public Config build() {
-			return new Config(inputFileTypes, outputFileTypes, defaultTimeLimit, minimumTimeLimit, maximumTimeLimit, languageSpecs);
+			return new Config(inputFileTypes, outputFileTypes, defaultTimeLimit, minimumTimeLimit, maximumTimeLimit, maximumIdleTime, languageSpecs);
 		}
 
 		public String[] getInputFileTypes() {
@@ -452,6 +482,15 @@ public class Config {
 
 		public Builder setMaximumTimeLimit(Long maximumTimeLimit) {
 			this.maximumTimeLimit = maximumTimeLimit;
+			return this;
+		}
+		
+		public Long getMaximumIdleTime() {
+			return maximumIdleTime;
+		}
+
+		public Builder setMaximumIdleTime(Long maximumIdleTime) {
+			this.maximumIdleTime = maximumIdleTime;
 			return this;
 		}
 

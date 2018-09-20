@@ -590,8 +590,9 @@ public class Veris {
         processHelper.redirectInput(c.inputFile);
 
         // Set the timeout to 105% the time limit + 1 additional second (for idle time).
-        // TODO: Have the allowed idle time be a setting.
-        processHelper.setTimeout(timeLimit * 105 / 100 + 1000);
+        long maximumIdleTime = Config.getConfig().hasMaximumIdleTime()
+        		? Config.getConfig().getMaximumIdleTime() : 1000;
+        processHelper.setTimeout(timeLimit * 105 / 100 + maximumIdleTime);
         
         // Run the program.
         ProcessHelper.ExecutionResult executionResult;
@@ -608,10 +609,10 @@ public class Veris {
         }
 
         // Calculate the time it took in milliseconds.
-        long time = executionResult.runtime();
+        long time = executionResult.completed() ? executionResult.runtime() : timeLimit + maximumIdleTime;
         boolean wasStoppedEarly = !executionResult.completed() || time >= timeLimit + 1000;
 
-        time = Math.min(timeLimit + 1000, time);
+        time = Math.min(timeLimit + maximumIdleTime, time);
         
         // Keep track of the longest time and the total time.
         longestTime = Math.max(longestTime, time);

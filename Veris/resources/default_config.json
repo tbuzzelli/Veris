@@ -4,6 +4,7 @@
   "defaultTimeLimit": "5000 ms",
   "minimumTimeLimit": "100 ms",
   "maximumTimeLimit": "3600000 ms",
+  "maximumIdleTime": "5000 ms",
   "languageSpecs": [
     {
       "languageName": "Java",
