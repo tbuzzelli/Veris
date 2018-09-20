@@ -5,6 +5,7 @@
   "minimumTimeLimit": "100 ms",
   "maximumTimeLimit": "3600000 ms",
   "maximumIdleTime": "5000 ms",
+  "compileTimeLimit": "60000 ms",
   "languageSpecs": [
     {
       "languageName": "Java",

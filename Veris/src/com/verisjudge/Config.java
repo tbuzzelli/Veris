@@ -30,6 +30,7 @@ public class Config {
 	public final static String JSON_FIELD_MINIMUM_TIME_LIMIT = "minimumTimeLimit";
 	public final static String JSON_FIELD_MAXIMUM_TIME_LIMIT = "maximumTimeLimit";
 	public final static String JSON_FIELD_MAXIMUM_IDLE_TIME = "maximumIdleTime";
+	public final static String JSON_FIELD_COMPILE_TIME_LIMIT = "compileTimeLimit";
 	public final static String JSON_FIELD_LANGUAGE_SPECS = "languageSpecs";
 	
 	public final static String JSON_FIELD_LANGUAGE_SPEC_LANGUAGE_NAME = "languageName";
@@ -53,19 +54,21 @@ public class Config {
 	private final Long maximumTimeLimit;
 	
 	private final Long maximumIdleTime;
+	private final Long compileTimeLimit;
 	
 	private final LanguageSpec[] languageSpecs;
 	private final LanguageSpec[] languageSpecsForDetectLanguage;
 	private final LanguageSpec[] languageSpecsForDisplay;
 
 	public Config(String[] inputFileTypes, String[] outputFileTypes, Long defaultTimeLimit, Long minimumTimeLimit,
-			Long maximumTimeLimit, Long maximumIdleTime, LanguageSpec[] languageSpecs) {
+			Long maximumTimeLimit, Long maximumIdleTime, Long compileTimeLimit, LanguageSpec[] languageSpecs) {
 		this.inputFileTypes = inputFileTypes;
 		this.outputFileTypes = outputFileTypes;
 		this.defaultTimeLimit = defaultTimeLimit;
 		this.minimumTimeLimit = minimumTimeLimit;
 		this.maximumTimeLimit = maximumTimeLimit;
 		this.maximumIdleTime = maximumIdleTime;
+		this.compileTimeLimit = compileTimeLimit;
 		this.languageSpecs = languageSpecs;
 		this.languageSpecsForDetectLanguage = languageSpecs == null ? new LanguageSpec[0] : languageSpecs.clone();
 		Arrays.sort(this.languageSpecsForDetectLanguage, LanguageSpec.DETECT_LANGUAGE_COMPARATOR);
@@ -153,6 +156,16 @@ public class Config {
         	}
         }
         
+        if (j.has(Config.JSON_FIELD_COMPILE_TIME_LIMIT)) {
+        	JsonElement element = j.get(Config.JSON_FIELD_COMPILE_TIME_LIMIT);
+        	if (element.isJsonPrimitive()) {
+        		Long compileTimeLimit = Problem.parseTimeLimit(element.getAsString());
+        		if (compileTimeLimit != null) {
+        			builder.setCompileTimeLimit(compileTimeLimit);
+        		}
+        	}
+        }
+        
         if (j.has(Config.JSON_FIELD_LANGUAGE_SPECS)) {
         	JsonElement jElement = j.get(Config.JSON_FIELD_LANGUAGE_SPECS);
     		if (jElement.isJsonArray()) {
@@ -223,6 +236,12 @@ public class Config {
 			builder.setMaximumIdleTime(newConfig.getMaximumIdleTime());
 		} else {
 			builder.setMaximumIdleTime(defaultConfig.getMaximumIdleTime());
+		}
+		
+		if (newConfig.hasCompileTimeLimit()) {
+			builder.setCompileTimeLimit(newConfig.getCompileTimeLimit());
+		} else {
+			builder.setCompileTimeLimit(defaultConfig.getCompileTimeLimit());
 		}
 		
 		ArrayList<LanguageSpec> languageSpecs = new ArrayList<>();
@@ -340,6 +359,14 @@ public class Config {
 	public boolean hasMaximumIdleTime() {
 		return maximumIdleTime != null;
 	}
+	
+	public Long getCompileTimeLimit() {
+		return compileTimeLimit;
+	}
+	
+	public boolean hasCompileTimeLimit() {
+		return compileTimeLimit != null;
+	}
 
 	public LanguageSpec[] getLanguageSpecs() {
 		return languageSpecs;
@@ -429,6 +456,7 @@ public class Config {
 		private Long maximumTimeLimit;
 		
 		private Long maximumIdleTime;
+		private Long compileTimeLimit;
 		
 		private LanguageSpec[] languageSpecs;
 		
@@ -437,7 +465,7 @@ public class Config {
 		}
 		
 		public Config build() {
-			return new Config(inputFileTypes, outputFileTypes, defaultTimeLimit, minimumTimeLimit, maximumTimeLimit, maximumIdleTime, languageSpecs);
+			return new Config(inputFileTypes, outputFileTypes, defaultTimeLimit, minimumTimeLimit, maximumTimeLimit, maximumIdleTime, compileTimeLimit, languageSpecs);
 		}
 
 		public String[] getInputFileTypes() {
@@ -491,6 +519,15 @@ public class Config {
 
 		public Builder setMaximumIdleTime(Long maximumIdleTime) {
 			this.maximumIdleTime = maximumIdleTime;
+			return this;
+		}
+		
+		public Long getCompileTimeLimit() {
+			return compileTimeLimit;
+		}
+
+		public Builder setCompileTimeLimit(Long compileTimeLimit) {
+			this.compileTimeLimit = compileTimeLimit;
 			return this;
 		}
 

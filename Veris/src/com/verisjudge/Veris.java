@@ -493,15 +493,15 @@ public class Veris {
         if (compileErrorStreamFile != null)
         	processHelper.redirectError(compileErrorStreamFile);
         
-        int resInt;
+        // Set the compile time limit if there is one.
+        if (Config.getConfig().hasCompileTimeLimit())
+        	processHelper.setTimeout(Config.getConfig().getCompileTimeLimit());
+        
+        ProcessHelper.ExecutionResult result;
         
         // Attempt to compile the program.
         try {
-        	ProcessHelper.ExecutionResult result = processHelper.run();
-            if (!result.completed()) {
-            	return compileResultBuilder.setVerdict(Verdict.INTERNAL_ERROR).build();
-            }
-            resInt = result.exitValue();
+        	result = processHelper.run();
         } catch (IOException e) {
             return compileResultBuilder.setVerdict(Verdict.INTERNAL_ERROR).build();
         } catch (InterruptedException e) {
@@ -514,7 +514,7 @@ public class Veris {
         	compileResultBuilder.setErrorStreamFile(compileErrorStreamFile);
         
         // Get the result and print it.
-        if (resInt == 0) {
+        if (result.completed() && result.exitValue() == 0) {
         	compileResultBuilder.setVerdict(Verdict.COMPILE_SUCCESS);
         } else {
         	compileResultBuilder.setVerdict(Verdict.COMPILE_ERROR);
