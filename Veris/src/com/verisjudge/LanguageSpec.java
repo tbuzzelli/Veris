@@ -1,6 +1,5 @@
 package com.verisjudge;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -180,6 +179,11 @@ public class LanguageSpec {
 			args[i] = compileArgs[i].replace("{file}", filename).replace("{filename}", classname);
 		}
 		return new ProcessBuilder(args);
+	}
+	public List<String> getCompileArgs(String directory, String filename, String classname) {
+		return Arrays.stream(compileArgs).map(
+				arg -> arg.replace("{dir}", directory).replace("{file}", filename).replace("{filename}", classname)
+			).collect(Collectors.toList());
 	}
 	
 	public List<String> getExecutionArgs(String directory, String filename, String classname) {

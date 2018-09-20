@@ -470,7 +470,13 @@ public class Veris {
         	return compileResultBuilder.setVerdict(Verdict.COMPILE_SUCCESS).build();
  
         // Build the compile process for this language.
-        ProcessBuilder builder = languageSpec.getCompileProcessBuilder(solutionFile.getName(), className);
+        ProcessHelper processHelper = new ProcessHelper(
+        		languageSpec.getCompileArgs(
+        				directory.getAbsolutePath(),
+        				solutionFile.getName(),
+        				className
+        		)
+        	);
 
         File compileErrorStreamFile = null;
 		try {
@@ -481,24 +487,24 @@ public class Veris {
 		}
 		
         // Set the working directory to the temporary directory.
-        builder.directory(directory);
+		processHelper.directory(directory);
         
         // Redirect the compile error stream to a file for later use.
         if (compileErrorStreamFile != null)
-        	builder.redirectError(compileErrorStreamFile);
+        	processHelper.redirectError(compileErrorStreamFile);
         
         int resInt;
         
         // Attempt to compile the program.
-        Process process = null;
         try {
-            process = builder.start();
-            resInt = process.waitFor();
+        	ProcessHelper.ExecutionResult result = processHelper.run();
+            if (!result.completed()) {
+            	return compileResultBuilder.setVerdict(Verdict.INTERNAL_ERROR).build();
+            }
+            resInt = result.exitValue();
         } catch (IOException e) {
             return compileResultBuilder.setVerdict(Verdict.INTERNAL_ERROR).build();
         } catch (InterruptedException e) {
-        	if (process != null)
-        		process.destroyForcibly();
         	Thread.currentThread().interrupt();
         	return compileResultBuilder.setVerdict(Verdict.INTERNAL_ERROR).build();
         }
@@ -568,7 +574,13 @@ public class Veris {
         }
 
         // Build the execution process for this language.
-        ProcessHelper processHelper = new ProcessHelper(languageSpec.getExecutionArgs(directory.getAbsolutePath(), solutionFile.getName(), className));
+        ProcessHelper processHelper = new ProcessHelper(
+        		languageSpec.getExecutionArgs(
+        				directory.getAbsolutePath(),
+        				solutionFile.getName(),
+        				className
+        		)
+        	);
 
         File errorStreamFile = null;
 		try {
