@@ -651,57 +651,6 @@ public class Veris {
                 inputScanner.close();
                 pScanner.close();
                 ansScanner.close();
-                
-                final int NUM_CHARS_TO_READ = 256;
-                
-                // Build the expectedOutput and output strings.
-                try {
-                	StringBuilder expectedOutputStringBuilder = new StringBuilder();
-                	StringBuilder outputStringBuilder = new StringBuilder();
-                	String line;
-					BufferedReader expectedOutputBufferedReader = new BufferedReader(new FileReader(c.answerFile));
-					while ((line = expectedOutputBufferedReader.readLine()) != null) {
-						if (expectedOutputStringBuilder.length() > 0)
-							expectedOutputStringBuilder.append('\n');
-						if (line.length() + expectedOutputStringBuilder.length() <= NUM_CHARS_TO_READ) {
-							expectedOutputStringBuilder.append(line);
-						} else {
-							int numChars = Math.min(line.length(), NUM_CHARS_TO_READ - 1 - expectedOutputStringBuilder.length());
-							if (numChars > 0) {
-								expectedOutputStringBuilder.append(line.substring(0, numChars) + "...");
-							}
-							break;
-						}
-					}
-					if (expectedOutputBufferedReader.readLine() != null) {
-						expectedOutputStringBuilder.append("\n...");
-					}
-					expectedOutputBufferedReader.close();
-					
-					BufferedReader outputBufferedReader = new BufferedReader(new FileReader(programOutputFile));
-					while ((line = outputBufferedReader.readLine()) != null) {
-						if (outputStringBuilder.length() > 0)
-							outputStringBuilder.append('\n');
-						if (line.length() + outputStringBuilder.length() <= NUM_CHARS_TO_READ) {
-							outputStringBuilder.append(line);
-						} else {
-							int numChars = Math.min(line.length(), NUM_CHARS_TO_READ - 1 - outputStringBuilder.length());
-							if (numChars > 0) {
-								outputStringBuilder.append(line.substring(0, numChars) + "...");
-							}
-							break;
-						}
-					}
-					if (outputBufferedReader.readLine() != null) {
-						outputStringBuilder.append("\n...");
-					}
-					outputBufferedReader.close();
-					
-					resultBuilder.setExpectedOutput(expectedOutputStringBuilder.toString());
-					resultBuilder.setOutput(outputStringBuilder.toString());
-				} catch (IOException e) {
-					// Ignore any errors.
-				}
             }
         }
         
