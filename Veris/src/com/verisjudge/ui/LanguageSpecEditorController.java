@@ -108,8 +108,7 @@ public class LanguageSpecEditorController {
 	
 	private void validateFileExtensions() {
 		ObservableList<String> styleClass = textFieldFileExtensions.getStyleClass();
-		System.err.println(getFileExtensions().length + "  " + Arrays.toString(getFileExtensions()));
-        if (!isFileExtensionsValid()) {
+		if (!isFileExtensionsValid()) {
             if (!styleClass.contains("error")) {
                 styleClass.add("error");
             }
@@ -180,8 +179,6 @@ public class LanguageSpecEditorController {
 	}
 	
 	@FXML protected void handleSaveButtonAction(ActionEvent event) {
-		System.err.println(createLanguageSpec());
-		
 		event.consume();
 	}
 	
