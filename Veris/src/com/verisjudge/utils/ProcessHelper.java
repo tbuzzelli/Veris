@@ -97,7 +97,7 @@ public class ProcessHelper {
      * @return The list of arguments to time the process.
      */
     public static List<String> getTimeProcessArgs(File outputFile) {
-    	return List.of("time", "-p", "-o", outputFile.getAbsolutePath());
+    	return List.of("time", "-p", "-q", "-o", outputFile.getAbsolutePath());
     }
     
     public class ExecutionResult {
