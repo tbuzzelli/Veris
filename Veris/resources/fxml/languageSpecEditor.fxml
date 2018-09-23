@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane xmlns="http://javafx.com/javafx/10.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.verisjudge.ui.LanguageSpecEditorController">
+   <center>
+      <GridPane BorderPane.alignment="CENTER">
+         <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
+         </columnConstraints>
+         <rowConstraints>
+            <RowConstraints vgrow="SOMETIMES" />
+            <RowConstraints vgrow="SOMETIMES" />
+         </rowConstraints>
+         <children>
+            <VBox>
+               <children>
+                  <Label text="Name:">
+                     <font>
+                        <Font size="16.0" />
+                     </font>
+                  </Label>
+                  <TextField fx:id="textFieldLanguageName">
+                     <VBox.margin>
+                        <Insets top="2.0" />
+                     </VBox.margin>
+                  </TextField>
+                  <Label text="File Extensions:">
+                     <font>
+                        <Font size="16.0" />
+                     </font>
+                     <VBox.margin>
+                        <Insets top="10.0" />
+                     </VBox.margin>
+                  </Label>
+                  <TextField fx:id="textFieldFileExtensions">
+                     <VBox.margin>
+                        <Insets top="2.0" />
+                     </VBox.margin>
+                  </TextField>
+                  <Label text="Compile Command:">
+                     <font>
+                        <Font size="16.0" />
+                     </font>
+                     <VBox.margin>
+                        <Insets top="10.0" />
+                     </VBox.margin>
+                  </Label>
+                  <TextArea fx:id="textAreaCompileCommand" maxWidth="1.7976931348623157E308" prefRowCount="3" wrapText="true">
+                     <VBox.margin>
+                        <Insets top="2.0" />
+                     </VBox.margin>
+                  </TextArea>
+                  <Label text="Execution Command:">
+                     <font>
+                        <Font size="16.0" />
+                     </font>
+                     <VBox.margin>
+                        <Insets top="10.0" />
+                     </VBox.margin>
+                  </Label>
+                  <TextArea fx:id="textAreaExecutionCommand" maxWidth="1.7976931348623157E308" prefRowCount="3" wrapText="true">
+                     <VBox.margin>
+                        <Insets top="2.0" />
+                     </VBox.margin>
+                  </TextArea>
+               </children>
+            </VBox>
+            <VBox spacing="5.0" styleClass="box-with-border" GridPane.rowIndex="1">
+               <children>
+                  <CheckBox fx:id="checkBoxIsAllowed" mnemonicParsing="false" text="Is Allowed">
+                     <font>
+                        <Font size="16.0" />
+                     </font>
+                  </CheckBox>
+                  <CheckBox fx:id="checkBoxNeedsCompile" mnemonicParsing="false" text="Needs Compile">
+                     <font>
+                        <Font size="16.0" />
+                     </font>
+                  </CheckBox>
+                  <GridPane>
+                    <columnConstraints>
+                      <ColumnConstraints hgrow="SOMETIMES" />
+                      <ColumnConstraints hgrow="SOMETIMES" />
+                    </columnConstraints>
+                    <rowConstraints>
+                      <RowConstraints vgrow="SOMETIMES" />
+                    </rowConstraints>
+                     <children>
+                        <Label text="Auto-Detect Language Priority">
+                           <font>
+                              <Font size="16.0" />
+                           </font>
+                        </Label>
+                        <TextField fx:id="textFieldAutoDetectLanguagePriority" GridPane.columnIndex="1" />
+                     </children>
+                  </GridPane>
+               </children>
+               <GridPane.margin>
+                  <Insets top="10.0" />
+               </GridPane.margin>
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+            </VBox>
+         </children>
+      </GridPane>
+   </center>
+   <padding>
+      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+   </padding>
+   <bottom>
+      <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleSaveButtonAction" text="SAVE" BorderPane.alignment="CENTER">
+         <BorderPane.margin>
+            <Insets top="5.0" />
+         </BorderPane.margin>
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Button>
+   </bottom>
+</BorderPane>

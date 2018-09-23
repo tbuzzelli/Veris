@@ -1,5 +1,6 @@
 package com.verisjudge;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -150,6 +151,10 @@ public class LanguageSpec {
 		return fileExtensions;
 	}
 	
+	public long getDetectLanguagePriority() {
+		return detectLanguagePriority;
+	}
+
 	public boolean isAllowed() {
 		return isAllowed;
 	}
@@ -191,6 +196,57 @@ public class LanguageSpec {
 				arg -> arg.replace("{dir}", directory).replace("{file}", filename).replace("{filename}", classname)
 			).collect(Collectors.toList());
 	}
+	
+	public static List<String> convertStringToArgsList(String str) {
+		List<String> argsList = new ArrayList<>();
+		StringBuilder currentArg = new StringBuilder();
+		boolean inDoubleQuotes = false;
+		boolean inSingleQuotes = false;
+		boolean isEscaped = false;
+		for (char c : str.toCharArray()) {
+			if (!isEscaped && c == '\\') {
+				isEscaped = !isEscaped;
+			} else {
+				isEscaped = false;
+			}
+			if (inDoubleQuotes && !isEscaped && c == '"') {
+				inDoubleQuotes = false;
+				continue;
+			}
+			if (inSingleQuotes && !isEscaped && c == '\'') {
+				inSingleQuotes = false;
+				continue;
+			}
+			if (inDoubleQuotes || inSingleQuotes) {
+				currentArg.append(c);
+				continue;
+			}
+			if (!isEscaped && c == '"') {
+				inDoubleQuotes = true;
+				continue;
+			}
+			if (!isEscaped && c == '\'') {
+				inSingleQuotes = true;
+				continue;
+			}
+			if (c == ' ' || c == '\t' || c == '\n') {
+				if (currentArg.length() > 0) {
+					argsList.add(currentArg.toString());
+					currentArg = new StringBuilder();
+				}
+			} else {
+				currentArg.append(c);
+			}
+		}
+		if (inDoubleQuotes || inSingleQuotes) {
+			// TODO: Throw some incorrect format exception here.
+		}
+		if (currentArg.length() > 0) {
+			argsList.add(currentArg.toString());
+			currentArg = new StringBuilder();
+		}
+		return argsList;
+	}
 
 	@Override
 	public String toString() {
@@ -210,7 +266,7 @@ public class LanguageSpec {
 				executionArgs == null ? null : Arrays.toString(executionArgs));
 	}
 	
-	static class Builder {
+	public static class Builder {
 		private String languageName;
 		private String[] fileExtensions = new String[] {};
 		private long detectLanguagePriority = DEFAULT_DETECT_LANGUAGE_PRIORITY;

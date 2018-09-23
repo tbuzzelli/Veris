@@ -13,8 +13,8 @@
       "isAllowed": true,
       "fileExtensions": ["java"],
       "needsCompile": true,
-      "compileArgs": ["javac", "-cp", ".;*", "{file}"],
-      "runtimeArgs": ["java", "-Xmx1024M", "-Xss512M", "-DONLINE_JUDGE=true", "-Duser.language=en", "-Duser.region=US", "-Duser.variant=US", "{filename}"]
+      "compileArgs": ["javac", "-encoding", "UTF-8", "-cp", ".;*", "{file}"],
+      "runtimeArgs": ["java", "-Dfile.encoding=UTF-8", "-XX:+UseSerialGC", "-Xss512m", "-Xms1920m", "-Xmx1920m", "-DONLINE_JUDGE=true", "-Duser.language=en", "-Duser.region=US", "-Duser.variant=US", "{filename}"]
     },
     {
       "languageName": "GNU GCC C11 5.1.0",
@@ -22,34 +22,34 @@
       "isAllowed": true,
       "fileExtensions": ["c"],
       "needsCompile": true,
-      "compileArgs": ["gcc", "-lm", "-O2", "-std=c11", "-o", "{filename}.exe", "{file}"],
+      "compileArgs": ["gcc", "-g", "-lm", "-O2", "-std=c11", "-o", "{filename}.exe", "{file}"],
       "runtimeArgs": ["{dir}/{filename}.exe"]
     },
     {
       "languageName": "GNU G++11 5.1.0",
       "detectLanguagePriority": 1,
       "isAllowed": true,
-      "fileExtensions": ["cpp", "cc"],
+      "fileExtensions": ["cpp", "cc", "cxx", "c++"],
       "needsCompile": true,
-      "compileArgs": ["g++", "-lm", "-O2", "-std=c++11", "-o", "{filename}.exe", "{file}"],
+      "compileArgs": ["g++", "-g", "-lm", "-O2", "-std=c++11", "-o", "{filename}.exe", "{file}"],
       "runtimeArgs": ["{dir}/{filename}.exe"]
     },
     {
       "languageName": "GNU G++14 6.4.0",
       "detectLanguagePriority": 2,
       "isAllowed": true,
-      "fileExtensions": ["cpp", "cc"],
+      "fileExtensions": ["cpp", "cc", "cxx", "c++"],
       "needsCompile": true,
-      "compileArgs": ["g++", "-lm", "-O2", "-std=c++14", "-o", "{filename}.exe", "{file}"],
+      "compileArgs": ["g++", "-g", "-lm", "-O2", "-std=c++14", "-o", "{filename}.exe", "{file}"],
       "runtimeArgs": ["{dir}/{filename}.exe"]
     },
     {
       "languageName": "GNU G++17 7.2.0",
       "detectLanguagePriority": 3,
       "isAllowed": true,
-      "fileExtensions": ["cpp", "cc"],
+      "fileExtensions": ["cpp", "cc", "cxx", "c++"],
       "needsCompile": true,
-      "compileArgs": ["g++", "-lm", "-O2", "-std=c++17", "-o", "{filename}.exe", "{file}"],
+      "compileArgs": ["g++", "-g", "-lm", "-O2", "-std=c++17", "-o", "{filename}.exe", "{file}"],
       "runtimeArgs": ["{dir}/{filename}.exe"]
     },
     {
