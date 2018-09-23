@@ -71,6 +71,7 @@ public class LanguageSpecEditorController {
 		loadFromLanguageSpec(Config.getConfig().getLanguageSpecs()[0]);
 		
 		setUpInputValidation();
+		updateSaveButton();
 	}
 	
 	private void setUpInputValidation() {
@@ -78,11 +79,16 @@ public class LanguageSpecEditorController {
 		textFieldFileExtensions.textProperty().addListener((o, ov, nv) -> validateFileExtensions());
 		textAreaCompileCommand.textProperty().addListener((o, ov, nv) -> validateCompileCommand());
 		textAreaExecutionCommand.textProperty().addListener((o, ov, nv) -> validateExecutionCommand());
-		checkBoxNeedsCompile.selectedProperty().addListener((o, ov, nv) -> validateCompileCommand());
+		checkBoxNeedsCompile.selectedProperty().addListener((o, ov, nv) ->
+				{
+					validateCompileCommand();
+					updateTextAreaCompileCommand();
+				});
 		textFieldDetectLanguagePriority.textProperty().addListener((o, ov, nv) -> validateDetectLanguagePriority());
 		validateLanguageName();
 		validateFileExtensions();
 		validateCompileCommand();
+		updateTextAreaCompileCommand();
 		validateExecutionCommand();
 		validateDetectLanguagePriority();
 	}
@@ -151,6 +157,10 @@ public class LanguageSpecEditorController {
             styleClass.removeAll(Collections.singleton("error"));                    
         }
         updateSaveButton();
+	}
+
+	private void updateTextAreaCompileCommand() {
+		textAreaCompileCommand.setDisable(!checkBoxNeedsCompile.isSelected());
 	}
 
 	private void updateSaveButton() {
