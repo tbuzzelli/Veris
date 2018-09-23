@@ -4,6 +4,11 @@
 	-fx-border-width: 1;
 }
 
+.text-area.error {
+  -fx-text-box-border: red;
+  -fx-focus-color: red;
+}
+
 .text-field.error {
   -fx-text-box-border: red;
   -fx-focus-color: red;

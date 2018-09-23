@@ -26,7 +26,7 @@
          <children>
             <VBox>
                <children>
-                  <Label text="Name:">
+                  <Label text="Language Name:">
                      <font>
                         <Font size="16.0" />
                      </font>
@@ -36,7 +36,7 @@
                         <Insets top="2.0" />
                      </VBox.margin>
                   </TextField>
-                  <Label text="File Extensions:">
+                  <Label text="File Extensions (comma separated):">
                      <font>
                         <Font size="16.0" />
                      </font>
@@ -103,7 +103,7 @@
                               <Font size="16.0" />
                            </font>
                         </Label>
-                        <TextField fx:id="textFieldAutoDetectLanguagePriority" GridPane.columnIndex="1" />
+                        <TextField fx:id="textFieldDetectLanguagePriority" alignment="CENTER_RIGHT" GridPane.columnIndex="1" />
                      </children>
                   </GridPane>
                </children>
@@ -121,13 +121,29 @@
       <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
    </padding>
    <bottom>
-      <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleSaveButtonAction" text="SAVE" BorderPane.alignment="CENTER">
+      <GridPane hgap="10.0" BorderPane.alignment="CENTER">
          <BorderPane.margin>
             <Insets top="5.0" />
          </BorderPane.margin>
-         <font>
-            <Font size="18.0" />
-         </font>
-      </Button>
+         <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" />
+            <ColumnConstraints hgrow="SOMETIMES" />
+         </columnConstraints>
+         <rowConstraints>
+            <RowConstraints vgrow="SOMETIMES" />
+         </rowConstraints>
+         <children>
+            <Button fx:id="buttonCancel" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleCancelButtonAction" text="Cancel">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Button>
+            <Button fx:id="buttonSave" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleSaveButtonAction" text="Save" GridPane.columnIndex="1">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Button>
+         </children>
+      </GridPane>
    </bottom>
 </BorderPane>
