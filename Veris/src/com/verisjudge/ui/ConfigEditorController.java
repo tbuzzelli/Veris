@@ -1,8 +1,14 @@
 package com.verisjudge.ui;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.stream.Collectors;
+
 import com.verisjudge.Config;
 import com.verisjudge.Main;
+import com.verisjudge.Problem;
 
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -12,9 +18,12 @@ import javafx.scene.control.Accordion;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class ConfigEditorController {
+
+	@FXML private Button buttonCancel;
 	@FXML private Button buttonSave;
 	
 	@FXML private Accordion mainAccordion;
@@ -26,9 +35,11 @@ public class ConfigEditorController {
 	@FXML private TextField textFieldMaximumIdleTime;
 	@FXML private TextField textFieldCompileTimeLimit;
 	
-	@FXML private TextField textFieldInputFileTypes;
-	@FXML private TextField textFieldOutputFileTypes;
+	@FXML private TextField textFieldInputFileExtensions;
+	@FXML private TextField textFieldOutputFileExtensions;
 
+	@FXML private VBox vBoxLanguageSpecs;
+	
 	private Stage stage;
 	
 	public static boolean createAndOpen() {
@@ -72,29 +83,230 @@ public class ConfigEditorController {
 	        });
 		}
 		loadDefaults();
+		
+		setUpInputValidation();
+		updateSaveButton();
 	}
 
+	private void setUpInputValidation() {
+		textFieldDefaultTimeLimit.textProperty().addListener((o, ov, nv) -> validateDefaultTimeLimit());
+		textFieldMinimumTimeLimit.textProperty().addListener((o, ov, nv) -> 
+				{
+					validateDefaultTimeLimit();
+					validateMinimumTimeLimit();
+					validateMaximumTimeLimit();
+				});
+		textFieldMaximumTimeLimit.textProperty().addListener((o, ov, nv) -> 
+				{
+					validateDefaultTimeLimit();
+					validateMinimumTimeLimit();
+					validateMaximumTimeLimit();
+				});
+		textFieldMaximumIdleTime.textProperty().addListener((o, ov, nv) -> validateMaximumIdleTime());
+		textFieldCompileTimeLimit.textProperty().addListener((o, ov, nv) -> validateCompileTimeLimit());
+		validateDefaultTimeLimit();
+		validateMinimumTimeLimit();
+		validateMaximumTimeLimit();
+		validateMaximumIdleTime();
+		validateCompileTimeLimit();
+	}
+	
+	private void validateDefaultTimeLimit() {
+		ObservableList<String> styleClass = textFieldDefaultTimeLimit.getStyleClass();
+        if (!isDefaultTimeLimitValid()) {
+            if (!styleClass.contains("error")) {
+                styleClass.add("error");
+            }
+        } else {
+            // remove all occurrences:
+            styleClass.removeAll(Collections.singleton("error"));                    
+        }
+        updateSaveButton();
+	}
+	
+	private void validateMinimumTimeLimit() {
+		ObservableList<String> styleClass = textFieldMinimumTimeLimit.getStyleClass();
+        if (!isMinimumTimeLimitValid()) {
+            if (!styleClass.contains("error")) {
+                styleClass.add("error");
+            }
+        } else {
+            // remove all occurrences:
+            styleClass.removeAll(Collections.singleton("error"));                    
+        }
+        updateSaveButton();
+	}
+	
+	private void validateMaximumTimeLimit() {
+		ObservableList<String> styleClass = textFieldMaximumTimeLimit.getStyleClass();
+        if (!isMaximumTimeLimitValid()) {
+            if (!styleClass.contains("error")) {
+                styleClass.add("error");
+            }
+        } else {
+            // remove all occurrences:
+            styleClass.removeAll(Collections.singleton("error"));                    
+        }
+        updateSaveButton();
+	}
+	
+	private void validateMaximumIdleTime() {
+		ObservableList<String> styleClass = textFieldMaximumIdleTime.getStyleClass();
+        if (!isMaximumIdleTimeValid()) {
+            if (!styleClass.contains("error")) {
+                styleClass.add("error");
+            }
+        } else {
+            // remove all occurrences:
+            styleClass.removeAll(Collections.singleton("error"));                    
+        }
+        updateSaveButton();
+	}
+	
+	private void validateCompileTimeLimit() {
+		ObservableList<String> styleClass = textFieldCompileTimeLimit.getStyleClass();
+        if (!isCompileTimeLimitValid()) {
+            if (!styleClass.contains("error")) {
+                styleClass.add("error");
+            }
+        } else {
+            // remove all occurrences:
+            styleClass.removeAll(Collections.singleton("error"));                    
+        }
+        updateSaveButton();
+	}
+
+	@FXML protected void handleCancelButtonAction(ActionEvent event) {
+		stage.close();
+		event.consume();
+	}
+	
 	@FXML protected void handleSaveButtonAction(ActionEvent event) {
 		event.consume();
+	}
+	
+	private void updateSaveButton() {
+		if (isDefaultTimeLimitValid()
+				&& isMinimumTimeLimitValid()
+				&& isMaximumTimeLimitValid()
+				&& isMaximumIdleTimeValid()
+				&& isCompileTimeLimitValid()) {
+			buttonSave.setDisable(false);
+		} else {
+			buttonSave.setDisable(true);
+		}
+	}
+	
+	private boolean isDefaultTimeLimitValid() {
+		Long defaultTimeLimit = getDefaultTimeLimit();
+		if (defaultTimeLimit == null || defaultTimeLimit < 0) {
+			return false;
+		}
+		Long minimumTimeLimit = getMinimumTimeLimit();
+		if (minimumTimeLimit != null && minimumTimeLimit > defaultTimeLimit) {
+			return false;
+		}
+		Long maximumTimeLimit = getMaximumTimeLimit();
+		if (maximumTimeLimit != null && maximumTimeLimit < defaultTimeLimit) {
+			return false;
+		}
+		return true;
+	}
+	
+	private Long getDefaultTimeLimit() {
+		return Problem.parseTimeLimit(textFieldDefaultTimeLimit.getText());
+	}
+	
+	private boolean isMinimumTimeLimitValid() {
+		Long minimumTimeLimit = getMinimumTimeLimit();
+		if (minimumTimeLimit == null || minimumTimeLimit < 0) {
+			return false;
+		}
+		Long maximumTimeLimit = getMaximumTimeLimit();
+		if (maximumTimeLimit != null && maximumTimeLimit < minimumTimeLimit) {
+			return false;
+		}
+		return true;
+	}
+	
+	private Long getMinimumTimeLimit() {
+		return Problem.parseTimeLimit(textFieldMinimumTimeLimit.getText());
+	}
+	
+	private boolean isMaximumTimeLimitValid() {
+		Long maximumTimeLimit = getMaximumTimeLimit();
+		if (maximumTimeLimit == null || maximumTimeLimit < 0) {
+			return false;
+		}
+		Long minimumTimeLimit = getMinimumTimeLimit();
+		if (minimumTimeLimit != null && minimumTimeLimit > maximumTimeLimit) {
+			return false;
+		}
+		return true;
+	}
+	
+	private Long getMaximumTimeLimit() {
+		return Problem.parseTimeLimit(textFieldMaximumTimeLimit.getText());
+	}
+	
+	private boolean isMaximumIdleTimeValid() {
+		Long maximumIdleTime = getMaximumIdleTime();
+		return maximumIdleTime != null && maximumIdleTime >= 0;
+	}
+	
+	private Long getMaximumIdleTime() {
+		return Problem.parseTimeLimit(textFieldMaximumIdleTime.getText());
+	}
+	
+	private boolean isCompileTimeLimitValid() {
+		Long compileTimeLimit = getCompileTimeLimit();
+		return compileTimeLimit != null && compileTimeLimit > 0;
+	}
+	
+	private Long getCompileTimeLimit() {
+		return Problem.parseTimeLimit(textFieldCompileTimeLimit.getText());
+	}
+	
+	private String[] getInputFileExtensions() {
+		return Arrays.stream(textFieldInputFileExtensions.getText().split("(\\s|,)+"))
+				.map(a -> a.replace(",", "").replace(" ", ""))
+				.filter(a -> !a.isEmpty())
+				.toArray(String[]::new);
+	}
+	
+	private String[] getOutputFileExtensions() {
+		return Arrays.stream(textFieldOutputFileExtensions.getText().split("(\\s|,)+"))
+				.map(a -> a.replace(",", "").replace(" ", ""))
+				.filter(a -> !a.isEmpty())
+				.toArray(String[]::new);
 	}
 	
 	private void loadDefaults() {
 		Config config = Config.getConfig();
 
-		if (textFieldDefaultTimeLimit != null && config.hasDefaultTimeLimit())
+		if (config.hasDefaultTimeLimit())
 			textFieldDefaultTimeLimit.setText(config.getDefaultTimeLimit() + " ms");
 		
-		if (textFieldMaximumTimeLimit != null && config.hasMaximumTimeLimit())
+		if (config.hasMaximumTimeLimit())
 			textFieldMaximumTimeLimit.setText(config.getMaximumTimeLimit() + " ms");
 		
-		if (textFieldMinimumTimeLimit != null && config.hasMinimumTimeLimit())
+		if (config.hasMinimumTimeLimit())
 			textFieldMinimumTimeLimit.setText(config.getMinimumTimeLimit() + " ms");
 		
-		if (textFieldMaximumIdleTime != null && config.hasMaximumIdleTime())
+		if (config.hasMaximumIdleTime())
 			textFieldMaximumIdleTime.setText(config.getMaximumIdleTime() + " ms");
 		
-		if (textFieldCompileTimeLimit != null && config.hasCompileTimeLimit())
+		if (config.hasCompileTimeLimit())
 			textFieldCompileTimeLimit.setText(config.getCompileTimeLimit() + " ms");
+	
+		textFieldInputFileExtensions.setText(
+				Arrays.stream(config.getInputFileTypes())
+				.collect(Collectors.joining(", "))
+		);
+		textFieldOutputFileExtensions.setText(
+				Arrays.stream(config.getOutputFileTypes())
+				.collect(Collectors.joining(", "))
+		);
 	}
 
 }

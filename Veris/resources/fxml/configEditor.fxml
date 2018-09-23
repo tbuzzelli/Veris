@@ -10,18 +10,35 @@
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
 <BorderPane xmlns="http://javafx.com/javafx/10.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.verisjudge.ui.ConfigEditorController">
    <bottom>
-      <Button fx:id="buttonSave" disable="true" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleSaveButtonAction" text="SAVE" BorderPane.alignment="CENTER">
-         <font>
-            <Font size="18.0" />
-         </font>
+      <GridPane hgap="10.0" BorderPane.alignment="CENTER">
          <BorderPane.margin>
             <Insets top="5.0" />
          </BorderPane.margin>
-      </Button>
+         <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0" />
+            <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0" />
+         </columnConstraints>
+         <rowConstraints>
+            <RowConstraints vgrow="SOMETIMES" />
+         </rowConstraints>
+         <children>
+            <Button fx:id="buttonCancel" cancelButton="true" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleCancelButtonAction" text="Cancel">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Button>
+            <Button fx:id="buttonSave" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleSaveButtonAction" text="Save" GridPane.columnIndex="1">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Button>
+         </children>
+      </GridPane>
    </bottom>
    <padding>
       <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
@@ -47,13 +64,13 @@
                               <Font size="16.0" />
                            </font>
                         </Label>
-                        <TextField fx:id="textFieldDefaultTimeLimit" alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" text="5 s" GridPane.columnIndex="1" />
+                        <TextField fx:id="textFieldDefaultTimeLimit" alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" />
                         <Label text="Minimum:" GridPane.rowIndex="1">
                            <font>
                               <Font size="16.0" />
                            </font>
                         </Label>
-                        <TextField fx:id="textFieldMinimumTimeLimit" alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" text="100 ms" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                        <TextField fx:id="textFieldMinimumTimeLimit" alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="1">
                            <GridPane.margin>
                               <Insets />
                            </GridPane.margin></TextField>
@@ -62,7 +79,7 @@
                               <Font size="16.0" />
                            </font>
                         </Label>
-                        <TextField fx:id="textFieldMaximumTimeLimit" alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" text="3600 s" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                        <TextField fx:id="textFieldMaximumTimeLimit" alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                      </children>
                   </GridPane>
                </content>
@@ -84,13 +101,13 @@
                               <Font size="16.0" />
                            </font>
                         </Label>
-                        <TextField fx:id="textFieldMaximumIdleTime" alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" text="5 s" GridPane.columnIndex="1" />
+                        <TextField fx:id="textFieldMaximumIdleTime" alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" />
                         <Label text="Compile Time Limit:" GridPane.rowIndex="1">
                            <font>
                               <Font size="16.0" />
                            </font>
                         </Label>
-                        <TextField fx:id="textFieldCompileTimeLimit" alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" text="60 s" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                        <TextField fx:id="textFieldCompileTimeLimit" alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                      </children>
                   </GridPane>
                </content>
@@ -107,23 +124,27 @@
                         <RowConstraints fillHeight="false" vgrow="NEVER" />
                      </rowConstraints>
                      <children>
-                        <Label text="Input File Types:">
+                        <Label text="Input File Extensions:">
                            <font>
                               <Font size="16.0" />
                            </font>
                         </Label>
-                        <TextField fx:id="textFieldInputFileTypes" alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" text="in, data" GridPane.columnIndex="1" />
-                        <Label text="Output File Types:" GridPane.rowIndex="1">
+                        <TextField fx:id="textFieldInputFileExtensions" alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" />
+                        <Label text="Output File Extensions:" GridPane.rowIndex="1">
                            <font>
                               <Font size="16.0" />
                            </font>
                         </Label>
-                        <TextField fx:id="textFieldOutputFileTypes" alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" text="ans, out, sol, a" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                        <TextField fx:id="textFieldOutputFileExtensions" alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                      </children>
                   </GridPane>
                </content>
             </TitledPane>
-            <TitledPane alignment="TOP_LEFT" animated="false" contentDisplay="CENTER" expanded="false" text="Languages" />
+            <TitledPane alignment="TOP_LEFT" animated="false" contentDisplay="CENTER" expanded="false" text="Language Specs">
+               <content>
+                  <VBox fx:id="vBoxLanguageSpecs" />
+               </content>
+            </TitledPane>
          </panes>
       </Accordion>
    </center>

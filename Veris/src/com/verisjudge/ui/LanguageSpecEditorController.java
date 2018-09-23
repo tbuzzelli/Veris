@@ -175,6 +175,7 @@ public class LanguageSpecEditorController {
 	}
 
 	@FXML protected void handleCancelButtonAction(ActionEvent event) {
+		stage.close();
 		event.consume();
 	}
 	

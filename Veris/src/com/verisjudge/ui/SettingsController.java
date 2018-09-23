@@ -14,6 +14,8 @@ import javafx.scene.control.CheckBox;
 import javafx.stage.Stage;
 
 public class SettingsController {
+	
+	@FXML private Button buttonCancel;
 	@FXML private Button buttonSave;
 	
 	@FXML private CheckBox checkBoxUseDarkTheme;
@@ -57,8 +59,14 @@ public class SettingsController {
 		loadSettings();
 	}
 
+	@FXML protected void handleCancelButtonAction(ActionEvent event) {
+		stage.close();
+		event.consume();
+	}
+	
 	@FXML protected void handleSaveButtonAction(ActionEvent event) {
 		saveSettings();
+		stage.close();
 		event.consume();
 	}
 	

@@ -229,36 +229,35 @@ public class Problem {
     }
 
     public static Long parseTimeLimit(String timeLimitString) {
-        timeLimitString = timeLimitString.toLowerCase().replace(" ", "");
+        timeLimitString = timeLimitString.toLowerCase().replaceAll("\\s|,", "");
         try {
             return Long.parseLong(timeLimitString);
-        } catch (Exception e) {}
+        } catch (NumberFormatException e) {}
         if (timeLimitString.endsWith("ms")) { // milliseconds
             try {
                 return Long.parseLong(timeLimitString.substring(
                     0, timeLimitString.length() - 2));
-            } catch (Exception e) {
+            } catch (NumberFormatException e) {
                 return null;
             }
         } else if (timeLimitString.endsWith("ns")) { // nanoseconds
             try {
                 return (Long.parseLong(timeLimitString.substring(
                     0, timeLimitString.length() - 2)) + 999) / 1000;
-            } catch (Exception e) {
+            } catch (NumberFormatException e) {
                 return null;
             }
         } else if (timeLimitString.endsWith("s")) { // seconds
             try {
                 return Long.parseLong(timeLimitString.substring(
                     0, timeLimitString.length() - 1)) * 1000;
-            } catch (Exception e) {
+            } catch (NumberFormatException e) {
                 return null;
             }
         } else { // assume milliseconds
         	try {
-                return Long.parseLong(timeLimitString.substring(
-                    0, timeLimitString.length() - 2));
-            } catch (Exception e) {
+                return Long.parseLong(timeLimitString);
+            } catch (NumberFormatException e) {
                 return null;
             }
         }
