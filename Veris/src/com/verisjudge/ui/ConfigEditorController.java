@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 import com.verisjudge.Config;
 import com.verisjudge.Main;
-import com.verisjudge.Problem;
+import com.verisjudge.utils.ParsingUtils;
 
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -214,7 +214,7 @@ public class ConfigEditorController {
 	}
 	
 	private Long getDefaultTimeLimit() {
-		return Problem.parseTimeLimit(textFieldDefaultTimeLimit.getText());
+		return ParsingUtils.parseTime(textFieldDefaultTimeLimit.getText());
 	}
 	
 	private boolean isMinimumTimeLimitValid() {
@@ -230,7 +230,7 @@ public class ConfigEditorController {
 	}
 	
 	private Long getMinimumTimeLimit() {
-		return Problem.parseTimeLimit(textFieldMinimumTimeLimit.getText());
+		return ParsingUtils.parseTime(textFieldMinimumTimeLimit.getText());
 	}
 	
 	private boolean isMaximumTimeLimitValid() {
@@ -246,7 +246,7 @@ public class ConfigEditorController {
 	}
 	
 	private Long getMaximumTimeLimit() {
-		return Problem.parseTimeLimit(textFieldMaximumTimeLimit.getText());
+		return ParsingUtils.parseTime(textFieldMaximumTimeLimit.getText());
 	}
 	
 	private boolean isMaximumIdleTimeValid() {
@@ -255,7 +255,7 @@ public class ConfigEditorController {
 	}
 	
 	private Long getMaximumIdleTime() {
-		return Problem.parseTimeLimit(textFieldMaximumIdleTime.getText());
+		return ParsingUtils.parseTime(textFieldMaximumIdleTime.getText());
 	}
 	
 	private boolean isCompileTimeLimitValid() {
@@ -264,7 +264,7 @@ public class ConfigEditorController {
 	}
 	
 	private Long getCompileTimeLimit() {
-		return Problem.parseTimeLimit(textFieldCompileTimeLimit.getText());
+		return ParsingUtils.parseTime(textFieldCompileTimeLimit.getText());
 	}
 	
 	private String[] getInputFileExtensions() {
@@ -284,20 +284,20 @@ public class ConfigEditorController {
 	private void loadDefaults() {
 		Config config = Config.getConfig();
 
-		if (config.hasDefaultTimeLimit())
-			textFieldDefaultTimeLimit.setText(config.getDefaultTimeLimit() + " ms");
+		if (config.hasDefaultTimeLimitString())
+			textFieldDefaultTimeLimit.setText(config.getDefaultTimeLimitString());
 		
-		if (config.hasMaximumTimeLimit())
-			textFieldMaximumTimeLimit.setText(config.getMaximumTimeLimit() + " ms");
+		if (config.hasMaximumTimeLimitString())
+			textFieldMaximumTimeLimit.setText(config.getMaximumTimeLimitString());
 		
-		if (config.hasMinimumTimeLimit())
-			textFieldMinimumTimeLimit.setText(config.getMinimumTimeLimit() + " ms");
+		if (config.hasMinimumTimeLimitString())
+			textFieldMinimumTimeLimit.setText(config.getMinimumTimeLimitString());
 		
-		if (config.hasMaximumIdleTime())
-			textFieldMaximumIdleTime.setText(config.getMaximumIdleTime() + " ms");
+		if (config.hasMaximumIdleTimeString())
+			textFieldMaximumIdleTime.setText(config.getMaximumIdleTimeString());
 		
-		if (config.hasCompileTimeLimit())
-			textFieldCompileTimeLimit.setText(config.getCompileTimeLimit() + " ms");
+		if (config.hasCompileTimeLimitString())
+			textFieldCompileTimeLimit.setText(config.getCompileTimeLimitString());
 	
 		textFieldInputFileExtensions.setText(
 				Arrays.stream(config.getInputFileTypes())

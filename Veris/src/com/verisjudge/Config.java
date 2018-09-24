@@ -19,6 +19,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import com.verisjudge.utils.FileUtils;
+import com.verisjudge.utils.ParsingUtils;
 
 import javafx.stage.FileChooser.ExtensionFilter;
 
@@ -49,6 +50,13 @@ public class Config {
 	private final String[] inputFileTypes;
 	private final String[] outputFileTypes;
 	
+	private final String defaultTimeLimitString;
+	private final String minimumTimeLimitString;
+	private final String maximumTimeLimitString;
+	
+	private final String maximumIdleTimeString;
+	private final String compileTimeLimitString;
+	
 	private final Long defaultTimeLimit;
 	private final Long minimumTimeLimit;
 	private final Long maximumTimeLimit;
@@ -60,15 +68,31 @@ public class Config {
 	private final LanguageSpec[] languageSpecsForDetectLanguage;
 	private final LanguageSpec[] languageSpecsForDisplay;
 
-	public Config(String[] inputFileTypes, String[] outputFileTypes, Long defaultTimeLimit, Long minimumTimeLimit,
-			Long maximumTimeLimit, Long maximumIdleTime, Long compileTimeLimit, LanguageSpec[] languageSpecs) {
+	public Config(
+			String[] inputFileTypes,
+			String[] outputFileTypes,
+			String defaultTimeLimitString,
+			String minimumTimeLimitString,
+			String maximumTimeLimitString,
+			String maximumIdleTimeString,
+			String compileTimeLimitString,
+			LanguageSpec[] languageSpecs
+	) {
 		this.inputFileTypes = inputFileTypes;
 		this.outputFileTypes = outputFileTypes;
-		this.defaultTimeLimit = defaultTimeLimit;
-		this.minimumTimeLimit = minimumTimeLimit;
-		this.maximumTimeLimit = maximumTimeLimit;
-		this.maximumIdleTime = maximumIdleTime;
-		this.compileTimeLimit = compileTimeLimit;
+		
+		this.defaultTimeLimitString = defaultTimeLimitString;
+		this.minimumTimeLimitString = minimumTimeLimitString;
+		this.maximumTimeLimitString = maximumTimeLimitString;
+		this.maximumIdleTimeString = maximumIdleTimeString;
+		this.compileTimeLimitString = compileTimeLimitString;
+		
+		defaultTimeLimit = ParsingUtils.parseTime(defaultTimeLimitString);
+		minimumTimeLimit = ParsingUtils.parseTime(minimumTimeLimitString);
+		maximumTimeLimit = ParsingUtils.parseTime(maximumTimeLimitString);
+		maximumIdleTime = ParsingUtils.parseTime(maximumIdleTimeString);
+		compileTimeLimit = ParsingUtils.parseTime(compileTimeLimitString);
+		
 		this.languageSpecs = languageSpecs;
 		this.languageSpecsForDetectLanguage = languageSpecs == null ? new LanguageSpec[0] : languageSpecs.clone();
 		Arrays.sort(this.languageSpecsForDetectLanguage, LanguageSpec.DETECT_LANGUAGE_COMPARATOR);
@@ -119,50 +143,35 @@ public class Config {
         if (j.has(Config.JSON_FIELD_DEFAULT_TIME_LIMIT)) {
         	JsonElement element = j.get(Config.JSON_FIELD_DEFAULT_TIME_LIMIT);
         	if (element.isJsonPrimitive()) {
-        		Long defaultTimeLimit = Problem.parseTimeLimit(element.getAsString());
-        		if (defaultTimeLimit != null) {
-        			builder.setDefaultTimeLimit(defaultTimeLimit);
-        		}
+       			builder.setDefaultTimeLimitString(element.getAsString());
         	}
         }
         
         if (j.has(Config.JSON_FIELD_MINIMUM_TIME_LIMIT)) {
         	JsonElement element = j.get(Config.JSON_FIELD_MINIMUM_TIME_LIMIT);
         	if (element.isJsonPrimitive()) {
-        		Long defaultTimeLimit = Problem.parseTimeLimit(element.getAsString());
-        		if (defaultTimeLimit != null) {
-        			builder.setMinimumTimeLimit(defaultTimeLimit);
-        		}
+        		builder.setMinimumTimeLimitString(element.getAsString());
         	}
         }
         
         if (j.has(Config.JSON_FIELD_MAXIMUM_TIME_LIMIT)) {
         	JsonElement element = j.get(Config.JSON_FIELD_MAXIMUM_TIME_LIMIT);
         	if (element.isJsonPrimitive()) {
-        		Long defaultTimeLimit = Problem.parseTimeLimit(element.getAsString());
-        		if (defaultTimeLimit != null) {
-        			builder.setMaximumTimeLimit(defaultTimeLimit);
-        		}
+        		builder.setMaximumTimeLimitString(element.getAsString());
         	}
         }
         
         if (j.has(Config.JSON_FIELD_MAXIMUM_IDLE_TIME)) {
         	JsonElement element = j.get(Config.JSON_FIELD_MAXIMUM_IDLE_TIME);
         	if (element.isJsonPrimitive()) {
-        		Long maximumIdleTime = Problem.parseTimeLimit(element.getAsString());
-        		if (maximumIdleTime != null) {
-        			builder.setMaximumIdleTime(maximumIdleTime);
-        		}
+        		builder.setMaximumIdleTimeString(element.getAsString());
         	}
         }
         
         if (j.has(Config.JSON_FIELD_COMPILE_TIME_LIMIT)) {
         	JsonElement element = j.get(Config.JSON_FIELD_COMPILE_TIME_LIMIT);
         	if (element.isJsonPrimitive()) {
-        		Long compileTimeLimit = Problem.parseTimeLimit(element.getAsString());
-        		if (compileTimeLimit != null) {
-        			builder.setCompileTimeLimit(compileTimeLimit);
-        		}
+        		builder.setCompileTimeLimitString(element.getAsString());
         	}
         }
         
@@ -215,33 +224,33 @@ public class Config {
 		}
 		
 		if (newConfig.hasDefaultTimeLimit()) {
-			builder.setDefaultTimeLimit(newConfig.getDefaultTimeLimit());
+			builder.setDefaultTimeLimitString(newConfig.getDefaultTimeLimitString());
 		} else {
-			builder.setDefaultTimeLimit(defaultConfig.getDefaultTimeLimit());
+			builder.setDefaultTimeLimitString(defaultConfig.getDefaultTimeLimitString());
 		}
 		
 		if (newConfig.hasMinimumTimeLimit()) {
-			builder.setMinimumTimeLimit(newConfig.getMinimumTimeLimit());
+			builder.setMinimumTimeLimitString(newConfig.getMinimumTimeLimitString());
 		} else {
-			builder.setMinimumTimeLimit(defaultConfig.getMinimumTimeLimit());
+			builder.setMinimumTimeLimitString(defaultConfig.getMinimumTimeLimitString());
 		}
 		
 		if (newConfig.hasMaximumTimeLimit()) {
-			builder.setMaximumTimeLimit(newConfig.getMaximumTimeLimit());
+			builder.setMaximumTimeLimitString(newConfig.getMaximumTimeLimitString());
 		} else {
-			builder.setMaximumTimeLimit(defaultConfig.getMaximumTimeLimit());
+			builder.setMaximumTimeLimitString(defaultConfig.getMaximumTimeLimitString());
 		}
 		
 		if (newConfig.hasMaximumIdleTime()) {
-			builder.setMaximumIdleTime(newConfig.getMaximumIdleTime());
+			builder.setMaximumIdleTimeString(newConfig.getMaximumIdleTimeString());
 		} else {
-			builder.setMaximumIdleTime(defaultConfig.getMaximumIdleTime());
+			builder.setMaximumIdleTimeString(defaultConfig.getMaximumIdleTimeString());
 		}
 		
 		if (newConfig.hasCompileTimeLimit()) {
-			builder.setCompileTimeLimit(newConfig.getCompileTimeLimit());
+			builder.setCompileTimeLimitString(newConfig.getCompileTimeLimitString());
 		} else {
-			builder.setCompileTimeLimit(defaultConfig.getCompileTimeLimit());
+			builder.setCompileTimeLimitString(defaultConfig.getCompileTimeLimitString());
 		}
 		
 		ArrayList<LanguageSpec> languageSpecs = new ArrayList<>();
@@ -326,6 +335,46 @@ public class Config {
 	
 	public boolean hasOutputFileTypes() {
 		return outputFileTypes != null;
+	}
+	
+	public String getDefaultTimeLimitString() {
+		return defaultTimeLimitString;
+	}
+	
+	public boolean hasDefaultTimeLimitString() {
+		return defaultTimeLimitString != null;
+	}
+
+	public String getMinimumTimeLimitString() {
+		return minimumTimeLimitString;
+	}
+	
+	public boolean hasMinimumTimeLimitString() {
+		return minimumTimeLimitString != null;
+	}
+
+	public String getMaximumTimeLimitString() {
+		return maximumTimeLimitString;
+	}
+	
+	public boolean hasMaximumTimeLimitString() {
+		return maximumTimeLimitString != null;
+	}
+	
+	public String getMaximumIdleTimeString() {
+		return maximumIdleTimeString;
+	}
+	
+	public boolean hasMaximumIdleTimeString() {
+		return maximumIdleTimeString != null;
+	}
+	
+	public String getCompileTimeLimitString() {
+		return compileTimeLimitString;
+	}
+	
+	public boolean hasCompileTimeLimitString() {
+		return compileTimeLimitString != null;
 	}
 
 	public Long getDefaultTimeLimit() {
@@ -451,12 +500,12 @@ public class Config {
 		private String[] inputFileTypes;
 		private String[] outputFileTypes;
 		
-		private Long defaultTimeLimit;
-		private Long minimumTimeLimit;
-		private Long maximumTimeLimit;
+		private String defaultTimeLimitString;
+		private String minimumTimeLimitString;
+		private String maximumTimeLimitString;
 		
-		private Long maximumIdleTime;
-		private Long compileTimeLimit;
+		private String maximumIdleTimeString;
+		private String compileTimeLimitString;
 		
 		private LanguageSpec[] languageSpecs;
 		
@@ -465,7 +514,16 @@ public class Config {
 		}
 		
 		public Config build() {
-			return new Config(inputFileTypes, outputFileTypes, defaultTimeLimit, minimumTimeLimit, maximumTimeLimit, maximumIdleTime, compileTimeLimit, languageSpecs);
+			return new Config(
+					inputFileTypes,
+					outputFileTypes,
+					defaultTimeLimitString,
+					minimumTimeLimitString,
+					maximumTimeLimitString,
+					maximumIdleTimeString,
+					compileTimeLimitString,
+					languageSpecs
+			);
 		}
 
 		public String[] getInputFileTypes() {
@@ -486,48 +544,48 @@ public class Config {
 			return this;
 		}
 
-		public Long getDefaultTimeLimit() {
-			return defaultTimeLimit;
+		public String getDefaultTimeLimitString() {
+			return defaultTimeLimitString;
 		}
 
-		public Builder setDefaultTimeLimit(Long defaultTimeLimit) {
-			this.defaultTimeLimit = defaultTimeLimit;
+		public Builder setDefaultTimeLimitString(String defaultTimeLimitString) {
+			this.defaultTimeLimitString = defaultTimeLimitString;
 			return this;
 		}
 
-		public Long getMinimumTimeLimit() {
-			return minimumTimeLimit;
+		public String getMinimumTimeLimitString() {
+			return minimumTimeLimitString;
 		}
 
-		public Builder setMinimumTimeLimit(Long minimumTimeLimit) {
-			this.minimumTimeLimit = minimumTimeLimit;
+		public Builder setMinimumTimeLimitString(String minimumTimeLimitString) {
+			this.minimumTimeLimitString = minimumTimeLimitString;
 			return this;
 		}
 
-		public Long getMaximumTimeLimit() {
-			return maximumTimeLimit;
+		public String getMaximumTimeLimitString() {
+			return maximumTimeLimitString;
 		}
 
-		public Builder setMaximumTimeLimit(Long maximumTimeLimit) {
-			this.maximumTimeLimit = maximumTimeLimit;
-			return this;
-		}
-		
-		public Long getMaximumIdleTime() {
-			return maximumIdleTime;
-		}
-
-		public Builder setMaximumIdleTime(Long maximumIdleTime) {
-			this.maximumIdleTime = maximumIdleTime;
+		public Builder setMaximumTimeLimitString(String maximumTimeLimitString) {
+			this.maximumTimeLimitString = maximumTimeLimitString;
 			return this;
 		}
 		
-		public Long getCompileTimeLimit() {
-			return compileTimeLimit;
+		public String getMaximumIdleTimeString() {
+			return maximumIdleTimeString;
 		}
 
-		public Builder setCompileTimeLimit(Long compileTimeLimit) {
-			this.compileTimeLimit = compileTimeLimit;
+		public Builder setMaximumIdleTimeString(String maximumIdleTimeString) {
+			this.maximumIdleTimeString = maximumIdleTimeString;
+			return this;
+		}
+		
+		public String getCompileTimeLimitString() {
+			return compileTimeLimitString;
+		}
+
+		public Builder setCompileTimeLimitString(String compileTimeLimitString) {
+			this.compileTimeLimitString = compileTimeLimitString;
 			return this;
 		}
 
