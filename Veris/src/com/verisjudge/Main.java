@@ -5,7 +5,6 @@ import java.io.IOException;
 
 import com.verisjudge.checker.Checker;
 import com.verisjudge.ui.ConfigEditorController;
-import com.verisjudge.ui.LanguageSpecEditorController;
 import com.verisjudge.ui.MainController;
 import com.verisjudge.ui.ResultsController;
 import com.verisjudge.utils.CheckerUtils;
@@ -72,7 +71,6 @@ public class Main extends Application {
 	@Override
 	public void start(Stage stage) throws IOException {
 		ConfigEditorController.createAndOpen();
-		LanguageSpecEditorController.createAndOpen();
 		
 		String[] args = getParameters().getRaw().toArray(new String[0]);
 		if (args.length == 0) {			

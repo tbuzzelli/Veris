@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.text.Font?>
+
+
+<GridPane styleClass="box-with-border" xmlns="http://javafx.com/javafx/10.0.2" xmlns:fx="http://javafx.com/fxml/1">
+   <columnConstraints>
+      <ColumnConstraints hgrow="SOMETIMES" />
+      <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" />
+   </columnConstraints>
+   <rowConstraints>
+      <RowConstraints vgrow="SOMETIMES" />
+   </rowConstraints>
+   <children>
+      <Label fx:id="labelLanguageName">
+         <font>
+            <Font size="16.0" />
+         </font>
+      </Label>
+      <MenuButton fx:id="menuButtonOptions" mnemonicParsing="false" text="Options" GridPane.columnIndex="1">
+        <items>
+          <MenuItem fx:id="menuItemEdit" mnemonicParsing="false" text="Edit" />
+          <MenuItem fx:id="menuItemDelete" mnemonicParsing="false" text="Delete" />
+        </items>
+      </MenuButton>
+   </children>
+   <padding>
+      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+   </padding>
+</GridPane>

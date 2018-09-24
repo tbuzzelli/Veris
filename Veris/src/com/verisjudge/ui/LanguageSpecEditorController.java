@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
-import com.verisjudge.Config;
 import com.verisjudge.LanguageSpec;
 import com.verisjudge.Main;
 
@@ -36,24 +35,32 @@ public class LanguageSpecEditorController {
 	@FXML private Button buttonSave;
 
 	private Stage stage;
+	private LanguageSpec originalLanguageSpec;
+	private LanguageSpecEventHandler eventHandler;
 	
-	public static boolean createAndOpen() {
+	public static boolean createAndOpen(LanguageSpec originalLanguageSpec, LanguageSpecEventHandler eventHandler) {
 		try {
 			FXMLLoader loader = new FXMLLoader(LanguageSpecEditorController.class.getResource("/fxml/languageSpecEditor.fxml"));
 			Parent root = (Parent) loader.load();
 			LanguageSpecEditorController controller = (LanguageSpecEditorController) loader.getController();
+			controller.setOriginalLanguageSpec(originalLanguageSpec);
+			controller.setEventHandler(eventHandler);
 			Stage stage = new Stage();
 			
 	        Scene scene = new Scene(root);
 
-	        stage.setTitle("Edit Language Spec");
+	        if (originalLanguageSpec == null) {
+	        	stage.setTitle("Create New Language Spec");
+	        } else {
+	        	stage.setTitle("Edit - " + originalLanguageSpec.getLanguageName());
+	        }
 	        stage.setScene(scene);
 	        stage.setResizable(false);
 	        Main.addIconToStage(stage);
 	        
 	        controller.setStage(stage);
 	        stage.show();
-	        
+
 	        return true;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -66,10 +73,21 @@ public class LanguageSpecEditorController {
 		Main.updateTheme(this.stage);
 	}
 	
+	private void setOriginalLanguageSpec(LanguageSpec originalLanguageSpec) {
+		this.originalLanguageSpec = originalLanguageSpec;
+		loadFromLanguageSpec(getOriginalLanguageSpec());
+	}
+	
+	private LanguageSpec getOriginalLanguageSpec() {
+		return originalLanguageSpec;
+	}
+	
+	private void setEventHandler(LanguageSpecEventHandler eventHandler) {
+		this.eventHandler = eventHandler;
+	}
+
 	@FXML
     protected void initialize() {
-		loadFromLanguageSpec(Config.getConfig().getLanguageSpecs()[0]);
-		
 		setUpInputValidation();
 		updateSaveButton();
 	}
@@ -175,15 +193,22 @@ public class LanguageSpecEditorController {
 	}
 
 	@FXML protected void handleCancelButtonAction(ActionEvent event) {
+		if (eventHandler != null) {
+			eventHandler.handleLanguageSpecEditorCancel(getOriginalLanguageSpec());
+		}
 		stage.close();
 		event.consume();
 	}
 	
 	@FXML protected void handleSaveButtonAction(ActionEvent event) {
+		if (eventHandler != null) {
+			eventHandler.handleLanguageSpecEditorSave(getOriginalLanguageSpec(), getEditedLanguageSpec());
+		}
+		stage.close();
 		event.consume();
 	}
 	
-	private LanguageSpec createLanguageSpec() {
+	private LanguageSpec getEditedLanguageSpec() {
 		return new LanguageSpec.Builder()
 				.setLanguageName(textFieldLanguageName.getText())
 				.setFileExtensions(getFileExtensions())
@@ -265,6 +290,11 @@ public class LanguageSpecEditorController {
 
 		checkBoxIsAllowed.setSelected(languageSpec.isAllowed());
 		checkBoxNeedsCompile.setSelected(languageSpec.needsCompile());
+	}
+	
+	public static interface LanguageSpecEventHandler {
+		public void handleLanguageSpecEditorSave(LanguageSpec originalLanguageSpec, LanguageSpec editedLanguageSpec);
+		public void handleLanguageSpecEditorCancel(LanguageSpec originalLanguageSpec);
 	}
 
 }

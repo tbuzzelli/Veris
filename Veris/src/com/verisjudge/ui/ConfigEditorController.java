@@ -1,27 +1,36 @@
 package com.verisjudge.ui;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import com.verisjudge.Config;
+import com.verisjudge.LanguageSpec;
 import com.verisjudge.Main;
+import com.verisjudge.ui.LanguageSpecEditorController.LanguageSpecEventHandler;
 import com.verisjudge.utils.ParsingUtils;
 
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.MenuButton;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-public class ConfigEditorController {
+public class ConfigEditorController implements LanguageSpecEventHandler {
 
 	@FXML private Button buttonCancel;
 	@FXML private Button buttonSave;
@@ -75,6 +84,9 @@ public class ConfigEditorController {
     protected void initialize() {
 		mainAccordion.heightProperty().addListener((obs, oldHeight, newHeight) -> {
 			stage.sizeToScene();
+			for (TitledPane titledPane : mainAccordion.getPanes()) {
+				titledPane.requestLayout();
+			}
 		} );
 		for (TitledPane titledPane : mainAccordion.getPanes()) {
 			titledPane.setAnimated(false);
@@ -182,6 +194,7 @@ public class ConfigEditorController {
 	}
 	
 	@FXML protected void handleSaveButtonAction(ActionEvent event) {
+		System.err.println(createConfig().toJsonString());
 		event.consume();
 	}
 	
@@ -213,8 +226,12 @@ public class ConfigEditorController {
 		return true;
 	}
 	
+	private String getDefaultTimeLimitString() {
+		return textFieldDefaultTimeLimit.getText();
+	}
+
 	private Long getDefaultTimeLimit() {
-		return ParsingUtils.parseTime(textFieldDefaultTimeLimit.getText());
+		return ParsingUtils.parseTime(getDefaultTimeLimitString());
 	}
 	
 	private boolean isMinimumTimeLimitValid() {
@@ -229,8 +246,12 @@ public class ConfigEditorController {
 		return true;
 	}
 	
+	private String getMinimumTimeLimitString() {
+		return textFieldMinimumTimeLimit.getText();
+	}
+	
 	private Long getMinimumTimeLimit() {
-		return ParsingUtils.parseTime(textFieldMinimumTimeLimit.getText());
+		return ParsingUtils.parseTime(getMinimumTimeLimitString());
 	}
 	
 	private boolean isMaximumTimeLimitValid() {
@@ -245,8 +266,12 @@ public class ConfigEditorController {
 		return true;
 	}
 	
+	private String getMaximumTimeLimitString() {
+		return textFieldMaximumTimeLimit.getText();
+	}
+	
 	private Long getMaximumTimeLimit() {
-		return ParsingUtils.parseTime(textFieldMaximumTimeLimit.getText());
+		return ParsingUtils.parseTime(getMaximumTimeLimitString());
 	}
 	
 	private boolean isMaximumIdleTimeValid() {
@@ -254,8 +279,12 @@ public class ConfigEditorController {
 		return maximumIdleTime != null && maximumIdleTime >= 0;
 	}
 	
+	private String getMaximumIdleTimeString() {
+		return textFieldMaximumIdleTime.getText();
+	}
+	
 	private Long getMaximumIdleTime() {
-		return ParsingUtils.parseTime(textFieldMaximumIdleTime.getText());
+		return ParsingUtils.parseTime(getMaximumIdleTimeString());
 	}
 	
 	private boolean isCompileTimeLimitValid() {
@@ -263,8 +292,12 @@ public class ConfigEditorController {
 		return compileTimeLimit != null && compileTimeLimit > 0;
 	}
 	
+	private String getCompileTimeLimitString() {
+		return textFieldCompileTimeLimit.getText();
+	}
+	
 	private Long getCompileTimeLimit() {
-		return ParsingUtils.parseTime(textFieldCompileTimeLimit.getText());
+		return ParsingUtils.parseTime(getCompileTimeLimitString());
 	}
 	
 	private String[] getInputFileExtensions() {
@@ -279,6 +312,96 @@ public class ConfigEditorController {
 				.map(a -> a.replace(",", "").replace(" ", ""))
 				.filter(a -> !a.isEmpty())
 				.toArray(String[]::new);
+	}
+	
+	private Config createConfig() {
+		return new Config.Builder()
+				.setInputFileTypes(getInputFileExtensions())
+				.setOutputFileTypes(getOutputFileExtensions())
+				.setDefaultTimeLimitString(getDefaultTimeLimitString())
+				.setMinimumTimeLimitString(getMinimumTimeLimitString())
+				.setMaximumTimeLimitString(getMaximumTimeLimitString())
+				.setMaximumIdleTimeString(getMaximumIdleTimeString())
+				.setCompileTimeLimitString(getCompileTimeLimitString())
+				.setLanguageSpecs(new LanguageSpec[0])
+				.build();
+	}
+	
+	@Override
+	public void handleLanguageSpecEditorSave(LanguageSpec originalLanguageSpec, LanguageSpec editedLanguageSpec) {
+		if (originalLanguageSpec == null) {
+			addLanguageSpec(editedLanguageSpec);
+		}  else {
+			replaceLanguageSpec(originalLanguageSpec, editedLanguageSpec);
+		}
+	}
+	
+	@Override
+	public void handleLanguageSpecEditorCancel(LanguageSpec originalLanguageSpec) {
+		// Do nothing.
+	}
+	
+	private void addLanguageSpec(LanguageSpec languageSpec) {
+		vBoxLanguageSpecs.getChildren().add(createLanguageSpecPane(languageSpec));
+	}
+	
+	private void openLanguageSpecEditor(LanguageSpec languageSpec) {
+		LanguageSpecEditorController.createAndOpen(languageSpec, this);
+	}
+	
+	private void deleteLanguageSpec(LanguageSpec languageSpec) {
+		vBoxLanguageSpecs.getChildren().removeIf(a -> languageSpec.equals(a.getUserData()));
+	}
+	
+	private void replaceLanguageSpec(LanguageSpec originalLanguageSpec, LanguageSpec editedLanguageSpec) {
+		List<Node> nodes = vBoxLanguageSpecs.getChildren().filtered(a -> originalLanguageSpec.equals(a.getUserData()));
+		Node node = nodes.isEmpty() ? null : nodes.get(0);
+		// If this language spec was already deleted, just return.
+		if (node == null) {
+			return;
+		}
+		int index = vBoxLanguageSpecs.getChildren().indexOf(node);
+		vBoxLanguageSpecs.getChildren().set(index, createLanguageSpecPane(editedLanguageSpec));
+	}
+	
+	private Pane createLanguageSpecPane(LanguageSpec languageSpec) {
+		Pane pane;
+		try {
+			pane = FXMLLoader.load(getClass().getResource("/fxml/languageSpec.fxml"));
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+		pane.setUserData(languageSpec);
+		
+		Label labelLanguageName = (Label) pane.lookup("#labelLanguageName");
+		labelLanguageName.setText(languageSpec.getLanguageName());
+
+		MenuButton menuButtonOptions = (MenuButton) pane.lookup("#menuButtonOptions");
+
+		MenuItem menuItemEdit = menuButtonOptions.getItems().stream()
+				.filter(item -> item.getId().equals("menuItemEdit"))
+				.findFirst()
+				.get();
+		menuItemEdit.setOnAction(e ->
+			{
+				openLanguageSpecEditor(languageSpec);
+				e.consume();
+			}
+		);
+
+		MenuItem menuItemDelete = menuButtonOptions.getItems().stream()
+				.filter(item -> item.getId().equals("menuItemDelete"))
+				.findFirst()
+				.get();
+		menuItemDelete.setOnAction(e ->
+			{
+				deleteLanguageSpec(languageSpec);
+				e.consume();
+			}
+		);
+
+		return pane;
 	}
 	
 	private void loadDefaults() {
@@ -307,6 +430,10 @@ public class ConfigEditorController {
 				Arrays.stream(config.getOutputFileTypes())
 				.collect(Collectors.joining(", "))
 		);
+		
+		for (LanguageSpec languageSpec : config.getLanguageSpecs()) {
+			addLanguageSpec(languageSpec);
+		}
 	}
 
 }

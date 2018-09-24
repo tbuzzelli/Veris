@@ -6,10 +6,20 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 public class LanguageSpec {
+	
+	public final static String JSON_FIELD_LANGUAGE_NAME = "languageName";
+	public final static String JSON_FIELD_FILE_EXTENSIONS = "fileExtensions";
+	public final static String JSON_FIELD_DETECT_LANGUAGE_PRIORITY = "detectLanguagePriority";
+	public final static String JSON_FIELD_IS_ALLOWED = "isAllowed";
+	public final static String JSON_FIELD_NEEDS_COMPILE = "needsCompile";
+	public final static String JSON_FIELD_COMPILE_ARGS = "compileArgs";
+	public final static String JSON_FIELD_EXECUTION_ARGS = "runtimeArgs";
+	
 	
 	public final static Comparator<LanguageSpec> DETECT_LANGUAGE_COMPARATOR = Comparator.comparing(a -> a.detectLanguagePriority);
 	public final static Comparator<LanguageSpec> DISPLAY_COMPARATOR = Comparator.comparing(a -> a.languageName);
@@ -84,28 +94,28 @@ public class LanguageSpec {
 	public static LanguageSpec fromJson(JsonObject j) {
         Builder builder = new Builder();
         
-        if (j.has(Config.JSON_FIELD_LANGUAGE_SPEC_LANGUAGE_NAME)) {
-        	JsonElement element = j.get(Config.JSON_FIELD_LANGUAGE_SPEC_LANGUAGE_NAME);
+        if (j.has(JSON_FIELD_LANGUAGE_NAME)) {
+        	JsonElement element = j.get(JSON_FIELD_LANGUAGE_NAME);
         	if (element.isJsonPrimitive() && element.getAsJsonPrimitive().isString())
         		builder.setLanguageName(element.getAsString());
         }
         
-        if (j.has(Config.JSON_FIELD_LANGUAGE_SPEC_FILE_EXTENSIONS)) {
+        if (j.has(JSON_FIELD_FILE_EXTENSIONS)) {
         	builder.setFileExtensions(Config.getStringArray(
-        			j, Config.JSON_FIELD_LANGUAGE_SPEC_FILE_EXTENSIONS));
+        			j, JSON_FIELD_FILE_EXTENSIONS));
         }
         
-        if (j.has(Config.JSON_FIELD_LANGUAGE_SPEC_COMPILE_ARGS)) {
+        if (j.has(JSON_FIELD_COMPILE_ARGS)) {
         	builder.setCompileArgs(Config.getStringArray(
-        			j, Config.JSON_FIELD_LANGUAGE_SPEC_COMPILE_ARGS));
+        			j, JSON_FIELD_COMPILE_ARGS));
         }
         
         if (builder.getCompileArgs() != null) {
         	builder.setNeedsCompile(true);
         }
         
-        if (j.has(Config.JSON_FIELD_LANGUAGE_SPEC_DETECT_LANGUAGE_PRIORITY)) {
-        	JsonElement element = j.get(Config.JSON_FIELD_LANGUAGE_SPEC_DETECT_LANGUAGE_PRIORITY);
+        if (j.has(JSON_FIELD_DETECT_LANGUAGE_PRIORITY)) {
+        	JsonElement element = j.get(JSON_FIELD_DETECT_LANGUAGE_PRIORITY);
         	if (element.isJsonPrimitive() && element.getAsJsonPrimitive().isNumber()) {
         		try {
         			builder.setDetectLanguagePriority(element.getAsLong());
@@ -116,15 +126,15 @@ public class LanguageSpec {
         	}
         }
         
-        if (j.has(Config.JSON_FIELD_LANGUAGE_SPEC_NEEDS_COMPILE)) {
-        	JsonElement element = j.get(Config.JSON_FIELD_LANGUAGE_SPEC_NEEDS_COMPILE);
+        if (j.has(JSON_FIELD_NEEDS_COMPILE)) {
+        	JsonElement element = j.get(JSON_FIELD_NEEDS_COMPILE);
         	if (element.isJsonPrimitive() && element.getAsJsonPrimitive().isBoolean())
         		builder.setNeedsCompile(element.getAsBoolean());
         }
         
-        if (j.has(Config.JSON_FIELD_LANGUAGE_SPEC_EXECUTION_ARGS)) {
+        if (j.has(JSON_FIELD_EXECUTION_ARGS)) {
         	builder.setExecutionArgs(Config.getStringArray(
-        			j, Config.JSON_FIELD_LANGUAGE_SPEC_EXECUTION_ARGS));
+        			j, JSON_FIELD_EXECUTION_ARGS));
         }
         
         if (builder.getCompileArgs() == null
@@ -133,8 +143,8 @@ public class LanguageSpec {
         	builder.setIsAllowed(false);
         }
         
-        if (j.has(Config.JSON_FIELD_LANGUAGE_SPEC_IS_ALLOWED)) {
-        	JsonElement element = j.get(Config.JSON_FIELD_LANGUAGE_SPEC_IS_ALLOWED);
+        if (j.has(JSON_FIELD_IS_ALLOWED)) {
+        	JsonElement element = j.get(JSON_FIELD_IS_ALLOWED);
         	if (element.isJsonPrimitive() && element.getAsJsonPrimitive().isBoolean()) {
         		builder.setIsAllowed(element.getAsBoolean());
         	}
@@ -163,8 +173,16 @@ public class LanguageSpec {
 		return needsCompile;
 	}
 	
+	public boolean hasCompileArgs() {
+		return getCompileArgs() != null;
+	}
+	
 	public String[] getCompileArgs() {
 		return compileArgs;
+	}
+	
+	public boolean hasExecutionArgs() {
+		return getExecutionArgs() != null;
 	}
 	
 	public String[] getExecutionArgs() {
@@ -195,6 +213,48 @@ public class LanguageSpec {
 		return Arrays.stream(executionArgs).map(
 				arg -> arg.replace("{dir}", directory).replace("{file}", filename).replace("{filename}", classname)
 			).collect(Collectors.toList());
+	}
+	
+	private JsonArray getFileExtensionsJsonArray() {
+		JsonArray jsonArray = new JsonArray();
+		for (String fileExtension : getFileExtensions()) {
+			jsonArray.add(fileExtension);
+		}
+		return jsonArray;
+	}
+	
+	private JsonArray getCompileArgsJsonArray() {
+		JsonArray jsonArray = new JsonArray();
+		for (String fileExtension : getCompileArgs()) {
+			jsonArray.add(fileExtension);
+		}
+		return jsonArray;
+	}
+	
+	private JsonArray getExecutionArgsJsonArray() {
+		JsonArray jsonArray = new JsonArray();
+		for (String fileExtension : getExecutionArgs()) {
+			jsonArray.add(fileExtension);
+		}
+		return jsonArray;
+	}
+
+	public JsonObject toJsonObject() {
+		JsonObject jsonObject = new JsonObject();
+		
+		jsonObject.addProperty(JSON_FIELD_LANGUAGE_NAME, getLanguageName());
+		jsonObject.addProperty(JSON_FIELD_DETECT_LANGUAGE_PRIORITY, getDetectLanguagePriority());
+		jsonObject.addProperty(JSON_FIELD_IS_ALLOWED, isAllowed());
+		jsonObject.addProperty(JSON_FIELD_NEEDS_COMPILE, needsCompile());
+		jsonObject.add(JSON_FIELD_FILE_EXTENSIONS, getFileExtensionsJsonArray());
+		if (hasCompileArgs()) {
+			jsonObject.add(JSON_FIELD_COMPILE_ARGS, getCompileArgsJsonArray());
+		}
+		if (hasExecutionArgs()) {
+			jsonObject.add(JSON_FIELD_EXECUTION_ARGS, getExecutionArgsJsonArray());
+		}
+	
+		return jsonObject;
 	}
 	
 	public static List<String> convertStringToArgsList(String str) {

@@ -79,12 +79,12 @@
             </VBox>
             <VBox spacing="5.0" styleClass="box-with-border" GridPane.rowIndex="1">
                <children>
-                  <CheckBox fx:id="checkBoxIsAllowed" mnemonicParsing="false" text="Is Allowed">
+                  <CheckBox fx:id="checkBoxIsAllowed" mnemonicParsing="false" selected="true" text="Is Allowed">
                      <font>
                         <Font size="16.0" />
                      </font>
                   </CheckBox>
-                  <CheckBox fx:id="checkBoxNeedsCompile" mnemonicParsing="false" text="Needs Compile">
+                  <CheckBox fx:id="checkBoxNeedsCompile" mnemonicParsing="false" selected="true" text="Needs Compile">
                      <font>
                         <Font size="16.0" />
                      </font>
@@ -103,7 +103,7 @@
                               <Font size="16.0" />
                            </font>
                         </Label>
-                        <TextField fx:id="textFieldDetectLanguagePriority" alignment="CENTER_RIGHT" GridPane.columnIndex="1" />
+                        <TextField fx:id="textFieldDetectLanguagePriority" alignment="CENTER_RIGHT" text="0" GridPane.columnIndex="1" />
                      </children>
                   </GridPane>
                </children>

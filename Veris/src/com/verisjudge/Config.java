@@ -33,15 +33,7 @@ public class Config {
 	public final static String JSON_FIELD_MAXIMUM_IDLE_TIME = "maximumIdleTime";
 	public final static String JSON_FIELD_COMPILE_TIME_LIMIT = "compileTimeLimit";
 	public final static String JSON_FIELD_LANGUAGE_SPECS = "languageSpecs";
-	
-	public final static String JSON_FIELD_LANGUAGE_SPEC_LANGUAGE_NAME = "languageName";
-	public final static String JSON_FIELD_LANGUAGE_SPEC_FILE_EXTENSIONS = "fileExtensions";
-	public final static String JSON_FIELD_LANGUAGE_SPEC_DETECT_LANGUAGE_PRIORITY = "detectLanguagePriority";
-	public final static String JSON_FIELD_LANGUAGE_SPEC_IS_ALLOWED = "isAllowed";
-	public final static String JSON_FIELD_LANGUAGE_SPEC_NEEDS_COMPILE = "needsCompile";
-	public final static String JSON_FIELD_LANGUAGE_SPEC_COMPILE_ARGS = "compileArgs";
-	public final static String JSON_FIELD_LANGUAGE_SPEC_EXECUTION_ARGS = "runtimeArgs";
-	
+
 	public final static String USER_CONFIG_FILENAME = "config.json";
 	public final static String DEFAULT_CONFIG_RESOURCE_PATH = "/default_config.json";
 	
@@ -481,6 +473,67 @@ public class Config {
 		return arr;
 	}
 	
+	public String toJsonString() {
+		JsonObject jsonObject = toJsonObject();
+		return jsonObject.toString();
+	}
+	
+	private JsonArray getInputFileExtensionsJsonArray() {
+		JsonArray jsonArray = new JsonArray();
+		for (String inputFileExtension : inputFileTypes) {
+			jsonArray.add(inputFileExtension);
+		}
+		return jsonArray;
+	}
+	
+	private JsonArray getOutputFileExtensionsJsonArray() {
+		JsonArray jsonArray = new JsonArray();
+		for (String outputFileExtension : outputFileTypes) {
+			jsonArray.add(outputFileExtension);
+		}
+		return jsonArray;
+	}
+	
+	private JsonArray getLanguageSpecsJsonArray() {
+		JsonArray jsonArray = new JsonArray();
+		for (LanguageSpec languageSpec : getLanguageSpecs()) {
+			jsonArray.add(languageSpec.toJsonObject());
+		}
+		return jsonArray;
+	}
+	
+	public JsonObject toJsonObject() {
+		JsonObject jsonObject = new JsonObject();
+		
+		jsonObject.add(JSON_FIELD_INPUT_FILE_TYPES, getInputFileExtensionsJsonArray());
+		
+		jsonObject.add(JSON_FIELD_OUTPUT_FILE_TYPES, getOutputFileExtensionsJsonArray());
+		
+        if (hasDefaultTimeLimitString()) {
+			jsonObject.addProperty(JSON_FIELD_DEFAULT_TIME_LIMIT, getDefaultTimeLimitString());
+		}
+        
+        if (hasMinimumTimeLimitString()) {
+			jsonObject.addProperty(JSON_FIELD_MINIMUM_TIME_LIMIT, getMinimumTimeLimitString());
+		}
+        
+        if (hasMaximumTimeLimitString()) {
+			jsonObject.addProperty(JSON_FIELD_MAXIMUM_TIME_LIMIT, getMaximumTimeLimitString());
+		}
+        
+        if (hasMaximumIdleTimeString()) {
+			jsonObject.addProperty(JSON_FIELD_MAXIMUM_IDLE_TIME, getMaximumIdleTimeString());
+		}
+        
+        if (hasCompileTimeLimitString()) {
+        	jsonObject.addProperty(JSON_FIELD_COMPILE_TIME_LIMIT, getCompileTimeLimitString());
+        }
+
+        jsonObject.add(JSON_FIELD_LANGUAGE_SPECS, getLanguageSpecsJsonArray());
+        
+		return jsonObject;
+	}
+	
 	@Override
 	public String toString() {
 		return String.format(
@@ -496,7 +549,7 @@ public class Config {
 				languageSpecs == null ? null : Arrays.toString(languageSpecs));
 	}
 	
-	static class Builder {
+	public static class Builder {
 		private String[] inputFileTypes;
 		private String[] outputFileTypes;
 		
