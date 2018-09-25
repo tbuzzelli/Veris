@@ -2,6 +2,7 @@ package com.verisjudge.ui;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import com.verisjudge.LanguageSpec;
@@ -237,30 +238,30 @@ public class LanguageSpecEditorController {
 	}
 
 	private boolean isCompileCommandValid() {
-		return !getNeedsCompile() || getCompileArgs().length > 0;
+		return !getNeedsCompile() || !getCompileArgs().isEmpty();
 	}
 	
-	private String[] getCompileArgs() {
-		return LanguageSpec.convertStringToArgsList(textAreaCompileCommand.getText()).toArray(new String[0]);
+	private List<String> getCompileArgs() {
+		return LanguageSpec.convertStringToArgsList(textAreaCompileCommand.getText());
 	}
 
 	private boolean isExecutionCommandValid() {
-		return getExecutionArgs().length > 0;
+		return !getExecutionArgs().isEmpty();
 	}
 
-	private String[] getExecutionArgs() {
-		return LanguageSpec.convertStringToArgsList(textAreaExecutionCommand.getText()).toArray(new String[0]);
+	private List<String> getExecutionArgs() {
+		return LanguageSpec.convertStringToArgsList(textAreaExecutionCommand.getText());
 	}
 	
 	private boolean isFileExtensionsValid() {
-		return getFileExtensions().length > 0;
+		return !getFileExtensions().isEmpty();
 	}
 
-	private String[] getFileExtensions() {
+	private List<String> getFileExtensions() {
 		return Arrays.stream(textFieldFileExtensions.getText().split("(\\s|,)+"))
 				.map(a -> a.replace(",", "").replace(" ", ""))
 				.filter(a -> !a.isEmpty())
-				.toArray(String[]::new);
+				.collect(Collectors.toList());
 	}
 	
 	private boolean isDetectLanguagePriorityValid() {
@@ -282,11 +283,11 @@ public class LanguageSpecEditorController {
 	
 	private void loadFromLanguageSpec(LanguageSpec languageSpec) {
 		textFieldLanguageName.setText(languageSpec.getLanguageName());
-		textFieldFileExtensions.setText(Arrays.stream(languageSpec.getFileExtensions()).collect(Collectors.joining(", ")));
+		textFieldFileExtensions.setText(languageSpec.getFileExtensions().stream().collect(Collectors.joining(", ")));
 		textFieldDetectLanguagePriority.setText("" + languageSpec.getDetectLanguagePriority());
 
-		textAreaCompileCommand.setText(Arrays.stream(languageSpec.getCompileArgs()).collect(Collectors.joining(" ")));
-		textAreaExecutionCommand.setText(Arrays.stream(languageSpec.getExecutionArgs()).collect(Collectors.joining(" ")));
+		textAreaCompileCommand.setText(languageSpec.getCompileArgs().stream().collect(Collectors.joining(" ")));
+		textAreaExecutionCommand.setText(languageSpec.getExecutionArgs().stream().collect(Collectors.joining(" ")));
 
 		checkBoxIsAllowed.setSelected(languageSpec.isAllowed());
 		checkBoxNeedsCompile.setSelected(languageSpec.needsCompile());

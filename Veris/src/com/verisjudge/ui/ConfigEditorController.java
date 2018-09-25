@@ -1,6 +1,7 @@
 package com.verisjudge.ui;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -60,7 +61,7 @@ public class ConfigEditorController implements LanguageSpecEventHandler {
 			
 	        Scene scene = new Scene(root);
 
-	        stage.setTitle("Config");
+	        stage.setTitle("Edit Config");
 	        stage.setScene(scene);
 	        stage.setResizable(false);
 	        Main.addIconToStage(stage);
@@ -69,7 +70,7 @@ public class ConfigEditorController implements LanguageSpecEventHandler {
 	        stage.show();
 	        
 	        return true;
-		} catch (Exception e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 			return false;
 		}
@@ -94,7 +95,7 @@ public class ConfigEditorController implements LanguageSpecEventHandler {
 				titledPane.requestLayout();
 	        });
 		}
-		loadDefaults();
+		loadFromConfig(Config.getConfig());
 		
 		setUpInputValidation();
 		updateSaveButton();
@@ -194,7 +195,8 @@ public class ConfigEditorController implements LanguageSpecEventHandler {
 	}
 	
 	@FXML protected void handleSaveButtonAction(ActionEvent event) {
-		System.err.println(createConfig().toJsonString());
+		Config.saveUserConfig(createConfig());
+		stage.close();
 		event.consume();
 	}
 	
@@ -300,21 +302,25 @@ public class ConfigEditorController implements LanguageSpecEventHandler {
 		return ParsingUtils.parseTime(getCompileTimeLimitString());
 	}
 	
-	private String[] getInputFileExtensions() {
+	private List<String> getInputFileExtensions() {
 		return Arrays.stream(textFieldInputFileExtensions.getText().split("(\\s|,)+"))
 				.map(a -> a.replace(",", "").replace(" ", ""))
 				.filter(a -> !a.isEmpty())
-				.toArray(String[]::new);
+				.collect(Collectors.toList());
 	}
 	
-	private String[] getOutputFileExtensions() {
+	private List<String> getOutputFileExtensions() {
 		return Arrays.stream(textFieldOutputFileExtensions.getText().split("(\\s|,)+"))
 				.map(a -> a.replace(",", "").replace(" ", ""))
 				.filter(a -> !a.isEmpty())
-				.toArray(String[]::new);
+				.collect(Collectors.toList());
 	}
 	
 	private Config createConfig() {
+		List<LanguageSpec> languageSpecs = new ArrayList<>();
+		vBoxLanguageSpecs.getChildrenUnmodifiable()
+			.filtered(a -> a.getUserData() instanceof LanguageSpec)
+			.forEach(a -> languageSpecs.add((LanguageSpec) a.getUserData()));
 		return new Config.Builder()
 				.setInputFileTypes(getInputFileExtensions())
 				.setOutputFileTypes(getOutputFileExtensions())
@@ -323,7 +329,7 @@ public class ConfigEditorController implements LanguageSpecEventHandler {
 				.setMaximumTimeLimitString(getMaximumTimeLimitString())
 				.setMaximumIdleTimeString(getMaximumIdleTimeString())
 				.setCompileTimeLimitString(getCompileTimeLimitString())
-				.setLanguageSpecs(new LanguageSpec[0])
+				.setLanguageSpecs(languageSpecs)
 				.build();
 	}
 	
@@ -404,9 +410,7 @@ public class ConfigEditorController implements LanguageSpecEventHandler {
 		return pane;
 	}
 	
-	private void loadDefaults() {
-		Config config = Config.getConfig();
-
+	private void loadFromConfig(Config config) {
 		if (config.hasDefaultTimeLimitString())
 			textFieldDefaultTimeLimit.setText(config.getDefaultTimeLimitString());
 		
@@ -422,12 +426,10 @@ public class ConfigEditorController implements LanguageSpecEventHandler {
 		if (config.hasCompileTimeLimitString())
 			textFieldCompileTimeLimit.setText(config.getCompileTimeLimitString());
 	
-		textFieldInputFileExtensions.setText(
-				Arrays.stream(config.getInputFileTypes())
+		textFieldInputFileExtensions.setText(config.getInputFileTypes().stream()
 				.collect(Collectors.joining(", "))
 		);
-		textFieldOutputFileExtensions.setText(
-				Arrays.stream(config.getOutputFileTypes())
+		textFieldOutputFileExtensions.setText(config.getOutputFileTypes().stream()
 				.collect(Collectors.joining(", "))
 		);
 		

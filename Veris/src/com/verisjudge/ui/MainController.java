@@ -319,8 +319,20 @@ public class MainController {
 		    }
 		});
 		
+		MenuItem itemOpenConfigEditor = new MenuItem("Edit Config");
+		itemOpenConfigEditor.setOnAction(new EventHandler<ActionEvent>() {
+		    public void handle(ActionEvent e) {
+		    	boolean status = ConfigEditorController.createAndOpen();
+	    		if (!status) {
+	    			// TODO: show error message "Failed to open config editor."
+	    		}
+		    }
+		});
+		
 		mainContextMenu.getItems().addAll(
-				itemOpenSettings);
+				itemOpenSettings,
+				itemOpenConfigEditor
+		);
 		
 		borderPaneMain.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			public void handle(MouseEvent e) {

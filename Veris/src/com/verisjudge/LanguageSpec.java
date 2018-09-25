@@ -1,7 +1,6 @@
 package com.verisjudge;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,9 +34,9 @@ public class LanguageSpec {
 	 */
 	private final String languageName;
 	/**
-	 * An array of the list of file extensions that apply to this language.
+	 * A list of file extensions that apply to this language.
 	 */
-	private final String[] fileExtensions;
+	private final List<String> fileExtensions;
 	/**
 	 * The value to sort by when auto detecting a language. Smaller values come first.
 	 * Defaulted to 1.
@@ -52,43 +51,53 @@ public class LanguageSpec {
 	 */
 	private final boolean needsCompile;
 	/**
-	 * An array of the args/command that needs to be run to compile solutions of this language.
+	 * A list of the args/command that needs to be run to compile solutions of this language.
 	 * Can be null if isAllowed or needsCompile is false.
 	 * 
 	 * "{file}" is replaced by the full name of the file (with extension)
 	 * "{filename}" is replaced by the name of the file (not including the extension)
 	 */
-	private final String[] compileArgs;
+	private final List<String> compileArgs;
 	/**
-	 * An array of the args/command that needs to be run to execute solutions of this language.
+	 * A list of the args/command that needs to be run to execute solutions of this language.
 	 * Can be null if isAllowed or needsCompile is false.
 	 * 
 	 * "{file}" is replaced by the full name of the file (with extension)
 	 * "{filename}" is replaced by the name of the file (not including the extension)
 	 */
-	private final String[] executionArgs;
+	private final List<String> executionArgs;
 	
-	public LanguageSpec(String languageName, String[] fileExtensions, long detectLanguagePriority,
-			boolean isAllowed, boolean needsCompile, String[] compileArgs, String[] executionArgs) {
+	public LanguageSpec(
+			String languageName,
+			List<String> fileExtensions,
+			long detectLanguagePriority,
+			boolean isAllowed,
+			boolean needsCompile,
+			List<String> compileArgs,
+			List<String> executionArgs
+	) {
 		if (languageName == null) {
 			throw new IllegalArgumentException("LanguageSpec languageName cannot be null!");
 		}
 		if (fileExtensions == null) {
 			throw new IllegalArgumentException("LanguageSpec fileExtensions cannot be null!");
 		}
-		if (isAllowed && needsCompile && compileArgs == null) {
-			throw new IllegalArgumentException("LanguageSpec compileArgs cannot be null if language is allowed and needs to compile!");
+		if (compileArgs == null) {
+			throw new IllegalArgumentException("LanguageSpec compileArgs cannot be null!");
 		}
-		if (isAllowed && executionArgs == null) {
-			throw new IllegalArgumentException("LanguageSpec executionArgs cannot be null if language is allowed!");
+		if (executionArgs == null) {
+			throw new IllegalArgumentException("LanguageSpec executionArgs cannot be null!");
 		}
 		this.languageName = languageName;
 		this.detectLanguagePriority = detectLanguagePriority;
-		this.fileExtensions = fileExtensions;
+		this.fileExtensions = fileExtensions.stream()
+				.collect(Collectors.toUnmodifiableList());
 		this.isAllowed = isAllowed;
 		this.needsCompile = needsCompile;
-		this.compileArgs = compileArgs;
-		this.executionArgs = executionArgs;
+		this.compileArgs = compileArgs.stream()
+				.collect(Collectors.toUnmodifiableList());
+		this.executionArgs = executionArgs.stream()
+				.collect(Collectors.toUnmodifiableList());
 	}
 	
 	public static LanguageSpec fromJson(JsonObject j) {
@@ -101,12 +110,12 @@ public class LanguageSpec {
         }
         
         if (j.has(JSON_FIELD_FILE_EXTENSIONS)) {
-        	builder.setFileExtensions(Config.getStringArray(
+        	builder.setFileExtensions(Config.getStringList(
         			j, JSON_FIELD_FILE_EXTENSIONS));
         }
         
         if (j.has(JSON_FIELD_COMPILE_ARGS)) {
-        	builder.setCompileArgs(Config.getStringArray(
+        	builder.setCompileArgs(Config.getStringList(
         			j, JSON_FIELD_COMPILE_ARGS));
         }
         
@@ -133,7 +142,7 @@ public class LanguageSpec {
         }
         
         if (j.has(JSON_FIELD_EXECUTION_ARGS)) {
-        	builder.setExecutionArgs(Config.getStringArray(
+        	builder.setExecutionArgs(Config.getStringList(
         			j, JSON_FIELD_EXECUTION_ARGS));
         }
         
@@ -157,7 +166,7 @@ public class LanguageSpec {
 		return languageName;
 	}
 	
-	public String[] getFileExtensions() {
+	public List<String> getFileExtensions() {
 		return fileExtensions;
 	}
 	
@@ -173,19 +182,11 @@ public class LanguageSpec {
 		return needsCompile;
 	}
 	
-	public boolean hasCompileArgs() {
-		return getCompileArgs() != null;
-	}
-	
-	public String[] getCompileArgs() {
+	public List<String> getCompileArgs() {
 		return compileArgs;
 	}
 	
-	public boolean hasExecutionArgs() {
-		return getExecutionArgs() != null;
-	}
-	
-	public String[] getExecutionArgs() {
+	public List<String> getExecutionArgs() {
 		return executionArgs;
 	}
 	
@@ -197,20 +198,20 @@ public class LanguageSpec {
 	}
 	
 	public ProcessBuilder getCompileProcessBuilder(String filename, String classname) {
-		String[] args = new String[compileArgs.length];
+		String[] args = new String[compileArgs.size()];
 		for (int i = 0; i < args.length; i++) {
-			args[i] = compileArgs[i].replace("{file}", filename).replace("{filename}", classname);
+			args[i] = compileArgs.get(i).replace("{file}", filename).replace("{filename}", classname);
 		}
 		return new ProcessBuilder(args);
 	}
 	public List<String> getCompileArgs(String directory, String filename, String classname) {
-		return Arrays.stream(compileArgs).map(
+		return compileArgs.stream().map(
 				arg -> arg.replace("{dir}", directory).replace("{file}", filename).replace("{filename}", classname)
 			).collect(Collectors.toList());
 	}
 	
 	public List<String> getExecutionArgs(String directory, String filename, String classname) {
-		return Arrays.stream(executionArgs).map(
+		return executionArgs.stream().map(
 				arg -> arg.replace("{dir}", directory).replace("{file}", filename).replace("{filename}", classname)
 			).collect(Collectors.toList());
 	}
@@ -247,13 +248,9 @@ public class LanguageSpec {
 		jsonObject.addProperty(JSON_FIELD_IS_ALLOWED, isAllowed());
 		jsonObject.addProperty(JSON_FIELD_NEEDS_COMPILE, needsCompile());
 		jsonObject.add(JSON_FIELD_FILE_EXTENSIONS, getFileExtensionsJsonArray());
-		if (hasCompileArgs()) {
-			jsonObject.add(JSON_FIELD_COMPILE_ARGS, getCompileArgsJsonArray());
-		}
-		if (hasExecutionArgs()) {
-			jsonObject.add(JSON_FIELD_EXECUTION_ARGS, getExecutionArgsJsonArray());
-		}
-	
+		jsonObject.add(JSON_FIELD_COMPILE_ARGS, getCompileArgsJsonArray());
+		jsonObject.add(JSON_FIELD_EXECUTION_ARGS, getExecutionArgsJsonArray());
+
 		return jsonObject;
 	}
 	
@@ -319,21 +316,22 @@ public class LanguageSpec {
 				+ "  compileArgs: %s\n"
 				+ "  executionArgs: %s }\n",
 				languageName,
-				fileExtensions == null ? null : Arrays.toString(fileExtensions),
+				fileExtensions,
 				detectLanguagePriority,
-				isAllowed, needsCompile,
-				compileArgs == null ? null : Arrays.toString(compileArgs),
-				executionArgs == null ? null : Arrays.toString(executionArgs));
+				isAllowed,
+				needsCompile,
+				compileArgs,
+				executionArgs);
 	}
 	
 	public static class Builder {
 		private String languageName;
-		private String[] fileExtensions = new String[] {};
+		private List<String> fileExtensions = new ArrayList<>();
 		private long detectLanguagePriority = DEFAULT_DETECT_LANGUAGE_PRIORITY;
 		private boolean isAllowed = true;
 		private boolean needsCompile = false;
-		private String[] compileArgs;
-		private String[] executionArgs;
+		private List<String> compileArgs = new ArrayList<>();
+		private List<String> executionArgs = new ArrayList<>();
 		
 		public Builder() {
 		}
@@ -351,11 +349,11 @@ public class LanguageSpec {
 			return this;
 		}
 		
-		public String[] getFileExtensions() {
+		public List<String> getFileExtensions() {
 			return fileExtensions;
 		}
 		
-		public Builder setFileExtensions(String[] fileExtensions) {
+		public Builder setFileExtensions(List<String> fileExtensions) {
 			this.fileExtensions = fileExtensions;
 			return this;
 		}
@@ -387,20 +385,20 @@ public class LanguageSpec {
 			return this;
 		}
 		
-		public String[] getCompileArgs() {
+		public List<String> getCompileArgs() {
 			return compileArgs;
 		}
 		
-		public Builder setCompileArgs(String[] compileArgs) {
+		public Builder setCompileArgs(List<String> compileArgs) {
 			this.compileArgs = compileArgs;
 			return this;
 		}
 		
-		public String[] getExecutionArgs() {
+		public List<String> getExecutionArgs() {
 			return executionArgs;
 		}
 		
-		public Builder setExecutionArgs(String[] executionArgs) {
+		public Builder setExecutionArgs(List<String> executionArgs) {
 			this.executionArgs = executionArgs;
 			return this;
 		}

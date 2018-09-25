@@ -9,9 +9,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -39,8 +40,8 @@ public class Config {
 	
 	private static Config CONFIG;
 	
-	private final String[] inputFileTypes;
-	private final String[] outputFileTypes;
+	private final List<String> inputFileTypes;
+	private final List<String> outputFileTypes;
 	
 	private final String defaultTimeLimitString;
 	private final String minimumTimeLimitString;
@@ -56,22 +57,33 @@ public class Config {
 	private final Long maximumIdleTime;
 	private final Long compileTimeLimit;
 	
-	private final LanguageSpec[] languageSpecs;
-	private final LanguageSpec[] languageSpecsForDetectLanguage;
-	private final LanguageSpec[] languageSpecsForDisplay;
+	private final List<LanguageSpec> languageSpecs;
+	private final List<LanguageSpec> languageSpecsForDetectLanguage;
+	private final List<LanguageSpec> languageSpecsForDisplay;
 
 	public Config(
-			String[] inputFileTypes,
-			String[] outputFileTypes,
+			List<String> inputFileTypes,
+			List<String> outputFileTypes,
 			String defaultTimeLimitString,
 			String minimumTimeLimitString,
 			String maximumTimeLimitString,
 			String maximumIdleTimeString,
 			String compileTimeLimitString,
-			LanguageSpec[] languageSpecs
+			List<LanguageSpec> languageSpecs
 	) {
-		this.inputFileTypes = inputFileTypes;
-		this.outputFileTypes = outputFileTypes;
+		if (inputFileTypes == null) {
+			throw new IllegalArgumentException("Config inputFileTypes cannot be null!");
+		}
+		if (outputFileTypes == null) {
+			throw new IllegalArgumentException("Config outputFileTypes cannot be null!");
+		}
+		if (languageSpecs == null) {
+			throw new IllegalArgumentException("Config languageSpecs cannot be null!");
+		}
+		this.inputFileTypes = inputFileTypes.stream()
+				.collect(Collectors.toUnmodifiableList());
+		this.outputFileTypes = outputFileTypes.stream()
+				.collect(Collectors.toUnmodifiableList());
 		
 		this.defaultTimeLimitString = defaultTimeLimitString;
 		this.minimumTimeLimitString = minimumTimeLimitString;
@@ -85,11 +97,14 @@ public class Config {
 		maximumIdleTime = ParsingUtils.parseTime(maximumIdleTimeString);
 		compileTimeLimit = ParsingUtils.parseTime(compileTimeLimitString);
 		
-		this.languageSpecs = languageSpecs;
-		this.languageSpecsForDetectLanguage = languageSpecs == null ? new LanguageSpec[0] : languageSpecs.clone();
-		Arrays.sort(this.languageSpecsForDetectLanguage, LanguageSpec.DETECT_LANGUAGE_COMPARATOR);
-		this.languageSpecsForDisplay = languageSpecs == null ? new LanguageSpec[0] : languageSpecs.clone();
-		Arrays.sort(this.languageSpecsForDisplay, LanguageSpec.DISPLAY_COMPARATOR);
+		this.languageSpecs = languageSpecs.stream()
+				.collect(Collectors.toUnmodifiableList());
+		this.languageSpecsForDetectLanguage = languageSpecs.stream()
+				.sorted(LanguageSpec.DETECT_LANGUAGE_COMPARATOR)
+				.collect(Collectors.toUnmodifiableList());
+		this.languageSpecsForDisplay = languageSpecs.stream()
+				.sorted(LanguageSpec.DISPLAY_COMPARATOR)
+				.collect(Collectors.toUnmodifiableList());
 	}
 	
 	public static Config fromConfigFile(String filename) {
@@ -123,12 +138,12 @@ public class Config {
 		Builder builder = new Builder();
 
 		if (j.has(Config.JSON_FIELD_INPUT_FILE_TYPES)) {
-			builder.setInputFileTypes(Config.getStringArray(
+			builder.setInputFileTypes(Config.getStringList(
         			j, Config.JSON_FIELD_INPUT_FILE_TYPES));
         }
         
         if (j.has(Config.JSON_FIELD_OUTPUT_FILE_TYPES)) {
-        	builder.setOutputFileTypes(Config.getStringArray(
+        	builder.setOutputFileTypes(Config.getStringList(
         			j, Config.JSON_FIELD_OUTPUT_FILE_TYPES));
         }
         
@@ -172,7 +187,7 @@ public class Config {
     		if (jElement.isJsonArray()) {
 	    		JsonArray jArray = jElement.getAsJsonArray();
 	    		int size = jArray.size();
-	    		LanguageSpec[] arr = new LanguageSpec[size];
+	    		List<LanguageSpec> languageSpecs = new ArrayList<>();
 	    		boolean isValid = true;
 	    		for (int i = 0; i < size; i++) {
 	    			JsonElement arrayElement = jArray.get(i);
@@ -181,10 +196,10 @@ public class Config {
 	    				// TODO: Throw error.
 	    				break;
 	    			}
-	    			arr[i] = LanguageSpec.fromJson(arrayElement.getAsJsonObject());
+	    			languageSpecs.add(LanguageSpec.fromJson(arrayElement.getAsJsonObject()));
 	    		}
 	    		if (isValid) {
-		        	builder.setLanguageSpecs(arr);
+		        	builder.setLanguageSpecs(languageSpecs);
 	    		}
     		} else {
     			// TODO: Throw error.
@@ -245,26 +260,11 @@ public class Config {
 			builder.setCompileTimeLimitString(defaultConfig.getCompileTimeLimitString());
 		}
 		
-		ArrayList<LanguageSpec> languageSpecs = new ArrayList<>();
-		if (newConfig.hasLanguageSpecs()) {
-			for (LanguageSpec languageSpec : newConfig.getLanguageSpecs())
-				languageSpecs.add(languageSpec);
+		if (newConfig.hasLanguageSpecs() && !newConfig.getLanguageSpecs().isEmpty()) {
+			builder.setLanguageSpecs(newConfig.getLanguageSpecs());
+		} else {
+			builder.setLanguageSpecs(defaultConfig.getLanguageSpecs());
 		}
-		if (defaultConfig.hasLanguageSpecs()) {
-			for (LanguageSpec languageSpec : defaultConfig.getLanguageSpecs()) {
-				boolean isRepeat = false;
-				for (LanguageSpec newLanguageSpec : languageSpecs) {
-					if (languageSpec.getLanguageName().equals(newLanguageSpec.getLanguageName())) {
-						isRepeat = true;
-						break;
-					}
-				}
-				if (!isRepeat) {
-					languageSpecs.add(languageSpec);
-				}
-			}
-		}
-		builder.setLanguageSpecs(languageSpecs.toArray(new LanguageSpec[0]));
 		return builder.build();
 	}
 
@@ -313,7 +313,24 @@ public class Config {
 		}
 	}
 	
-	public String[] getInputFileTypes() {
+	public static boolean saveUserConfig(Config config) {
+		File userConfigFile = FileUtils.getConfigFile(USER_CONFIG_FILENAME);
+		try {
+			BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(userConfigFile));
+			String jsonString = config.toJsonString();
+			bufferedWriter.write(jsonString);
+			bufferedWriter.newLine();
+			bufferedWriter.close();
+			
+			return true;
+		} catch (IOException e) {
+			e.printStackTrace();
+			
+			return false;
+		}
+	}
+	
+	public List<String> getInputFileTypes() {
 		return inputFileTypes;
 	}
 
@@ -321,7 +338,7 @@ public class Config {
 		return inputFileTypes != null;
 	}
 	
-	public String[] getOutputFileTypes() {
+	public List<String> getOutputFileTypes() {
 		return outputFileTypes;
 	}
 	
@@ -409,7 +426,7 @@ public class Config {
 		return compileTimeLimit != null;
 	}
 
-	public LanguageSpec[] getLanguageSpecs() {
+	public List<LanguageSpec> getLanguageSpecs() {
 		return languageSpecs;
 	}
 	
@@ -417,11 +434,11 @@ public class Config {
 		return languageSpecs != null;
 	}
 	
-	public LanguageSpec[] getLanguageSpecsForDetectLanguage() {
+	public List<LanguageSpec> getLanguageSpecsForDetectLanguage() {
 		return languageSpecsForDetectLanguage;
 	}
 	
-	public LanguageSpec[] getLanguageSpecsForDisplay() {
+	public List<LanguageSpec> getLanguageSpecsForDisplay() {
 		return languageSpecsForDisplay;
 	}
 	
@@ -453,7 +470,7 @@ public class Config {
 		return new ExtensionFilter(filterDescription, extensionsArray);
 	}
 	
-	public static String[] getStringArray(JsonObject j, String fieldName) {
+	public static List<String> getStringList(JsonObject j, String fieldName) {
 		if (!j.has(fieldName))
 			return null; // Throw error (if appropriate).
 		JsonElement jElement = j.get(fieldName);
@@ -461,16 +478,16 @@ public class Config {
 			return null; // Throw error.
 		JsonArray jArray = jElement.getAsJsonArray();
 		int size = jArray.size();
-		String[] arr = new String[size];
+		List<String> list = new ArrayList<>(size);
 		for (int i = 0; i < size; i++) {
 			JsonElement arrayElement = jArray.get(i);
 			if (!arrayElement.isJsonPrimitive())
 				return null; // Throw error.
 			arrayElement.getAsString();
 			JsonPrimitive arrayPrimitive = arrayElement.getAsJsonPrimitive();
-			arr[i] = arrayPrimitive.getAsString();
+			list.add(arrayPrimitive.getAsString());
 		}
-		return arr;
+		return list;
 	}
 	
 	public String toJsonString() {
@@ -543,15 +560,17 @@ public class Config {
 				+ "  minimumTimeLimit: %s\n"
 				+ "  maximumTimeLimit: %s\n"
 				+ "  languageSpecs: %s }\n",
-				inputFileTypes == null ? null : Arrays.toString(inputFileTypes),
-				outputFileTypes == null ? null : Arrays.toString(outputFileTypes),
-				defaultTimeLimit, minimumTimeLimit, maximumTimeLimit,
-				languageSpecs == null ? null : Arrays.toString(languageSpecs));
+				inputFileTypes,
+				outputFileTypes,
+				defaultTimeLimit,
+				minimumTimeLimit,
+				maximumTimeLimit,
+				languageSpecs);
 	}
 	
 	public static class Builder {
-		private String[] inputFileTypes;
-		private String[] outputFileTypes;
+		private List<String> inputFileTypes = new ArrayList<>();
+		private List<String> outputFileTypes = new ArrayList<>();
 		
 		private String defaultTimeLimitString;
 		private String minimumTimeLimitString;
@@ -560,11 +579,7 @@ public class Config {
 		private String maximumIdleTimeString;
 		private String compileTimeLimitString;
 		
-		private LanguageSpec[] languageSpecs;
-		
-		public Builder() {
-			
-		}
+		private List<LanguageSpec> languageSpecs = new ArrayList<>();
 		
 		public Config build() {
 			return new Config(
@@ -579,20 +594,20 @@ public class Config {
 			);
 		}
 
-		public String[] getInputFileTypes() {
+		public List<String> getInputFileTypes() {
 			return inputFileTypes;
 		}
 
-		public Builder setInputFileTypes(String[] inputFileTypes) {
+		public Builder setInputFileTypes(List<String> inputFileTypes) {
 			this.inputFileTypes = inputFileTypes;
 			return this;
 		}
 
-		public String[] getOutputFileTypes() {
+		public List<String> getOutputFileTypes() {
 			return outputFileTypes;
 		}
 
-		public Builder setOutputFileTypes(String[] outputFileTypes) {
+		public Builder setOutputFileTypes(List<String> outputFileTypes) {
 			this.outputFileTypes = outputFileTypes;
 			return this;
 		}
@@ -642,11 +657,11 @@ public class Config {
 			return this;
 		}
 
-		public LanguageSpec[] getLanguageSpecs() {
+		public List<LanguageSpec> getLanguageSpecs() {
 			return languageSpecs;
 		}
 
-		public Builder setLanguageSpecs(LanguageSpec[] languageSpecs) {
+		public Builder setLanguageSpecs(List<LanguageSpec> languageSpecs) {
 			this.languageSpecs = languageSpecs;
 			return this;
 		}

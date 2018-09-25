@@ -70,8 +70,6 @@ public class Main extends Application {
 
 	@Override
 	public void start(Stage stage) throws IOException {
-		ConfigEditorController.createAndOpen();
-		
 		String[] args = getParameters().getRaw().toArray(new String[0]);
 		if (args.length == 0) {			
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/main.fxml"));
