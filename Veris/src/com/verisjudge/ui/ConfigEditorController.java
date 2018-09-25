@@ -200,6 +200,11 @@ public class ConfigEditorController implements LanguageSpecEventHandler {
 		event.consume();
 	}
 	
+	@FXML protected void handleAddNewLanguageSpecButtonAction(ActionEvent event) {
+		LanguageSpecEditorController.createAndOpen(null, this);
+		event.consume();
+	}
+	
 	private void updateSaveButton() {
 		if (isDefaultTimeLimitValid()
 				&& isMinimumTimeLimitValid()

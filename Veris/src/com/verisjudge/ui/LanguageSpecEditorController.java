@@ -282,6 +282,10 @@ public class LanguageSpecEditorController {
 	}
 	
 	private void loadFromLanguageSpec(LanguageSpec languageSpec) {
+		if (languageSpec == null) {
+			return;
+		}
+
 		textFieldLanguageName.setText(languageSpec.getLanguageName());
 		textFieldFileExtensions.setText(languageSpec.getFileExtensions().stream().collect(Collectors.joining(", ")));
 		textFieldDetectLanguagePriority.setText("" + languageSpec.getDetectLanguagePriority());
