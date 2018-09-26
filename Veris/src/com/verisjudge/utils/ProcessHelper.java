@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.SystemUtils;
+
 public class ProcessHelper {
 
 	private final List<String> commandArgs;
@@ -46,16 +48,23 @@ public class ProcessHelper {
 	
 	public ExecutionResult run() throws IOException, InterruptedException {
 		Process process;
-		File timeOutputFile = Files.createTempFile("time", ".txt").toFile();
+		boolean useTimeProcess = SystemUtils.IS_OS_UNIX;
+		File timeOutputFile = null;
+		long startNanos, endNanos;
 		try {
 			List<String> args = new ArrayList<>();
-			args.addAll(getTimeProcessArgs(timeOutputFile));
+			if (useTimeProcess) {
+				timeOutputFile = Files.createTempFile("time", ".txt").toFile();
+				args.addAll(getTimeProcessArgs(timeOutputFile));
+			}
 			args.addAll(commandArgs);
 
 			process = processBuilder.command(args).start();
+			startNanos = System.nanoTime();
 		} catch (IOException e) {
 			throw e;
 		}
+
 		int exitValue;
 		try {
 			if (timeoutMillis > 0) {
@@ -67,26 +76,32 @@ public class ProcessHelper {
 			} else {
 				exitValue = process.waitFor();
 			}
+			endNanos = System.nanoTime();
 		} catch (InterruptedException e) {
 			process.destroyForcibly();
 			throw e;
 		}
-		try {
-			Scanner timeResultsScanner = new Scanner(timeOutputFile);
-			timeResultsScanner.next();
-			long realTime =  Math.round(timeResultsScanner.nextDouble() * 1000);
-			timeResultsScanner.next();
-			long userTime = Math.round(timeResultsScanner.nextDouble() * 1000);
-			timeResultsScanner.next();
-			long sysTime = Math.round(timeResultsScanner.nextDouble() * 1000);
-			timeResultsScanner.close();
-			
-			long runtime = userTime + sysTime;
-			long idleTime = Math.max(0, realTime - runtime);
-
-			return new ExecutionResult(true, exitValue, runtime, idleTime);
-		} catch (IOException e) {
-			throw e;
+		if (useTimeProcess) {
+			try {
+				Scanner timeResultsScanner = new Scanner(timeOutputFile);
+				timeResultsScanner.next();
+				long realTime =  Math.round(timeResultsScanner.nextDouble() * 1000);
+				timeResultsScanner.next();
+				long userTime = Math.round(timeResultsScanner.nextDouble() * 1000);
+				timeResultsScanner.next();
+				long sysTime = Math.round(timeResultsScanner.nextDouble() * 1000);
+				timeResultsScanner.close();
+				
+				long runtime = userTime + sysTime;
+				long idleTime = Math.max(0, realTime - runtime);
+	
+				return new ExecutionResult(true, exitValue, runtime, idleTime);
+			} catch (IOException e) {
+				throw e;
+			}
+		} else {
+			long runtime = (endNanos - startNanos + 999) / 1000;
+			return new ExecutionResult(true, exitValue, runtime, 0);
 		}
 	}
 	
