@@ -23,10 +23,20 @@ public class FileUtils {
 			return dir;
 		}
 		if (SystemUtils.IS_OS_WINDOWS) {
-			File dir = new File("../");
+			String appDataDir = System.getenv("APPDATA");
+			File dir = new File(appDataDir + "/Local/Verisimilitude/");
+			dir.mkdirs();
 			return dir;
 		}
-		return new File("./");
+		if (SystemUtils.IS_OS_MAC_OSX) {
+			String homeDir = System.getProperty("user.home");
+			File dir = new File(homeDir + "/Library/Application Support/Verisimilitude/");
+			dir.mkdirs();
+			return dir;
+		}
+		File dir = new File("./Verisimilitude/");
+		dir.mkdirs();
+		return dir;
 	}
 	
 	public static File getConfigFile(String filename) {
