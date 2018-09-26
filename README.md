@@ -8,5 +8,5 @@ Verisimilitude (**Veris** for short) began as a simple command-line interfacing 
 
 ## Mission Statement
 
-Verisimilitude seeks to be a comprehensive tool for judging competitive programming solutions locally given a solution, data path, and checker.
+Verisimilitude seeks to be a comprehensive tool for judging competitive programming solutions locally given a solution file, collection of data files, and optionally a checker.
 
