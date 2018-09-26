@@ -76,14 +76,6 @@
       "needsCompile": true,
       "compileArgs": ["fpc", "-O3", "-o{filename}.exe", "{file}"],
       "runtimeArgs": ["{dir}/{filename}.exe"]
-    },
-    {
-      "languageName": "Pre-Compiled Executable",
-      "detectLanguagePriority": 2,
-      "isAllowed": true,
-      "fileExtensions": ["exe"],
-      "needsCompile": false,
-      "runtimeArgs": ["./{file}"]
     }
   ]
 }
