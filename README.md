@@ -1,4 +1,4 @@
-# Verisimilitude
+# Overview
 
 ## Background
 
@@ -6,7 +6,9 @@ The Oxford Dictionary defines *verisimilitude* as *"The appearance of being true
 
 Verisimilitude (**Veris** for short) began as a simple command-line interfacing script written by **Alex Coleman** and **Timothy Buzzelli** (both former members of the UCF Programming Team and 2018 ACM-ICPC World Finals Bronze Medalists.) After constant iteration and development, Veris made its way from a command-line tool to a robust and powerful judging tool with a simple UI. Since then, Timothy Buzzelli has been constantly adding improvements to Veris based on feature requests from UCF Programming Teammembers.
 
-## Mission Statement
+## Goal
 
 Verisimilitude seeks to be a comprehensive tool for judging competitive programming solutions locally given a solution file, collection of data files, and optionally a checker.
+
+# Tutorial
 
