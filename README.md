@@ -14,7 +14,7 @@ Verisimilitude seeks to be a comprehensive tool for judging competitive programm
 
 ### Main Window
 
-(Image Here)
+![Main Window](/docs/screenshots/main_window.png)
 
 * **Solution:** The path to the source file for the solution. Can be dragged and dropped into the window.
 * **Data:** The path to a folder containing the input/output files for the judge data. Can be dragged and dropped into the window. When the Data folder is not selected and a solution is dragged in, the data folder will automatically be set to the directory containing the solution source file.
@@ -22,3 +22,11 @@ Verisimilitude seeks to be a comprehensive tool for judging competitive programm
 * **Time Limit (seconds):** A double value representing the time limit in seconds per test case to allow the solution to run for. If the solution takes longer than this time on a test case, that case result will be a TLE.
 * **Checker:** A selector to choose which checker to use when comparing the expected output with the solution's output. The built-in checkers and their specific settings is explained in more detail in the Checkers section.
 * **Data regex (optional):** A regular expression to use when looking for data files in the selected data folder. Only data files matching this regular expression **before the file extension** will be considered for judging. If this is not provided, the value is assumed to be ".\*".
+
+### Results Window
+
+![Results Window Compiling](/docs/screenshots/results_window_compiling.png)
+
+![Results Window Running](/docs/screenshots/results_window_running.png)
+
+![Results Window Judging Finished](/docs/screenshots/results_window_judging_finished.png)
