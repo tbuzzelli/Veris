@@ -1,5 +1,7 @@
 # Verisimilitude
 
+![Main Logo](/pictures/icon128.png)
+
 ## Background
 
 The Oxford Dictionary defines *verisimilitude* as *"The appearance of being true or real."* When we submit solutions to competitive programming contests, the judging system does not check if our solutions are provably correct. Rather, our solutions are accepted if they pass the pre-defined test cases and thus *appear to be correct*.
