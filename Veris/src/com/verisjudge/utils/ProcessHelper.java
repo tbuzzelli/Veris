@@ -92,9 +92,9 @@ public class ProcessHelper {
 				long sysTime = Math.round(timeResultsScanner.nextDouble() * 1000);
 				timeResultsScanner.close();
 				
-				long runtime = userTime + sysTime;
+				long runtime = Math.min(realTime, userTime + sysTime);
 				long idleTime = Math.max(0, realTime - runtime);
-	
+
 				return new ExecutionResult(true, exitValue, runtime, idleTime);
 			} catch (IOException e) {
 				throw e;
