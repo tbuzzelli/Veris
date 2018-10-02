@@ -27,7 +27,7 @@ Verisimilitude seeks to be a comprehensive tool for judging competitive programm
 
 ### Results Window
 
-![Results Window Judging Finished](/docs/screenshots/results_window_accepted.png)
+![Results Window Accepted](/docs/screenshots/results_window_accepted.gif)
 
 The results window opens up when *Judge* is pressed in the Main Window. It will give live updates while compiling the code and running the cases one at a time. The **Compile Status** is listed at the top and each test case is represented as a colored and numbered rectangle in the main center section.
 
