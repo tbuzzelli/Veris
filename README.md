@@ -57,3 +57,46 @@ To rejudge a single test case, right click the case and click **Rerun this case*
 To rejudge all failing test cases, right click the verdict at the bottom and click **Rerun failing cases**. This will fetch the solution file again, recompile, and run every test case that failed (did not get Accepted) again. **Even if these cases pass, the final verdict below will not change.**
 
 To rejudge all cases, right click the verdict at the bottom and click **Rejudge**. This will completely rejudge the solution and will affect the final verdict listed below.
+
+### Checkers
+
+#### Token Checker
+
+The *Token Checker* most closely mimics the standard checkers used on Codeforces and at the ACM-ICPC World Finals. All whitespace is ignored and solutions are accepted if all of the tokens match.
+
+* **Case Sensitive:** When this option is selected, tokens must match exactly with the same case. When not selected, the strings *"Yes"* and *"yes"* will be considered the same.
+
+If the program's output has any extra tokens or is missing any tokens, the solution is judged as Wrong Answer.
+
+#### Diff Checker
+
+The *Diff Checker* performs a basic line-by-line diff of the program's output and expected output. Solutions are acceptped if the diff results come back empty.
+
+* **Ignore Trailing Whitespace:** When this option is selected, extra whitespace at the end of lines in the program's output and the expected output will be ignored.
+* **Ignore Trailing Blank Lines:** When this option is selected, extra blank lines at the end of the program's output and the expected output will be ignored.
+
+#### Epsilon Checker
+
+The *Epsilon Checker* is very similar to the *Token Checker* because it checks the output by comparing tokens and ignoring whitespace. However, tokens in the expected output that can be interpreted as numbers are compared using an absolute and relative epsilon.
+
+* **Absolute Epsilon:** Numbers differing by no more than this value will be considered the same.
+* **Relative Epsilon:** Numbers which have a relative difference of no more than this value will be considered the same.
+
+Accepted number formats:
+* ```123```
+* ```5.24```
+* ```3.96e-5```
+
+Below is the pseudocode for comparing numbers using the two epsilons:
+```
+boolean check(expectedNumber, actualValue) {
+  if (abs(expectedNumber) > 0) {
+    if (abs((expectedNumber - actualValue) / expectedNumber) <= relativeEpsilon) {
+      return true;
+    }
+  }
+  return abs(expectedNumber - actualValue) <= absoluteEpsilon;
+}
+```
+
+**Note:** The comparisons are done using 64 bit doubles. Values which cannot fit into a 64-bit double will not be compared using a string comparison.
