@@ -84,7 +84,9 @@ public class ProcessHelper {
 		if (useTimeProcess) {
 			try {
 				Scanner timeResultsScanner = new Scanner(timeOutputFile);
-				timeResultsScanner.next();
+				while (!timeResultsScanner.next().equals("real")) {
+					continue;
+				}
 				long realTime =  Math.round(timeResultsScanner.nextDouble() * 1000);
 				timeResultsScanner.next();
 				long userTime = Math.round(timeResultsScanner.nextDouble() * 1000);
@@ -112,7 +114,7 @@ public class ProcessHelper {
      * @return The list of arguments to time the process.
      */
     public static List<String> getTimeProcessArgs(File outputFile) {
-    	return List.of("time", "-p", "-q", "-o", outputFile.getAbsolutePath());
+    	return List.of("time", "-p", "--quiet", "-o", outputFile.getAbsolutePath());
     }
     
     public class ExecutionResult {

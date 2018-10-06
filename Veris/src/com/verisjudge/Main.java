@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 
 import com.verisjudge.checker.Checker;
-import com.verisjudge.ui.ConfigEditorController;
 import com.verisjudge.ui.MainController;
 import com.verisjudge.ui.ResultsController;
 import com.verisjudge.utils.CheckerUtils;
