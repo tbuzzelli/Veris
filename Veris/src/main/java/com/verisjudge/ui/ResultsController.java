@@ -199,8 +199,8 @@ public class ResultsController implements VerisListener {
 			return;
 		List<Integer> failingCases = new ArrayList<>();
 		for (int caseNumber = 0; caseNumber < testCaseResults.length; caseNumber++) {
-			if (testCaseResults[caseNumber] != null
-					&& testCaseResults[caseNumber].verdict != Verdict.CORRECT) {
+			if (testCaseResults[caseNumber] == null
+					|| testCaseResults[caseNumber].verdict != Verdict.CORRECT) {
 				failingCases.add(caseNumber);
 				testCaseResults[caseNumber] = null;
 				refreshTestCase(caseNumber);
