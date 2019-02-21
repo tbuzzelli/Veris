@@ -2,6 +2,8 @@ package com.verisjudge;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 import com.verisjudge.checker.Checker;
 import com.verisjudge.ui.MainController;
@@ -70,8 +72,10 @@ public class Main extends Application {
 	@Override
 	public void start(Stage stage) throws IOException {
 		String[] args = getParameters().getRaw().toArray(new String[0]);
+		Locale locale = Locale.ENGLISH;
+		ResourceBundle bundle = ResourceBundle.getBundle("MessagesBundle", locale);
 		if (args.length == 0) {			
-			FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/main.fxml"));
+			FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/main.fxml"), bundle);
 			Parent root = (Parent) loader.load();
 			
 			MainController controller = (MainController) loader.getController();

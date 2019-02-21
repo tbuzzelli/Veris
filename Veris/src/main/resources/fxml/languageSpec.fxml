@@ -24,10 +24,10 @@
             <Font size="16.0" />
          </font>
       </Label>
-      <MenuButton fx:id="menuButtonOptions" mnemonicParsing="false" text="Options" GridPane.columnIndex="1">
+      <MenuButton fx:id="menuButtonOptions" mnemonicParsing="false" text="%menu_button_options" GridPane.columnIndex="1">
         <items>
-          <MenuItem fx:id="menuItemEdit" mnemonicParsing="false" text="Edit" />
-          <MenuItem fx:id="menuItemDelete" mnemonicParsing="false" text="Delete" />
+          <MenuItem fx:id="menuItemEdit" mnemonicParsing="false" text="%edit" />
+          <MenuItem fx:id="menuItemDelete" mnemonicParsing="false" text="%delete" />
         </items>
       </MenuButton>
    </children>

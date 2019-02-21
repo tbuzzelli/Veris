@@ -16,7 +16,7 @@
       <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
    </padding>
    <top>
-      <Label text="Settings" BorderPane.alignment="CENTER">
+      <Label text="%settings_title" BorderPane.alignment="CENTER">
          <font>
             <Font size="20.0" />
          </font>
@@ -25,22 +25,22 @@
    <center>
       <FlowPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
          <children>
-            <CheckBox fx:id="checkBoxUseDarkTheme" mnemonicParsing="false" text="Use dark theme">
+            <CheckBox fx:id="checkBoxUseDarkTheme" mnemonicParsing="false" text="%settings_use_dark_theme">
                <font>
                   <Font size="16.0" />
                </font>
             </CheckBox>
-            <CheckBox fx:id="checkBoxRememberJudgingSettings" mnemonicParsing="false" text="Save judging settings">
+            <CheckBox fx:id="checkBoxRememberJudgingSettings" mnemonicParsing="false" text="%settings_save_judging_settings">
                <font>
                   <Font size="16.0" />
                </font>
             </CheckBox>
-            <CheckBox fx:id="checkBoxSortCasesBySize" mnemonicParsing="false" text="Run largest cases first">
+            <CheckBox fx:id="checkBoxSortCasesBySize" mnemonicParsing="false" text="%settings_run_largest_cases_first">
                <font>
                   <Font size="16.0" />
                </font>
             </CheckBox>
-            <CheckBox fx:id="checkBoxStopAtFirstNonCorrectVerdict" mnemonicParsing="false" text="Stop at first non-correct verdict">
+            <CheckBox fx:id="checkBoxStopAtFirstNonCorrectVerdict" mnemonicParsing="false" text="%settings_stop_at_first_non_correct_verdict">
                <font>
                   <Font size="16.0" />
                </font>
@@ -58,12 +58,12 @@
             <RowConstraints vgrow="SOMETIMES" />
          </rowConstraints>
          <children>
-            <Button fx:id="buttonSave" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleSaveButtonAction" text="Save" GridPane.columnIndex="1">
+            <Button fx:id="buttonSave" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleSaveButtonAction" text="%save" GridPane.columnIndex="1">
                <font>
                   <Font size="18.0" />
                </font>
             </Button>
-            <Button fx:id="buttonCancel" cancelButton="true" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleCancelButtonAction" text="Cancel">
+            <Button fx:id="buttonCancel" cancelButton="true" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleCancelButtonAction" text="%cancel">
                <font>
                   <Font size="18.0" />
                </font>

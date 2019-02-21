@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 import com.verisjudge.Config;
@@ -50,18 +52,19 @@ public class ConfigEditorController implements LanguageSpecEventHandler {
 
 	@FXML private VBox vBoxLanguageSpecs;
 	
+	private final static ResourceBundle MESSAGES = ResourceBundle.getBundle("MessagesBundle", Locale.ENGLISH);
 	private Stage stage;
 	
 	public static boolean createAndOpen() {
 		try {
-			FXMLLoader loader = new FXMLLoader(ConfigEditorController.class.getResource("/fxml/configEditor.fxml"));
+			FXMLLoader loader = new FXMLLoader(ConfigEditorController.class.getResource("/fxml/configEditor.fxml"), MESSAGES);
 			Parent root = (Parent) loader.load();
 			ConfigEditorController controller = (ConfigEditorController) loader.getController();
 			Stage stage = new Stage();
 			
 	        Scene scene = new Scene(root);
 
-	        stage.setTitle("Edit Config");
+	        stage.setTitle(MESSAGES.getString("config_editor_title"));
 	        stage.setScene(scene);
 	        stage.setResizable(false);
 	        Main.addIconToStage(stage);
@@ -378,7 +381,7 @@ public class ConfigEditorController implements LanguageSpecEventHandler {
 	private Pane createLanguageSpecPane(LanguageSpec languageSpec) {
 		Pane pane;
 		try {
-			pane = FXMLLoader.load(getClass().getResource("/fxml/languageSpec.fxml"));
+			pane = FXMLLoader.load(getClass().getResource("/fxml/languageSpec.fxml"), MESSAGES);
 		} catch (IOException e) {
 			e.printStackTrace();
 			return null;

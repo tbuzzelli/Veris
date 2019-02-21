@@ -28,12 +28,12 @@
             <RowConstraints vgrow="SOMETIMES" />
          </rowConstraints>
          <children>
-            <Button fx:id="buttonCancel" cancelButton="true" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleCancelButtonAction" text="Cancel">
+            <Button fx:id="buttonCancel" cancelButton="true" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleCancelButtonAction" text="%cancel">
                <font>
                   <Font size="18.0" />
                </font>
             </Button>
-            <Button fx:id="buttonSave" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleSaveButtonAction" text="Save" GridPane.columnIndex="1">
+            <Button fx:id="buttonSave" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleSaveButtonAction" text="%save" GridPane.columnIndex="1">
                <font>
                   <Font size="18.0" />
                </font>
@@ -47,7 +47,7 @@
    <center>
       <Accordion fx:id="mainAccordion" BorderPane.alignment="CENTER">
          <panes>
-            <TitledPane alignment="TOP_LEFT" animated="false" contentDisplay="CENTER" text="Time Limits">
+            <TitledPane alignment="TOP_LEFT" animated="false" contentDisplay="CENTER" text="%config_time_limits">
                <content>
                   <GridPane hgap="5.0" vgap="5.0">
                      <columnConstraints>
@@ -60,13 +60,13 @@
                         <RowConstraints fillHeight="false" vgrow="NEVER" />
                      </rowConstraints>
                      <children>
-                        <Label text="Default:">
+                        <Label text="%config_label_default">
                            <font>
                               <Font size="16.0" />
                            </font>
                         </Label>
                         <TextField fx:id="textFieldDefaultTimeLimit" alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" />
-                        <Label text="Minimum:" GridPane.rowIndex="1">
+                        <Label text="%config_label_minimum" GridPane.rowIndex="1">
                            <font>
                               <Font size="16.0" />
                            </font>
@@ -75,7 +75,7 @@
                            <GridPane.margin>
                               <Insets />
                            </GridPane.margin></TextField>
-                        <Label text="Maximum:" GridPane.rowIndex="2">
+                        <Label text="%config_label_maximum" GridPane.rowIndex="2">
                            <font>
                               <Font size="16.0" />
                            </font>
@@ -85,7 +85,7 @@
                   </GridPane>
                </content>
             </TitledPane>
-            <TitledPane alignment="TOP_LEFT" animated="false" contentDisplay="CENTER" expanded="false" text="Compiling &amp; Running">
+            <TitledPane alignment="TOP_LEFT" animated="false" contentDisplay="CENTER" expanded="false" text="%config_compiling_and_running">
                <content>
                   <GridPane hgap="5.0" vgap="5.0">
                      <columnConstraints>
@@ -97,13 +97,13 @@
                         <RowConstraints fillHeight="false" vgrow="NEVER" />
                      </rowConstraints>
                      <children>
-                        <Label text="Maximum Idle Time:">
+                        <Label text="%config_label_maximum_idle_time">
                            <font>
                               <Font size="16.0" />
                            </font>
                         </Label>
                         <TextField fx:id="textFieldMaximumIdleTime" alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" />
-                        <Label text="Compile Time Limit:" GridPane.rowIndex="1">
+                        <Label text="%config_label_compile_time_limit" GridPane.rowIndex="1">
                            <font>
                               <Font size="16.0" />
                            </font>
@@ -113,7 +113,7 @@
                   </GridPane>
                </content>
             </TitledPane>
-            <TitledPane alignment="TOP_LEFT" animated="false" contentDisplay="CENTER" expanded="false" text="Data">
+            <TitledPane alignment="TOP_LEFT" animated="false" contentDisplay="CENTER" expanded="false" text="%config_data">
                <content>
                   <GridPane hgap="5.0" vgap="5.0">
                      <columnConstraints>
@@ -125,13 +125,13 @@
                         <RowConstraints fillHeight="false" vgrow="NEVER" />
                      </rowConstraints>
                      <children>
-                        <Label text="Input File Extensions:">
+                        <Label text="%config_label_input_file_extensions">
                            <font>
                               <Font size="16.0" />
                            </font>
                         </Label>
                         <TextField fx:id="textFieldInputFileExtensions" alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" />
-                        <Label text="Output File Extensions:" GridPane.rowIndex="1">
+                        <Label text="%config_label_output_file_extensions" GridPane.rowIndex="1">
                            <font>
                               <Font size="16.0" />
                            </font>
@@ -141,7 +141,7 @@
                   </GridPane>
                </content>
             </TitledPane>
-            <TitledPane alignment="TOP_LEFT" animated="false" contentDisplay="CENTER" expanded="false" maxHeight="1.7976931348623157E308" text="Language Specs">
+            <TitledPane alignment="TOP_LEFT" animated="false" contentDisplay="CENTER" expanded="false" maxHeight="1.7976931348623157E308" text="%config_language_specs">
                <content>
                   <ScrollPane fitToHeight="true" fitToWidth="true" maxHeight="1.7976931348623157E308" minHeight="-Infinity" prefHeight="200.0">
                      <content>
@@ -162,7 +162,7 @@
                                     <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                                  </padding>
                                  <children>
-                                    <Button mnemonicParsing="false" onAction="#handleAddNewLanguageSpecButtonAction" text="Add New Language Spec">
+                                    <Button mnemonicParsing="false" onAction="#handleAddNewLanguageSpecButtonAction" text="%config_button_add_new_language_spec">
                                        <font>
                                           <Font size="16.0" />
                                        </font>

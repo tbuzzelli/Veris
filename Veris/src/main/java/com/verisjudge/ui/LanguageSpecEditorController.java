@@ -3,6 +3,8 @@ package com.verisjudge.ui;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 import com.verisjudge.LanguageSpec;
@@ -35,13 +37,15 @@ public class LanguageSpecEditorController {
 	@FXML private Button buttonCancel;
 	@FXML private Button buttonSave;
 
+	private final static ResourceBundle MESSAGES = ResourceBundle.getBundle("MessagesBundle", Locale.ENGLISH);
+
 	private Stage stage;
 	private LanguageSpec originalLanguageSpec;
 	private LanguageSpecEventHandler eventHandler;
 	
 	public static boolean createAndOpen(LanguageSpec originalLanguageSpec, LanguageSpecEventHandler eventHandler) {
 		try {
-			FXMLLoader loader = new FXMLLoader(LanguageSpecEditorController.class.getResource("/fxml/languageSpecEditor.fxml"));
+			FXMLLoader loader = new FXMLLoader(LanguageSpecEditorController.class.getResource("/fxml/languageSpecEditor.fxml"), MESSAGES);
 			Parent root = (Parent) loader.load();
 			LanguageSpecEditorController controller = (LanguageSpecEditorController) loader.getController();
 			controller.setOriginalLanguageSpec(originalLanguageSpec);
@@ -51,9 +55,9 @@ public class LanguageSpecEditorController {
 	        Scene scene = new Scene(root);
 
 	        if (originalLanguageSpec == null) {
-	        	stage.setTitle("Create New Language Spec");
+	        	stage.setTitle(MESSAGES.getString("language_spec_editor_title_new"));
 	        } else {
-	        	stage.setTitle("Edit - " + originalLanguageSpec.getLanguageName());
+	        	stage.setTitle(MESSAGES.getString("language_spec_editor_title_edit") + " - " + originalLanguageSpec.getLanguageName());
 	        }
 	        stage.setScene(scene);
 	        stage.setResizable(false);

@@ -12,7 +12,7 @@
    <children>
       <ImageView fx:id="imageViewTestCase" fitWidth="63.0" pickOnBounds="true" preserveRatio="true">
          <image>
-            <Image url="@../../../../../../../../../../../../../home/timothy/ucfpt/veris/Veris/src/res/verdictQueued.png" />
+            <Image url="@images/verdictQueued.png" />
          </image>
       </ImageView>
       <Label fx:id="labelTestCaseNumber" alignment="CENTER" maxWidth="1.7976931348623157E308" text="000" textAlignment="CENTER" textFill="WHITE">

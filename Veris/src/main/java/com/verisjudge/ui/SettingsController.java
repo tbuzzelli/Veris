@@ -1,5 +1,8 @@
 package com.verisjudge.ui;
 
+import java.util.Locale;
+import java.util.ResourceBundle;
+
 import com.verisjudge.Main;
 import com.verisjudge.Settings;
 import com.verisjudge.Veris;
@@ -23,18 +26,20 @@ public class SettingsController {
 	@FXML private CheckBox checkBoxSortCasesBySize;
 	@FXML private CheckBox checkBoxStopAtFirstNonCorrectVerdict;
 
+	private final static ResourceBundle MESSAGES = ResourceBundle.getBundle("MessagesBundle", Locale.ENGLISH);
+
 	private Stage stage;
 	
 	public static boolean createAndOpen() {
 		try {
-			FXMLLoader loader = new FXMLLoader(SettingsController.class.getResource("/fxml/settings.fxml"));
+			FXMLLoader loader = new FXMLLoader(SettingsController.class.getResource("/fxml/settings.fxml"), MESSAGES);
 			Parent root = (Parent) loader.load();
 			SettingsController controller = (SettingsController) loader.getController();
 			Stage stage = new Stage();
 			
 	        Scene scene = new Scene(root);
 
-	        stage.setTitle("Settings");
+	        stage.setTitle(MESSAGES.getString("settings_title"));
 	        stage.setScene(scene);
 	        stage.setResizable(false);
 	        Main.addIconToStage(stage);

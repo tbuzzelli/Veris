@@ -3,6 +3,8 @@ package com.verisjudge.ui;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -69,6 +71,8 @@ public class MainController {
 	@FXML private TextField textFieldEpsilonCheckerAbsoluteEpsilon;
 	@FXML private TextField textFieldEpsilonCheckerRelativeEpsilon;
 	
+	private final static ResourceBundle MESSAGES = ResourceBundle.getBundle("MessagesBundle", Locale.ENGLISH);
+
 	public final static String DETECT_LANGUAGE_STR = "Detect Language";
 	public final static String DEFAULT_CHECKER_STR = "Token Checker";
 	
@@ -309,7 +313,7 @@ public class MainController {
 		    }
 		});
 
-		MenuItem itemOpenSettings = new MenuItem("Settings");
+		MenuItem itemOpenSettings = new MenuItem(MESSAGES.getString("settings"));
 		itemOpenSettings.setOnAction(new EventHandler<ActionEvent>() {
 		    public void handle(ActionEvent e) {
 		    	boolean status = SettingsController.createAndOpen();
@@ -319,7 +323,7 @@ public class MainController {
 		    }
 		});
 		
-		MenuItem itemOpenConfigEditor = new MenuItem("Edit Config");
+		MenuItem itemOpenConfigEditor = new MenuItem(MESSAGES.getString("edit_config"));
 		itemOpenConfigEditor.setOnAction(new EventHandler<ActionEvent>() {
 		    public void handle(ActionEvent e) {
 		    	boolean status = ConfigEditorController.createAndOpen();
@@ -382,7 +386,7 @@ public class MainController {
     	FileChooser fileChooser = new FileChooser();
     	if (verisBuilder.getSolutionFile() != null)
     		fileChooser.setInitialDirectory(verisBuilder.getSolutionFile().getParentFile());
-    	fileChooser.setTitle("Select Solution File");
+    	fileChooser.setTitle(MESSAGES.getString("select_solution_file"));
     	fileChooser.getExtensionFilters().add(Config.getConfig().getExtensionFilterFromLanguageSpecs());
     	File file = fileChooser.showOpenDialog(stage);
     	if (file != null && Veris.isValidSolutionFile(file)) {
@@ -393,7 +397,7 @@ public class MainController {
 
     @FXML protected void handleDataPathButtonAction(ActionEvent event) {
     	DirectoryChooser directoryChooser = new DirectoryChooser();
-    	directoryChooser.setTitle("Select Data Folder");
+    	directoryChooser.setTitle(MESSAGES.getString("select_data_folder"));
     	if (verisBuilder.getDataFolder() != null)
     		directoryChooser.setInitialDirectory(verisBuilder.getDataFolder().getParentFile());
     	File file = directoryChooser.showDialog(stage);
@@ -565,10 +569,10 @@ public class MainController {
 		if (solutionFile != null) {
 			buttonSolution.setText(solutionFile.getPath());
 			buttonSolution.setTextOverrun(OverrunStyle.LEADING_ELLIPSIS);
-			stage.setTitle("Verisimilitude - " + solutionFile.getName());
+			stage.setTitle(MESSAGES.getString("main_title") + " - " + solutionFile.getName());
 		} else {
 			buttonSolution.setText("?");
-			stage.setTitle("Verisimilitude - ?");
+			stage.setTitle(MESSAGES.getString("main_title") + " - ?");
 		}
     	updateJudgeButton();
 	}

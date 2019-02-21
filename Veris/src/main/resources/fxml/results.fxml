@@ -24,17 +24,17 @@
             <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
          </rowConstraints>
          <children>
-            <Label text="Worst time:">
+            <Label text="%label_worst_time">
                <font>
                   <Font size="16.0" />
                </font>
             </Label>
-            <Label text="Total time:" GridPane.rowIndex="1">
+            <Label text="%label_total_time" GridPane.rowIndex="1">
                <font>
                   <Font size="16.0" />
                </font>
             </Label>
-            <Label text="Verdict:" GridPane.rowIndex="2">
+            <Label text="%label_verdict" GridPane.rowIndex="2">
                <font>
                   <Font size="20.0" />
                </font>

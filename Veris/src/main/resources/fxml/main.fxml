@@ -40,31 +40,31 @@
                         <RowConstraints vgrow="NEVER" />
                      </rowConstraints>
                      <children>
-                        <Label text="Solution:">
+                        <Label text="%label_solution">
                            <font>
                               <Font size="16.0" />
                            </font>
                         </Label>
                         <Button fx:id="buttonSolution" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleSolutionButtonAction" text="Select solution..." GridPane.columnIndex="1" />
-                        <Label text="Data:" GridPane.rowIndex="1">
+                        <Label text="%label_data" GridPane.rowIndex="1">
                            <font>
                               <Font size="16.0" />
                            </font>
                         </Label>
                         <Button fx:id="buttonDataPath" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleDataPathButtonAction" text="Select data path..." textOverrun="LEADING_ELLIPSIS" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                        <Label text="Language:" GridPane.rowIndex="2">
+                        <Label text="%label_language" GridPane.rowIndex="2">
                            <font>
                               <Font size="16.0" />
                            </font>
                         </Label>
                         <ChoiceBox fx:id="choiceBoxLanguage" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                        <Label text="Time Limit (seconds):" GridPane.rowIndex="3">
+                        <Label text="%label_time_limit" GridPane.rowIndex="3">
                            <font>
                               <Font size="16.0" />
                            </font>
                         </Label>
                         <TextField fx:id="textFieldTimeLimit" alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" text="5.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                        <Label text="Checker:" GridPane.rowIndex="4">
+                        <Label text="%label_checker" GridPane.rowIndex="4">
                            <font>
                               <Font size="16.0" />
                            </font>
@@ -85,7 +85,7 @@
                       <RowConstraints vgrow="SOMETIMES" />
                     </rowConstraints>
                      <children>
-                        <CheckBox fx:id="checkBoxTokenCheckerCaseSensitive" mnemonicParsing="false" text="Case Sensitive" />
+                        <CheckBox fx:id="checkBoxTokenCheckerCaseSensitive" mnemonicParsing="false" text="%checker_case_sensitive" />
                      </children>
                      <StackPane.margin>
                         <Insets />
@@ -93,8 +93,8 @@
                   </GridPane>
                   <GridPane fx:id="gridPaneDiffCheckerSettings" nodeOrientation="LEFT_TO_RIGHT" visible="false">
                      <children>
-                        <CheckBox fx:id="checkBoxDiffCheckerIgnoreTrailingWhitespace" mnemonicParsing="false" text="Ignore Trailing Whitespace" />
-                        <CheckBox fx:id="checkBoxDiffCheckerIgnoreTrailingBlankLines" mnemonicParsing="false" text="Ignore Trailing Blank Lines" GridPane.rowIndex="1" />
+                        <CheckBox fx:id="checkBoxDiffCheckerIgnoreTrailingWhitespace" mnemonicParsing="false" text="%checker_ignore_trailing_whitespace" />
+                        <CheckBox fx:id="checkBoxDiffCheckerIgnoreTrailingBlankLines" mnemonicParsing="false" text="%checker_ignore_trailing_blank_lines" GridPane.rowIndex="1" />
                      </children>
                      <columnConstraints>
                         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -108,8 +108,8 @@
                      <children>
                         <TextField fx:id="textFieldEpsilonCheckerAbsoluteEpsilon" alignment="CENTER_RIGHT" maxWidth="-Infinity" prefWidth="100.0" text="1e-6" GridPane.columnIndex="1" />
                         <TextField fx:id="textFieldEpsilonCheckerRelativeEpsilon" alignment="CENTER_RIGHT" maxWidth="-Infinity" prefWidth="100.0" text="1e-6" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                        <Label text="Absolute Epsilon:" />
-                        <Label text="Relative Epsilon:" GridPane.rowIndex="1" />
+                        <Label text="%label_checker_absolute_epsilon" />
+                        <Label text="%label_checker_relative_epsilon" GridPane.rowIndex="1" />
                      </children>
                      <columnConstraints>
                         <ColumnConstraints hgrow="NEVER" minWidth="10.0" />
@@ -130,7 +130,7 @@
             </StackPane>
             <Accordion fx:id="accordionAdvancedSettings" GridPane.rowIndex="2" GridPane.valignment="TOP" GridPane.vgrow="SOMETIMES">
               <panes>
-                  <TitledPane fx:id="titledPaneAdvancedSettings" alignment="TOP_LEFT" animated="false" contentDisplay="CENTER" expanded="false" text="Advanced Settings">
+                  <TitledPane fx:id="titledPaneAdvancedSettings" alignment="TOP_LEFT" animated="false" contentDisplay="CENTER" expanded="false" text="%advanced_settings">
                      <content>
                         <GridPane hgap="5.0">
                            <columnConstraints>
@@ -141,7 +141,7 @@
                               <RowConstraints fillHeight="false" vgrow="NEVER" />
                            </rowConstraints>
                            <children>
-                              <Label text="Data regex:">
+                              <Label text="%label_data_regex">
                                  <font>
                                     <Font size="16.0" />
                                  </font>

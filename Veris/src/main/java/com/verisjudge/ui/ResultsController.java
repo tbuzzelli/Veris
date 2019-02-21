@@ -6,6 +6,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 import com.verisjudge.CompileResult;
 import com.verisjudge.Main;
@@ -51,6 +53,8 @@ public class ResultsController implements VerisListener {
 	@FXML private Label labelWorstTime;
 	@FXML private Label labelTotalTime;
 	@FXML private Label labelVerdict;
+
+	private final static ResourceBundle MESSAGES = ResourceBundle.getBundle("MessagesBundle", Locale.ENGLISH);
 	
 	private final Image TEST_CASE_BACKGROUND_CORRECT = new Image(this.getClass().getResourceAsStream("/images/verdictAccepted.png"));
 	private final Image TEST_CASE_BACKGROUND_INTERNAL_ERROR = new Image(this.getClass().getResourceAsStream("/images/verdictInternalError.png"));
@@ -110,14 +114,14 @@ public class ResultsController implements VerisListener {
 	
 	public static boolean createAndJudge(Veris veris) {
 		try {
-			FXMLLoader loader = new FXMLLoader(ResultsController.class.getResource("/fxml/results.fxml"));
+			FXMLLoader loader = new FXMLLoader(ResultsController.class.getResource("/fxml/results.fxml"), MESSAGES);
 			Parent root = (Parent) loader.load();
 			ResultsController controller = (ResultsController) loader.getController();
 			Stage stage = new Stage();
 			
 	        Scene scene = new Scene(root);
 
-	        stage.setTitle(veris.getSolutionFile().getName() + " - Verisimilitude");
+	        stage.setTitle(veris.getSolutionFile().getName() + " - " + MESSAGES.getString("results_title"));
 	        stage.setScene(scene);
 	        stage.setResizable(false);
 	        Main.addIconToStage(stage);
@@ -153,7 +157,7 @@ public class ResultsController implements VerisListener {
 	public void judge() {
 		refreshTimeLabels();
 		veris.setListener(this);
-		labelMainTitle.setText("Judging " + veris.getSolutionFile().getName());
+		labelMainTitle.setText(MESSAGES.getString("judging") + " " + veris.getSolutionFile().getName());
 		verisThread = new Thread() {
 			public void run() {
 				veris.testCode();
@@ -169,7 +173,7 @@ public class ResultsController implements VerisListener {
 		}
 		refreshTimeLabels();
 		numRejudgingCases = testCaseResults.length;
-		labelMainTitle.setText("Judging " + veris.getSolutionFile().getName());
+		labelMainTitle.setText(MESSAGES.getString("judging") + " " + veris.getSolutionFile().getName());
 		verisThread = new Thread() {
 			public void run() {
 				veris.reTestCode(null);
@@ -185,7 +189,7 @@ public class ResultsController implements VerisListener {
 		refreshTestCase(caseNumber);
 		refreshTimeLabels();
 		numRejudgingCases = 1;
-		labelMainTitle.setText("Judging " + veris.getSolutionFile().getName());
+		labelMainTitle.setText(MESSAGES.getString("judging") + " " + veris.getSolutionFile().getName());
 		verisThread = new Thread() {
 			public void run() {
 				veris.reTestCode(List.of(caseNumber));
@@ -210,7 +214,7 @@ public class ResultsController implements VerisListener {
 		refreshTimeLabels();
 		numRejudgingCases = failingCases.size();
 		
-		labelMainTitle.setText("Judging " + veris.getSolutionFile().getName());
+		labelMainTitle.setText(MESSAGES.getString("judging") + " " + veris.getSolutionFile().getName());
 		verisThread = new Thread() {
 			public void run() {
 				veris.reTestCode(failingCases);
@@ -257,14 +261,14 @@ public class ResultsController implements VerisListener {
 		
 		testCaseContextMenu.getItems().clear();
 
-		MenuItem itemOpenInputFile = new MenuItem("Open input file");
+		MenuItem itemOpenInputFile = new MenuItem(MESSAGES.getString("open_input_file"));
 		itemOpenInputFile.setOnAction(new EventHandler<ActionEvent>() {
 		    public void handle(ActionEvent e) {
 		    	if (activeContextMenuTestCaseNumber != null) {
 		    		TestCaseResult result = testCaseResults[activeContextMenuTestCaseNumber];
 		    		if (result != null && result.getInputFile() != null) {
 		    			TextViewerController.createAndOpenTextViewer(
-		    					"Verisimilitude - " + result.name,
+		    					MESSAGES.getString("app_name") + " - " + result.name,
 		    					result.getInputFile().getName(),
 		    					result.getInputFile());
 		    		} else {
@@ -274,14 +278,14 @@ public class ResultsController implements VerisListener {
 		    }
 		});
 		
-		MenuItem itemOpenAnswerFile = new MenuItem("Open answer file");
+		MenuItem itemOpenAnswerFile = new MenuItem(MESSAGES.getString("open_answer_file"));
 		itemOpenAnswerFile.setOnAction(new EventHandler<ActionEvent>() {
 		    public void handle(ActionEvent e) {
 		    	if (activeContextMenuTestCaseNumber != null) {
 		    		TestCaseResult result = testCaseResults[activeContextMenuTestCaseNumber];
 		    		if (result != null && result.getAnswerFile() != null) {
 		    			TextViewerController.createAndOpenTextViewer(
-		    					"Verisimilitude - " + result.name,
+		    					MESSAGES.getString("app_name") + " - " + result.name,
 		    					result.getAnswerFile().getName(),
 		    					result.getAnswerFile());
 		    		} else {
@@ -291,15 +295,15 @@ public class ResultsController implements VerisListener {
 		    }
 		});
 		
-		MenuItem itemOpenProgramOutputFile = new MenuItem("Open program output");
+		MenuItem itemOpenProgramOutputFile = new MenuItem(MESSAGES.getString("open_program_output"));
 		itemOpenProgramOutputFile.setOnAction(new EventHandler<ActionEvent>() {
 		    public void handle(ActionEvent e) {
 		    	if (activeContextMenuTestCaseNumber != null) {
 		    		TestCaseResult result = testCaseResults[activeContextMenuTestCaseNumber];
 		    		if (result != null && result.getProgramOutputFile() != null) {
 		    			TextViewerController.createAndOpenTextViewer(
-		    					"Verisimilitude - " + result.name,
-		    					result.name + " - Program Output",
+		    					MESSAGES.getString("app_name") + " - " + result.name,
+		    					result.name + " - " + MESSAGES.getString("program_output_title"),
 		    					result.getProgramOutputFile());
 		    		} else {
 		    			// TODO: show error message "Failed to open program output."
@@ -308,15 +312,15 @@ public class ResultsController implements VerisListener {
 		    }
 		});
 		
-		MenuItem itemOpenDiff = new MenuItem("Open output diff");
+		MenuItem itemOpenDiff = new MenuItem(MESSAGES.getString("open_output_diff"));
 		itemOpenDiff.setOnAction(new EventHandler<ActionEvent>() {
 		    public void handle(ActionEvent e) {
 		    	if (activeContextMenuTestCaseNumber != null) {
 		    		TestCaseResult result = testCaseResults[activeContextMenuTestCaseNumber];
 		    		if (result != null && result.getAnswerFile() != null && result.getProgramOutputFile() != null) {
 		    			DiffViewerController.createAndOpenDiffViewer(
-		    					"Verisimilitude - " + result.name,
-		    					"Expected Output vs. Program Output",
+		    					MESSAGES.getString("app_name") + " - " + result.name,
+		    					MESSAGES.getString("output_diff_title"),
 		    					result.getAnswerFile(),
 		    					result.getProgramOutputFile());
 		    		} else {
@@ -333,8 +337,8 @@ public class ResultsController implements VerisListener {
 		    		TestCaseResult result = testCaseResults[activeContextMenuTestCaseNumber];
 		    		if (result != null && result.getErrorStreamFile() != null) {
 		    			TextViewerController.createAndOpenTextViewer(
-		    					"Verisimilitude - " + result.name,
-		    					result.name + " - Error Stream",
+		    					MESSAGES.getString("app_name") + " - " + result.name,
+		    					result.name + " - " + MESSAGES.getString("error_stream_title"),
 		    					result.getErrorStreamFile());
 		    		} else {
 		    			// TODO: show error message "Failed to open error stream file."
@@ -351,7 +355,7 @@ public class ResultsController implements VerisListener {
 				itemViewErrorStream);
 		
 		if (!isJudging()) {
-			MenuItem itemRerun = new MenuItem("Rerun this case");
+			MenuItem itemRerun = new MenuItem(MESSAGES.getString("rerun_this_case"));
 			itemRerun.setOnAction(new EventHandler<ActionEvent>() {
 			    public void handle(ActionEvent e) {
 			    	if (activeContextMenuTestCaseNumber != null) {
@@ -388,14 +392,14 @@ public class ResultsController implements VerisListener {
 		verdictContextMenu.getItems().clear();
 		
 		if (!isJudging()) {
-			MenuItem itemRerunFailing = new MenuItem("Rerun failing cases");
+			MenuItem itemRerunFailing = new MenuItem(MESSAGES.getString("rerun_failing_cases"));
 			itemRerunFailing.setOnAction(new EventHandler<ActionEvent>() {
 			    public void handle(ActionEvent e) {
 			    	rerunFailingCases();
 			    }
 			});
 			
-			MenuItem itemRejudge = new MenuItem("Rejudge");
+			MenuItem itemRejudge = new MenuItem(MESSAGES.getString("rejudge"));
 			itemRejudge.setOnAction(new EventHandler<ActionEvent>() {
 			    public void handle(ActionEvent e) {
 			    	rejudge();
@@ -545,8 +549,8 @@ public class ResultsController implements VerisListener {
 	}
 
 	private void refreshTimeLabels() {
-		labelWorstTime.setText(String.format("%.2f seconds", getWorstTime() / 1000.0));
-		labelTotalTime.setText(String.format("%.2f seconds", getTotalTime() / 1000.0));
+		labelWorstTime.setText(String.format("%.2f " + MESSAGES.getString("seconds"), getWorstTime() / 1000.0));
+		labelTotalTime.setText(String.format("%.2f " + MESSAGES.getString("seconds"), getTotalTime() / 1000.0));
 	}
 	
 	private void setIsJudging(boolean isJudging) {
@@ -599,20 +603,20 @@ public class ResultsController implements VerisListener {
 		if (isJudging) {
 			if (wasRejudge) {
 				labelRunningTestCases.setText(
-						String.format("Rerunning %d test case%s",
+						String.format(MESSAGES.getString("rerunning") + " %d %s",
 								numCases,
-								numCases == 1 ? "" : "s"));
+								numCases == 1 ? MESSAGES.getString("test_case_singular") : MESSAGES.getString("test_case_plural")));
 			} else {
 				labelRunningTestCases.setText(
-						String.format("Running %d test case%s",
+						String.format(MESSAGES.getString("running") + " %d %s",
 								numCases,
-								numCases == 1 ? "" : "s"));
+								numCases == 1 ? MESSAGES.getString("test_case_singular") : MESSAGES.getString("test_case_plural")));
 			}
 		} else if (isFinished) {
 			if (wasRejudge) {
-				labelRunningTestCases.setText("Finished rejudging");
+				labelRunningTestCases.setText(MESSAGES.getString("finished_rejudging"));
 			} else {
-				labelRunningTestCases.setText("Finished judging");
+				labelRunningTestCases.setText(MESSAGES.getString("finished_judging"));
 			}
 		} else {
 			labelRunningTestCases.setText("");
@@ -626,7 +630,7 @@ public class ResultsController implements VerisListener {
 		Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
-				stage.setTitle("Verisimilitude - " + solutionName);
+				stage.setTitle(MESSAGES.getString("results_title") + " - " + solutionName);
 				initializeTestCases(numTestCases);
 				updateJudgingString(false, false, false);
 			}
@@ -654,7 +658,7 @@ public class ResultsController implements VerisListener {
 		Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
-				labelCompilingCode.setText("Compiling code. . .");
+				labelCompilingCode.setText(MESSAGES.getString("compiling_code"));
 			}
 		});
 	}
@@ -665,7 +669,7 @@ public class ResultsController implements VerisListener {
 		Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
-				labelCompilingCode.setText("Compiling code. . . " + compileVerdict.getName().toUpperCase());
+				labelCompilingCode.setText(MESSAGES.getString("compiling_code") + compileVerdict.getName().toUpperCase());
 				if (compileVerdict == Verdict.COMPILE_SUCCESS) {
 					updateJudgingString(true, false, isRejudging());
 				} else if (compileResult.getErrorStreamFile() != null) {
@@ -673,7 +677,7 @@ public class ResultsController implements VerisListener {
 					labelCompilingCode.setOnMouseClicked(new EventHandler<MouseEvent>() {
 						public void handle(MouseEvent e) {
 							if (e.getButton() == MouseButton.PRIMARY) {
-								TextViewerController.createAndOpenTextViewer("Verisimilitude - Compile Error", "Compile Error", compileResult.getErrorStreamFile());
+								TextViewerController.createAndOpenTextViewer(MESSAGES.getString("app_name") + " - " + MESSAGES.getString("compile_error_title"), MESSAGES.getString("compile_error_title"), compileResult.getErrorStreamFile());
 							}
 						}
 					});
