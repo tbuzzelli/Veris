@@ -74,79 +74,24 @@ public class Main extends Application {
 		String[] args = getParameters().getRaw().toArray(new String[0]);
 		Locale locale = Locale.ENGLISH;
 		ResourceBundle bundle = ResourceBundle.getBundle("MessagesBundle", locale);
-		if (args.length == 0) {			
-			FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/main.fxml"), bundle);
-			Parent root = (Parent) loader.load();
-			
-			MainController controller = (MainController) loader.getController();
-			
-	        Scene scene = new Scene(root);
-	    
-	        stage.setTitle("Verisimilitude");
-	        stage.setScene(scene);
-	        stage.setResizable(false);
-	        addIconToStage(stage);
-	        
-	        controller.setStage(stage);
-	        
-	        controller.loadPrevious();
-	        
-	        stage.show();
-		} else {
-			Veris.Builder verisBuilder = new Veris.Builder();
-			File solutionFile = new File(args[0]);
-			if (!solutionFile.exists())
-				exitWithError("Failed to find solution file '" + args[0] + "'");
-			verisBuilder.setSolutionFile(solutionFile);
-			verisBuilder.setDataFolder(new File("."));
-			for (int i = 1; i < args.length; i++) {
-				String arg = args[i];
-				if (!arg.startsWith("--"))
-					usage();
-				int eqIdx = arg.indexOf("=");
-				String key, value;
-				if (eqIdx < 0) {
-					key = arg.substring(2).toLowerCase();
-					value = "";
-				} else {
-					key = arg.substring(2, eqIdx).toLowerCase();
-					value = arg.substring(eqIdx + 1);
-				}
-
-				switch (key) {
-					case "d":
-					case "data":
-					case "datapath":
-					case "data_path":
-						if (value.length() == 0)
-							exitWithError("The data folder name can't be blank/empty");
-						File dataFolder = new File(value);
-						if (!dataFolder.exists() || !dataFolder.isDirectory())
-							exitWithError("Failed to find data folder '" + value + "'");
-						verisBuilder.setDataFolder(dataFolder);
-						break;
-					case "t":
-					case "time":
-					case "timelimit":
-					case "time_limit":
-						int timeLimit = parseTimeLimit(value);
-						verisBuilder.setTimeLimit((long) timeLimit);
-						break;
-					case "c":
-					case "checker":
-						Checker checker = parseChecker(value);
-						verisBuilder.setChecker(checker);
-						break;
-					default:
-						usage();
-				}
-			}
-			
-			boolean status = ResultsController.createAndJudge(verisBuilder);
-			if (!status) {
-				exitWithError("Failed to read solution file and/or data folder");
-			}
-		}
+		
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/main.fxml"), bundle);
+		Parent root = (Parent) loader.load();
+		
+		MainController controller = (MainController) loader.getController();
+		
+        Scene scene = new Scene(root);
+    
+        stage.setTitle("Verisimilitude");
+        stage.setScene(scene);
+        stage.setResizable(false);
+        addIconToStage(stage);
+        
+        controller.setStage(stage);
+        
+        controller.loadPrevious();
+        
+        stage.show();
 	}
 	
 	public static void addIconToStage(Stage stage) {

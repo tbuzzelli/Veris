@@ -1,0 +1,52 @@
+import org.gradle.internal.os.OperatingSystem
+
+ext {
+    operatingSystem = OperatingSystem.current()
+}
+
+allprojects {
+    group 'com.verisjudge'
+}
+
+wrapper {
+    description 'Setup the Gradle wrapper'
+    gradleVersion = '5.2.1'
+    distributionUrl = "https://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
+}
+
+buildscript {
+    repositories {
+        jcenter()
+        maven {
+            url 'https://plugins.gradle.org/m2/'
+        }
+    }
+
+    dependencies {
+        classpath 'com.github.ben-manes:gradle-versions-plugin:0.20.0'
+        classpath 'net.researchgate:gradle-release:2.8.0'
+        classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.7'
+        classpath 'gradle.plugin.com.github.spotbugs:spotbugs-gradle-plugin:1.6.9'
+    }
+}
+
+apply plugin: 'base'
+apply plugin: 'net.researchgate.release'
+apply plugin: 'org.sonarqube'
+apply plugin: 'com.github.ben-manes.versions'
+
+subprojects {
+
+    apply plugin: 'java'
+
+    sourceCompatibility = 10
+    targetCompatibility = 10
+
+    repositories {
+        jcenter()
+    }
+
+    [compileJava].each { task ->
+        task.options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+    }
+}
