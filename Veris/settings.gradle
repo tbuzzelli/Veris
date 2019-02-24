@@ -1,3 +1,4 @@
 rootProject.name = 'verisimilitude'
 
 include 'core'
+include 'package'

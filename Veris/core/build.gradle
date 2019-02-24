@@ -69,10 +69,11 @@ task execute(type:JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
 
     main = project.getProperty("mainClassName")
+    /*
     jvmArgs = [
 		'--module-path', files(configurations.compileClasspath).asPath,
 		'--add-modules', 'ALL-MODULE-PATH',
-	]
+	]*/
 }
 
 task copyDependencies(type: Copy) {

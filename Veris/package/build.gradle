@@ -7,7 +7,8 @@ ext {
     javafxModulePath = file("${rootProject.project('core').buildDir}/javafx-modules")
     mainJar = project(':core').jar.outputs.files[0].name
     bundlePath = file("${buildDir}/bundle")
-    extraBundlerArguments = []
+    secondaryLauncher = file('resources/main/secondaryLauncher.properties')
+    extraBundlerArguments = ["--secondary-launcher " + secondaryLauncher]
     if (operatingSystem.isMacOsX()) {
         packageType = 'pkg'
         appIcon = file('icons/mac/Verisimilitude.icns')
@@ -21,7 +22,7 @@ ext {
         appIcon = file('icons/windows/Verisimilitude.ico')
         sessionIcon = file('icons/windows/VerisimilitudeSession.ico')
         bundlerScript = file('bin/build-package.bat')
-        generatedInnoSetupFile = file("${buildDir}/resources/main/application.iss")
+        generatedInnoSetupFile = file("resources/main/application.iss")
         windowsExecutable = file("${bundlePath}/Verisimilitude/Verisimilitude.exe")
         bundleContent = file("${bundlePath}/Verisimilitude/*")
     }
@@ -120,7 +121,6 @@ task createBundle(type: Exec, dependsOn: [processResources, checkBundlingEnviron
             bundlePath,
             mainJar,
             publishedVersion,
-            fileAssociations,
             appIcon,
             *extraBundlerArguments]
     }
